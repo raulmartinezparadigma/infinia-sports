@@ -1,0 +1,10 @@
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\InfiniaSportsApplication.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\model\Product.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\repository\ProductRepository.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\exception\GlobalExceptionHandler.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\service\ProductService.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\config\DataInitializer.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\config\WebConfig.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\config\OpenApiConfig.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\controller\ProductController.java
+C:\infinia-sports\backend\src\main\java\com\infinia\sports\model\ProductType.java

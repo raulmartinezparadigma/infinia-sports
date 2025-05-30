@@ -1,1 +1,62 @@
+# Infinia Sports
 
+_E-commerce de productos deportivos_
+
+## Estado del proyecto
+- **Backend Java 17 (Spring Boot) en arquitectura de 3 capas**: Controller, Service, Persistence
+- **Frontend**: React.js
+- **Bases de datos**: PostgreSQL (productos) y MongoDB (pedidos)
+- **Documentación API**: OpenAPI 3.0.x (Swagger UI)
+
+## Módulos implementados
+### 1. Módulo de Productos
+- CRUD completo sobre entidad `Product` (id, type, description, price, size)
+- Importación masiva de productos
+- Validación de campos y tipos
+- Persistencia en PostgreSQL
+- Endpoints REST:
+  - `GET /productos`
+  - `GET /productos/{id}`
+  - `POST /productos`
+  - `PUT /productos/{id}`
+  - `DELETE /productos/{id}`
+  - `POST /productos/importar`
+
+### 2. Módulo de Checkout (en planificación)
+- Gestión de carrito y pedidos (estructura JSON compleja)
+- Persistencia en MongoDB
+- Endpoints previstos: `/carrito`, `/checkout`, `/pedidos`
+
+### 3. Módulo de Pagos (en planificación)
+- Integración con Bizum, Redsys y Transferencia bancaria
+- Envío de correo de confirmación tras pedido
+
+## Tecnologías principales
+- Java 17
+- Spring Boot
+- Spring Data JPA
+- PostgreSQL
+- MongoDB
+- React.js (frontend)
+- OpenAPI 3.0.x (Swagger)
+
+## Cómo arrancar el backend
+1. Asegúrate de tener **Java 17** y **Maven** instalados y configurados en tu PATH.
+2. Desde la carpeta `backend`, ejecuta:
+   ```bash
+   mvn clean install
+   java -jar target/sports-0.0.1-SNAPSHOT.jar
+   ```
+   El backend arrancará en [http://localhost:8080](http://localhost:8080)
+3. Accede a la documentación Swagger UI en:
+   [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+## Notas
+- No existen scripts auxiliares en `backend` (Windows/Linux): el arranque se realiza solo con Maven y Java.
+- Los nombres de clases, métodos y variables están en inglés; los comentarios en español.
+- Arquitectura y convenciones alineadas con la planificación del proyecto.
+
+## Próximos pasos
+- Implementar módulo de Checkout y Pagos
+- Desarrollar frontend React
+- Pruebas de integración y despliegue

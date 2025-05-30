@@ -1,0 +1,191 @@
+openapi: 3.0.3
+info:
+  title: Infinia Sports API
+  description: API para el e-commerce de productos deportivos
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Servidor de desarrollo local
+paths:
+  /productos:
+    get:
+      summary: Obtiene todos los productos
+      description: Retorna una lista de todos los productos disponibles. Se puede filtrar por tipo, descripción o talla.
+      parameters:
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [SNEAKERS, CLOTHING, SUPPLEMENT]
+        - name: descripcion
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: talla
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de productos obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      summary: Crea un nuevo producto
+      description: Crea un nuevo producto en el sistema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Producto creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Datos de producto inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /productos/{id}:
+    get:
+      summary: Obtiene un producto por su ID
+      description: Retorna un producto específico según su ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+    put:
+      summary: Actualiza un producto existente
+      description: Actualiza los datos de un producto existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Datos de producto inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Producto no encontrado
+    delete:
+      summary: Elimina un producto
+      description: Elimina un producto según su ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Producto eliminado correctamente
+        '404':
+          description: Producto no encontrado
+  /productos/importar:
+    post:
+      summary: Importa una lista de productos
+      description: Permite importar múltiples productos en una sola operación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Productos importados correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '400':
+          description: Datos de productos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único del producto
+        type:
+          type: string
+          enum: [SNEAKERS, CLOTHING, SUPPLEMENT]
+          description: Tipo de producto
+        description:
+          type: string
+          description: Descripción del producto
+        price:
+          type: number
+          format: decimal
+          description: Precio del producto
+        size:
+          type: string
+          description: Talla del producto
+      required:
+        - type
+        - description
+        - price
+        - size
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensaje de error
+      additionalProperties:
+        type: string
