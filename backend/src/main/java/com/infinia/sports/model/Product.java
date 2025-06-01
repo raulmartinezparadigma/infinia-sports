@@ -43,4 +43,10 @@ public class Product {
 
     @NotBlank(message = "La talla no puede estar vacía")
     private String size;
+
+    /**
+     * URL o nombre de la imagen del producto
+     */
+    @NotBlank(message = "La imagen no puede estar vacía")
+    private String mage;
 }

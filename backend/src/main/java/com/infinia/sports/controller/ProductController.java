@@ -52,7 +52,7 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Productos encontrados",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class))})
+                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))})
     })
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts(
@@ -84,7 +84,7 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto encontrado",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class))}),
+                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
                 content = @Content)
     })
@@ -107,7 +107,7 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Producto creado correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class))}),
+                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de producto inválidos",
                 content = @Content)
     })
@@ -127,7 +127,7 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class))}),
+                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de producto inválidos",
                 content = @Content),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
@@ -176,7 +176,7 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Productos importados correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class))}),
+                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de productos inválidos",
                 content = @Content)
     })
