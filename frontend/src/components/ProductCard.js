@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 // Tarjeta individual de producto
 import Card from "@mui/material/Card";
@@ -6,10 +6,20 @@ import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
+import { useCart } from "./CartContext";
 
 // Tarjeta individual de producto
 function ProductCard({ product }) {
   // Props: product { id, name, description, price, size, type }
+  const { addToCart } = useCart();
+  const [open, setOpen] = useState(false);
+
+  const handleAdd = () => {
+    addToCart(product);
+    setOpen(true);
+  };
+
   return (
     <Card sx={{ minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center" }}>
       {/* Imagen del producto */}
@@ -27,7 +37,16 @@ function ProductCard({ product }) {
         <Typography variant="h6" sx={{ mt: 1, px: 2, textAlign: 'center' }}>{product.price?.toFixed(2)} €</Typography>
       </CardContent>
       <CardActions>
-        <Button variant="contained" color="primary" fullWidth>Añadir al carrito</Button>
+        <Button variant="contained" color="primary" fullWidth sx={{ borderRadius: '20px' }} onClick={handleAdd}>
+          Añadir al carrito
+        </Button>
+        <Snackbar
+          open={open}
+          autoHideDuration={1500}
+          onClose={() => setOpen(false)}
+          message="Producto añadido a la cesta"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
       </CardActions>
     </Card>
   );
