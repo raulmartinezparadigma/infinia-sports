@@ -13,7 +13,7 @@ function MiniCart() {
     <Paper elevation={4} sx={{
       position: 'fixed',
       right: 24,
-      top: 88,
+      top: 120,
       width: 320,
       zIndex: 1300,
       p: 2,

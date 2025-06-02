@@ -3,6 +3,7 @@ import React from "react";
 // Formulario de dirección de envío
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
+import BackgroundCarousel from './BackgroundCarousel';
 
 function ShippingForm({ onNext }) {
   const [values, setValues] = useState({
@@ -51,7 +52,10 @@ function ShippingForm({ onNext }) {
   };
 
   return (
-    <Paper elevation={2} sx={{ mt: 4, p: 3, maxWidth: 500, margin: '32px auto' }}>
+    <Box sx={{ position: 'relative', mt: 4, mb: 4, minHeight: 500 }}>
+      {/* Carrusel de fondo */}
+      <BackgroundCarousel borderRadius={4} minHeight={500} />
+      <Paper elevation={2} sx={{ p: 1, maxWidth: 500, margin: '8px auto', position: 'relative', zIndex: 2, borderRadius: 4, backdropFilter: 'blur(0.5px)' }}>
       <Typography variant="h6" gutterBottom>Dirección de envío</Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <TextField
@@ -62,7 +66,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.fullName}
           helperText={errors.fullName}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="Dirección"
@@ -72,7 +76,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.address}
           helperText={errors.address}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="Ciudad"
@@ -82,7 +86,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.city}
           helperText={errors.city}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="Código postal"
@@ -92,7 +96,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.postalCode}
           helperText={errors.postalCode}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="Provincia"
@@ -102,7 +106,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.province}
           helperText={errors.province}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="País"
@@ -112,7 +116,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.country}
           helperText={errors.country}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <TextField
           label="Teléfono"
@@ -122,7 +126,7 @@ function ShippingForm({ onNext }) {
           error={!!errors.phone}
           helperText={errors.phone}
           fullWidth
-          margin="normal"
+          margin="dense"
         />
         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
           Guardar dirección
@@ -134,6 +138,7 @@ function ShippingForm({ onNext }) {
         )}
       </Box>
     </Paper>
+    </Box>
   );
 }
 

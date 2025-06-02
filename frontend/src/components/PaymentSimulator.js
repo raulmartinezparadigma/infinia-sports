@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Typography, Button, CircularProgress, Alert, Paper } from "@mui/material";
 
-function PaymentSimulator({ onSuccess }) {
+function PaymentSimulator({ onSuccess, onBack }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -36,6 +36,13 @@ function PaymentSimulator({ onSuccess }) {
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Simular pago"}
         </Button>
+      )}
+      {typeof onBack === 'function' && (
+        <Box mt={4} display="flex" justifyContent="center">
+          <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>
+            Volver
+          </Button>
+        </Box>
       )}
     </Paper>
   );

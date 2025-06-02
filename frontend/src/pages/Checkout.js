@@ -18,7 +18,7 @@ function Checkout() {
 
   return (
     <div>
-      {step !== 5 && <MiniCart position="top" />}
+      {step < 5 && <MiniCart position="top" />}
       {step === 0 && <ShippingForm onNext={() => setStep(1)} />}
       {step === 1 && <BillingForm onNext={() => setStep(2)} />}
       {step === 2 && <OrderSummary onNext={() => setStep(3)} />}

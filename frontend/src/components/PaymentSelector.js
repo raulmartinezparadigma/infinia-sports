@@ -31,7 +31,7 @@ const paymentMethods = [
   }
 ];
 
-function PaymentSelector({ onNext }) {
+function PaymentSelector({ onNext, onBack }) {
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [bizumPhone, setBizumPhone] = useState("");
@@ -177,6 +177,13 @@ function PaymentSelector({ onNext }) {
           }} variant="contained" color="primary">Confirmar</Button>
         </DialogActions>
       </Dialog>
+      {typeof onBack === 'function' && (
+        <Box mt={4} display="flex" justifyContent="center">
+          <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>
+            Volver
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }
