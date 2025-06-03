@@ -1,0 +1,322 @@
+package com.infinia.sports.service.impl;
+
+import com.infinia.sports.exception.ResourceNotFoundException;
+import com.infinia.sports.model.Cart;
+import com.infinia.sports.model.Order;
+import com.infinia.sports.model.dto.AddressDTO;
+import com.infinia.sports.model.dto.CartItemDTO;
+import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.repository.CartRepository;
+import com.infinia.sports.repository.OrderRepository;
+import com.infinia.sports.service.CheckoutService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * Implementación del servicio de checkout
+ */
+@Service
+@RequiredArgsConstructor
+public class CheckoutServiceImpl implements CheckoutService {
+
+    private final CartRepository cartRepository;
+    private final OrderRepository orderRepository;
+    
+    // Tasa de impuesto por defecto (21% IVA)
+    private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.21");
+    
+    @Override
+    public Cart addItemToCart(String sessionId, String userId, CartItemDTO cartItemDTO) {
+        // Buscar carrito existente o crear uno nuevo
+        Cart cart = getOrCreateCart(sessionId, userId);
+        
+        // Comprobar si el producto ya está en el carrito
+        Optional<Cart.CartItem> existingItem = cart.getItems().stream()
+                .filter(item -> item.getProductId().equals(cartItemDTO.getProductId()))
+                .findFirst();
+        
+        if (existingItem.isPresent()) {
+            // Actualizar cantidad si el producto ya existe
+            Cart.CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + cartItemDTO.getQuantity());
+            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        } else {
+            // Añadir nuevo producto al carrito
+            Cart.CartItem newItem = Cart.CartItem.builder()
+                    .id(UUID.randomUUID().toString())
+                    .productId(cartItemDTO.getProductId())
+                    .productName(cartItemDTO.getProductName())
+                    .quantity(cartItemDTO.getQuantity())
+                    .unitPrice(cartItemDTO.getUnitPrice())
+                    .totalPrice(cartItemDTO.getUnitPrice().multiply(BigDecimal.valueOf(cartItemDTO.getQuantity())))
+                    .attributes(cartItemDTO.getAttributes())
+                    .build();
+            
+            cart.getItems().add(newItem);
+        }
+        
+        // Actualizar totales
+        updateCartTotals(cart);
+        
+        // Guardar y devolver el carrito actualizado
+        cart.setUpdatedAt(LocalDateTime.now());
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    public Cart removeItemFromCart(String sessionId, String userId, String itemId) {
+        // Obtener el carrito
+        Cart cart = getCart(sessionId, userId);
+        
+        // Eliminar el producto del carrito
+        boolean removed = cart.getItems().removeIf(item -> item.getId().equals(itemId));
+        
+        if (!removed) {
+            throw new ResourceNotFoundException("Producto no encontrado en el carrito");
+        }
+        
+        // Actualizar totales
+        updateCartTotals(cart);
+        
+        // Guardar y devolver el carrito actualizado
+        cart.setUpdatedAt(LocalDateTime.now());
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    public Cart getCart(String sessionId, String userId) {
+        Cart cart;
+        
+        if (userId != null && !userId.isEmpty()) {
+            // Buscar por ID de usuario
+            cart = cartRepository.findByUserId(userId)
+                    .orElseGet(() -> cartRepository.findBySessionId(sessionId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado")));
+            
+            // Si se encontró por sesión pero no por usuario, actualizar el userId
+            if (cart.getUserId() == null || cart.getUserId().isEmpty()) {
+                cart.setUserId(userId);
+                cart = cartRepository.save(cart);
+            }
+        } else {
+            // Buscar solo por ID de sesión
+            cart = cartRepository.findBySessionId(sessionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
+        }
+        
+        return cart;
+    }
+
+    @Override
+    public Cart saveAddresses(String cartId, AddressDTO shippingAddress, AddressDTO billingAddress, boolean sameAsBillingAddress) {
+        // Obtener el carrito
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
+        
+        // En un caso real, aquí guardaríamos las direcciones en el carrito o en una entidad relacionada
+        // Para este ejemplo, simplemente devolvemos el carrito sin cambios
+        
+        return cart;
+    }
+
+    @Override
+    public Order confirmOrder(CheckoutDTO checkoutDTO) {
+        // Obtener el carrito
+        Cart cart = cartRepository.findById(checkoutDTO.getCartId())
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
+        
+        // Crear la orden
+        Order order = createOrderFromCart(cart, checkoutDTO);
+        
+        // Guardar la orden
+        Order savedOrder = orderRepository.save(order);
+        
+        // Eliminar el carrito
+        cartRepository.delete(cart);
+        
+        return savedOrder;
+    }
+
+    @Override
+    public Order getOrder(String orderId) {
+        return orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+    }
+    
+    /**
+     * Obtiene un carrito existente o crea uno nuevo
+     */
+    private Cart getOrCreateCart(String sessionId, String userId) {
+        Cart cart;
+        
+        if (userId != null && !userId.isEmpty()) {
+            // Intentar encontrar por userId
+            Optional<Cart> userCart = cartRepository.findByUserId(userId);
+            
+            if (userCart.isPresent()) {
+                cart = userCart.get();
+                // Actualizar sessionId si ha cambiado
+                if (!sessionId.equals(cart.getSessionId())) {
+                    cart.setSessionId(sessionId);
+                }
+            } else {
+                // Intentar encontrar por sessionId
+                Optional<Cart> sessionCart = cartRepository.findBySessionId(sessionId);
+                
+                if (sessionCart.isPresent()) {
+                    cart = sessionCart.get();
+                    // Actualizar userId
+                    cart.setUserId(userId);
+                } else {
+                    // Crear nuevo carrito
+                    cart = createNewCart(sessionId, userId);
+                }
+            }
+        } else {
+            // Buscar solo por sessionId
+            cart = cartRepository.findBySessionId(sessionId)
+                    .orElseGet(() -> createNewCart(sessionId, null));
+        }
+        
+        return cart;
+    }
+    
+    /**
+     * Crea un nuevo carrito
+     */
+    private Cart createNewCart(String sessionId, String userId) {
+        Cart cart = Cart.builder()
+                .sessionId(sessionId)
+                .userId(userId)
+                .items(new ArrayList<>())
+                .subtotal(BigDecimal.ZERO)
+                .tax(BigDecimal.ZERO)
+                .total(BigDecimal.ZERO)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return cartRepository.save(cart);
+    }
+    
+    /**
+     * Actualiza los totales del carrito
+     */
+    private void updateCartTotals(Cart cart) {
+        // Calcular subtotal
+        BigDecimal subtotal = cart.getItems().stream()
+                .map(Cart.CartItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Calcular impuestos
+        BigDecimal tax = subtotal.multiply(DEFAULT_TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+        
+        // Actualizar totales en el carrito
+        cart.setSubtotal(subtotal);
+        cart.setTax(tax);
+        cart.setTotal(subtotal.add(tax));
+    }
+    
+    /**
+     * Crea una orden a partir del carrito y los datos de checkout
+     */
+    private Order createOrderFromCart(Cart cart, CheckoutDTO checkoutDTO) {
+        // Convertir items del carrito a items de orden
+        List<Order.LineItem> lineItems = cart.getItems().stream()
+                .map(cartItem -> Order.LineItem.builder()
+                        .id(cartItem.getId())
+                        .productId(cartItem.getProductId())
+                        .productName(cartItem.getProductName())
+                        .quantity(cartItem.getQuantity())
+                        .unitPrice(cartItem.getUnitPrice())
+                        .totalPrice(cartItem.getTotalPrice())
+                        .attributes(cartItem.getAttributes())
+                        .build())
+                .collect(Collectors.toList());
+        
+        // Crear grupo de envío
+        Order.ShippingGroup shippingGroup = Order.ShippingGroup.builder()
+                .id(UUID.randomUUID().toString())
+                .shippingMethod(checkoutDTO.getShippingMethod())
+                .shippingCost(BigDecimal.ZERO) // En un caso real, se calcularía según el método de envío
+                .lineItemIds(lineItems.stream().map(Order.LineItem::getId).collect(Collectors.toList()))
+                .build();
+        
+        // Crear información de precios
+        Order.PriceInfo priceInfo = Order.PriceInfo.builder()
+                .subtotal(cart.getSubtotal())
+                .shipping(shippingGroup.getShippingCost())
+                .tax(cart.getTax())
+                .discount(BigDecimal.ZERO) // En un caso real, se aplicarían descuentos si los hay
+                .total(cart.getTotal().add(shippingGroup.getShippingCost()))
+                .build();
+        
+        // Crear información fiscal
+        Order.TaxInfo taxInfo = Order.TaxInfo.builder()
+                .taxRate(DEFAULT_TAX_RATE)
+                .taxRegion("ES") // En un caso real, se determinaría según la dirección
+                .build();
+        
+        // Convertir direcciones
+        Order.Address shippingAddress = mapAddressDtoToOrderAddress(checkoutDTO.getShippingAddress());
+        
+        Order.Address billingAddress;
+        if (checkoutDTO.isSameAsBillingAddress()) {
+            billingAddress = shippingAddress;
+        } else {
+            billingAddress = mapAddressDtoToOrderAddress(checkoutDTO.getBillingAddress());
+        }
+        
+        // Crear la orden
+        return Order.builder()
+                .orderId(generateOrderId())
+                .language("es") // En un caso real, se tomaría del contexto o preferencias del usuario
+                .submitDate(LocalDateTime.now())
+                .status("PENDIENTE")
+                .email(checkoutDTO.getEmail())
+                .shippingGroups(List.of(shippingGroup))
+                .shippingAddress(shippingAddress)
+                .billingAddress(billingAddress)
+                .lineItems(lineItems)
+                .priceInfo(priceInfo)
+                .taxInfo(taxInfo)
+                .build();
+    }
+    
+    /**
+     * Convierte un AddressDTO a Order.Address
+     */
+    private Order.Address mapAddressDtoToOrderAddress(AddressDTO addressDTO) {
+        if (addressDTO == null) {
+            return null;
+        }
+        
+        return Order.Address.builder()
+                .firstName(addressDTO.getFirstName())
+                .lastName(addressDTO.getLastName())
+                .addressLine1(addressDTO.getAddressLine1())
+                .addressLine2(addressDTO.getAddressLine2())
+                .city(addressDTO.getCity())
+                .state(addressDTO.getState())
+                .postalCode(addressDTO.getPostalCode())
+                .country(addressDTO.getCountry())
+                .phoneNumber(addressDTO.getPhoneNumber())
+                .build();
+    }
+    
+    /**
+     * Genera un ID de orden único
+     */
+    private String generateOrderId() {
+        return "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+}
