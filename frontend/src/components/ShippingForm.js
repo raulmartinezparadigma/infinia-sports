@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import BackgroundCarousel from './BackgroundCarousel';
 
-function ShippingForm({ onNext }) {
+function ShippingForm({ onNext, onBack }) {
   const [values, setValues] = useState({
     fullName: "",
     address: "",
@@ -131,6 +131,13 @@ function ShippingForm({ onNext }) {
         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
           Guardar dirección
         </Button>
+        {typeof onBack === 'function' && (
+          <Box mt={2} display="flex" justifyContent="center">
+            <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>
+              Volver
+            </Button>
+          </Box>
+        )}
         {submitted && (
           <Typography color="success.main" sx={{ mt: 2 }}>
             ¡Dirección guardada correctamente!
