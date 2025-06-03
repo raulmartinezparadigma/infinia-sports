@@ -50,18 +50,16 @@ function OrderSummary({ onNext, onBack }) {
           <Typography variant="h6">Total:</Typography>
           <Typography variant="h6">{total.toFixed(2)} €</Typography>
         </Box>
-        <Box display="flex" justifyContent="flex-end" mt={3}>
+        <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+          {typeof onBack === 'function' && (
+            <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>
+              Volver
+            </Button>
+          )}
           <Button variant="contained" color="primary" size="large" onClick={typeof onNext === 'function' ? onNext : undefined}>
             Ir a pago
           </Button>
         </Box>
-        {typeof onBack === 'function' && (
-          <Box mt={4} display="flex" justifyContent="center">
-            <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>
-              Volver
-            </Button>
-          </Box>
-        )}
       </Paper>
     </Box>
   );
