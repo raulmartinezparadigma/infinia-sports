@@ -58,13 +58,13 @@ export function CartProvider({ children }) {
   }
 
   // Eliminar producto del carrito y sincronizar con backend
-  async function removeFromCart(productId) {
+  async function removeFromCart(itemId) {
     try {
-      const updatedCart = await removeItemFromCart(productId, userId);
+      const updatedCart = await removeItemFromCart(itemId, userId);
       // Adaptar los items al formato esperado por el frontend
       setCart((updatedCart.items || []).map(adaptCartItem));
     } catch (err) {
-      setCart(prev => prev.filter(item => item.id !== productId));
+      setCart(prev => prev.filter(item => item.id !== itemId));
     }
   }
 
@@ -74,7 +74,7 @@ export function CartProvider({ children }) {
       ...item,
       name: item.productName || item.name || item.description,
       price: item.unitPrice ?? item.price,
-      id: item.productId || item.id,
+      id: item.id,
     };
   }
 

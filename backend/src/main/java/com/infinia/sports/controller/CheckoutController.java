@@ -173,23 +173,7 @@ public class CheckoutController {
      * Obtiene o crea un ID de sesión
      */
     private String getOrCreateSessionId(HttpServletRequest request) {
-        // Intentar obtener el ID de sesión de la cookie
-        String sessionId = null;
-        
-        if (request.getCookies() != null) {
-            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
-                if ("SESSION_ID".equals(cookie.getName())) {
-                    sessionId = cookie.getValue();
-                    break;
-                }
-            }
-        }
-        
-        // Si no hay ID de sesión, crear uno nuevo
-        if (sessionId == null || sessionId.isEmpty()) {
-            sessionId = UUID.randomUUID().toString();
-        }
-        
-        return sessionId;
+        // Usa la sesión HTTP estándar (JSESSIONID)
+        return request.getSession(true).getId();
     }
 }

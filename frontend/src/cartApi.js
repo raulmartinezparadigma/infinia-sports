@@ -2,6 +2,7 @@
 // Todos los nombres en inglés, comentarios en español
 import axios from 'axios';
 
+axios.defaults.withCredentials = true;
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 // Obtiene el carrito actual
