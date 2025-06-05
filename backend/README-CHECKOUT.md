@@ -47,6 +47,13 @@ La aplicación se ejecutará en `http://localhost:8080` por defecto.
 
 ## Pruebas de los Endpoints
 
+### Integración PUT cantidad carrito (troubleshooting)
+- El endpoint `PUT /cart/items/{id}` exige que el body incluya el campo `productId` en el DTO `CartItemDTO`, aunque solo se actualice la cantidad.
+- Si falta `productId`, devuelve error 400: `{ "productId": "El ID del producto es obligatorio" }`.
+- El frontend React está adaptado para enviar `{ id, productId, quantity }`.
+- Si la cantidad baja a 0, el frontend llama a DELETE, nunca a PUT.
+- El identificador de la URL es el id del item en el carrito (MongoDB), no el productId del catálogo.
+
 ### Usando el Script de Pruebas
 
 Se ha creado un script bash para probar todos los endpoints del módulo:

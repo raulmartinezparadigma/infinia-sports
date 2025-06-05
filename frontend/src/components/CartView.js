@@ -36,7 +36,7 @@ function CartView() {
                 <TableCell>{item.name || item.description}</TableCell>
                 <TableCell align="right">{item.price?.toFixed(2)} €</TableCell>
                 <TableCell align="center">
-                  <Button size="small" onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</Button>
+                  <Button size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
                   <span style={{ margin: '0 8px' }}>{item.quantity}</span>
                   <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
                 </TableCell>

@@ -26,9 +26,12 @@ export async function removeItemFromCart(itemId) {
   return response.data;
 }
 
-// Actualiza la cantidad de un producto (opcional, si el backend lo soporta)
-// export async function updateItemQuantity(itemId, quantity, userId) {
-//   const headers = userId ? { 'User-ID': userId } : {};
-//   const response = await axios.put(`${API_BASE}/cart/items/${itemId}`, { quantity }, { headers });
-//   return response.data;
-// }
+// Actualiza la cantidad de un producto en el carrito
+export async function updateItemQuantity(itemId, quantity, productId) {
+  // El backend espera un objeto CartItemDTO con productId obligatorio
+  const response = await axios.put(
+    `${API_BASE}/cart/items/${itemId}`,
+    { id: itemId, productId, quantity }
+  );
+  return response.data;
+}

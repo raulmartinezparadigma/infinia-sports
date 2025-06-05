@@ -58,6 +58,36 @@ public class CheckoutController {
     }
     
     /**
+     * Actualiza la cantidad de un producto en el carrito
+     */
+    @PutMapping("/cart/items/{id}")
+    @Operation(summary = "Actualizar cantidad de producto en el carrito", description = "Actualiza la cantidad de un producto en el carrito de compras")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cantidad actualizada correctamente",
+                    content = @Content(schema = @Schema(implementation = Cart.class))),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado en el carrito")
+    })
+    public ResponseEntity<Cart> updateCartItemQuantity(
+            @PathVariable("id") String itemId,
+            @Valid @RequestBody CartItemDTO cartItemDTO,
+            @RequestHeader(value = "User-ID", required = false) String userId,
+            HttpServletRequest request) {
+        logger.info("[updateCartItemQuantity] Parámetros recibidos: itemId={}, quantity={}, userId={}, sessionId={}", itemId, cartItemDTO.getQuantity(), userId, request.getSession().getId());
+        String sessionId = getOrCreateSessionId(request);
+        try {
+            Cart updatedCart = checkoutService.updateCartItemQuantity(sessionId, userId, itemId, cartItemDTO.getQuantity());
+            logger.info("[updateCartItemQuantity] Respuesta del servicio: {}", updatedCart);
+            return ResponseEntity.ok(updatedCart);
+        } catch (com.infinia.sports.exception.ResourceNotFoundException e) {
+            logger.warn("[updateCartItemQuantity] Carrito o item no encontrado: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            logger.error("[updateCartItemQuantity] Error al actualizar cantidad de item del carrito", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Elimina un producto del carrito
      */
     @DeleteMapping("/cart/items/{id}")

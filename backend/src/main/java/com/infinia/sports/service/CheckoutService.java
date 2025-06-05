@@ -19,6 +19,8 @@ public interface CheckoutService {
      * @return El carrito actualizado
      */
     Cart addItemToCart(String sessionId, String userId, CartItemDTO cartItemDTO);
+
+    Cart updateCartItemQuantity(String sessionId, String userId, String itemId, Integer quantity);
     
     /**
      * Elimina un producto del carrito

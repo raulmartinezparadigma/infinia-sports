@@ -22,10 +22,13 @@ _E-commerce de productos deportivos_
   - `DELETE /productos/{id}`
   - `POST /productos/importar`
 
-### 2. Módulo de Checkout (en planificación)
+### 2. Módulo de Checkout
 - Gestión de carrito y pedidos (estructura JSON compleja)
 - Persistencia en MongoDB
-- Endpoints previstos: `/carrito`, `/checkout`, `/pedidos`
+- Endpoints implementados: `/cart`, `/cart/items`, `/checkout`, `/orders`
+- Integración frontend-backend funcional (React + Spring Boot)
+- PUT `/cart/items/{id}` requiere en el body `{ id, productId, quantity }` (ver troubleshooting)
+- Error 400 resuelto: el backend valida que `productId` sea obligatorio en el body para actualizar cantidad
 
 ### 3. Módulo de Pagos (en planificación)
 - Integración con Bizum, Redsys y Transferencia bancaria

@@ -37,6 +37,33 @@ public class CheckoutServiceImpl implements CheckoutService {
     
     // Tasa de impuesto por defecto (21% IVA)
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.21");
+
+    @Override
+    public Cart updateCartItemQuantity(String sessionId, String userId, String itemId, Integer quantity) {
+        Cart cart = getCart(sessionId, userId);
+        Optional<Cart.CartItem> optItem = cart.getItems().stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst();
+        if (optItem.isEmpty()) {
+            logger.warn("[updateCartItemQuantity] No se encontró el itemId={} en el carrito", itemId);
+            throw new ResourceNotFoundException("Producto no encontrado en el carrito");
+        }
+        Cart.CartItem item = optItem.get();
+        if (quantity == null || quantity < 1) {
+            // Eliminar el item si la cantidad es menor a 1
+            cart.getItems().remove(item);
+            logger.info("[updateCartItemQuantity] Item eliminado (cantidad <= 0): id={}", itemId);
+        } else {
+            item.setQuantity(quantity);
+            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
+            logger.info("[updateCartItemQuantity] Cantidad actualizada: id={}, nueva cantidad={}", itemId, quantity);
+        }
+        updateCartTotals(cart);
+        cart.setUpdatedAt(LocalDateTime.now());
+        Cart savedCart = cartRepository.save(cart);
+        logger.info("[updateCartItemQuantity] Carrito guardado tras actualización de cantidad. ID: {}", savedCart.getId());
+        return savedCart;
+    }
     
     @Override
     public Cart addItemToCart(String sessionId, String userId, CartItemDTO cartItemDTO) {

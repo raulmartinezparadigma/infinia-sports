@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getCart, addItemToCart, removeItemFromCart } from "../cartApi";
+import { getCart, addItemToCart, removeItemFromCart, updateItemQuantity } from "../cartApi";
 
 const CartContext = createContext();
 
@@ -78,11 +78,21 @@ export function CartProvider({ children }) {
     };
   }
 
-  // Actualizar cantidad de producto (requiere endpoint PUT en backend)
-  async function updateQuantity(productId, quantity) {
-    // Si el backend soporta PUT /cart/items/{id}, implementa la llamada aquí
-    // Por ahora, solo actualizar localmente
-    setCart(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
+  // Actualizar cantidad de producto (PUT si >=1, DELETE si 0)
+  async function updateQuantity(itemId, quantity) {
+    const item = cart.find(i => i.id === itemId);
+    if (!item) return;
+    if (quantity < 1) {
+      await removeFromCart(itemId);
+    } else {
+      try {
+        // Ahora pasamos también el productId real
+        const updatedCart = await updateItemQuantity(itemId, quantity, item.productId);
+        setCart((updatedCart.items || []).map(adaptCartItem));
+      } catch (err) {
+        setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity } : i));
+      }
+    }
   }
 
   function clearCart() {
