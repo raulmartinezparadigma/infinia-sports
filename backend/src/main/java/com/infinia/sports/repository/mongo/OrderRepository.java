@@ -1,4 +1,4 @@
-package com.infinia.sports.repository;
+package com.infinia.sports.repository.mongo;
 
 import com.infinia.sports.model.Order;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -13,28 +13,27 @@ import java.util.Optional;
  */
 @Repository
 public interface OrderRepository extends MongoRepository<Order, String> {
-    
     /**
      * Busca una orden por su orderId
      * @param orderId ID de la orden
      * @return Optional con la orden si existe
      */
     Optional<Order> findByOrderId(String orderId);
-    
+
     /**
      * Busca órdenes por el email del cliente
      * @param email Email del cliente
      * @return Lista de órdenes
      */
     List<Order> findByEmail(String email);
-    
+
     /**
      * Busca órdenes por estado
      * @param status Estado de la orden
      * @return Lista de órdenes
      */
     List<Order> findByStatus(String status);
-    
+
     /**
      * Busca órdenes creadas entre dos fechas
      * @param startDate Fecha inicial

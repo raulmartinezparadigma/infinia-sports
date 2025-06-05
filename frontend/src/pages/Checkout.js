@@ -1,7 +1,7 @@
 import React from "react";
 
 // Página de proceso de checkout
-import CheckoutStepper from "../components/CheckoutStepper";
+
 import ShippingForm from "../components/ShippingForm";
 import BillingForm from "../components/BillingForm";
 import OrderSummary from "../components/OrderSummary";

@@ -14,7 +14,7 @@ import Confirmation from "./pages/Confirmation";
 import Navbar from "./components/Navbar";
 
 import { CartProvider } from "./components/CartContext";
-import MiniCart from "./components/MiniCart";
+
 
 function App() {
   return (

@@ -2,7 +2,7 @@ package com.infinia.sports.config;
 
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
-import com.infinia.sports.repository.ProductRepository;
+import com.infinia.sports.repository.jpa.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;

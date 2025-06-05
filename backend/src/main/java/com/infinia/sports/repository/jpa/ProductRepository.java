@@ -1,4 +1,4 @@
-package com.infinia.sports.repository;
+package com.infinia.sports.repository.jpa;
 
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
@@ -14,21 +14,20 @@ import java.util.UUID;
  */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
-    
     /**
      * Busca productos por tipo
      * @param type tipo de producto
      * @return lista de productos del tipo especificado
      */
     List<Product> findByType(ProductType type);
-    
+
     /**
      * Busca productos que contengan la descripción especificada
      * @param description texto a buscar en la descripción
      * @return lista de productos que coinciden con la descripción
      */
     List<Product> findByDescriptionContainingIgnoreCase(String description);
-    
+
     /**
      * Busca productos por talla
      * @param size talla del producto

@@ -16,9 +16,18 @@ function ProductCard({ product }) {
   const [open, setOpen] = useState(false);
 
   const handleAdd = () => {
-    addToCart(product);
+    // Adaptar el objeto al DTO esperado por el backend
+    const cartItem = {
+      productId: product.id, // Mapea 'id' a 'productId'
+      productName: product.name || product.description,
+      quantity: 1, // Puedes cambiar esto si hay selector de cantidad
+      unitPrice: product.price,
+      // Puedes añadir más campos opcionales si lo deseas
+    };
+    addToCart(cartItem);
     setOpen(true);
   };
+
 
   return (
     <Card sx={{ minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center" }}>

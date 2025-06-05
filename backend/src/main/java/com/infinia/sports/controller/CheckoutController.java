@@ -30,11 +30,12 @@ import java.util.UUID;
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CheckoutController.class);
     
     /**
      * Añade un producto al carrito
      */
-    @PostMapping("/carrito/items")
+    @PostMapping("/cart/items")
     @Operation(summary = "Añadir producto al carrito", description = "Añade un producto al carrito de compras")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Producto añadido correctamente", 
@@ -46,17 +47,20 @@ public class CheckoutController {
             @RequestHeader(value = "User-ID", required = false) String userId,
             HttpServletRequest request) {
         
+        // Log de parámetros de entrada
+        logger.info("[addItemToCart] Parámetros recibidos: cartItemDTO={}, userId={}, sessionId={}", cartItemDTO, userId, request.getSession().getId());
         // Obtener ID de sesión o generar uno nuevo
         String sessionId = getOrCreateSessionId(request);
         
         Cart updatedCart = checkoutService.addItemToCart(sessionId, userId, cartItemDTO);
+        logger.info("[addItemToCart] Respuesta: {}", updatedCart);
         return ResponseEntity.ok(updatedCart);
     }
     
     /**
      * Elimina un producto del carrito
      */
-    @DeleteMapping("/carrito/items/{id}")
+    @DeleteMapping("/cart/items/{id}")
     @Operation(summary = "Eliminar producto del carrito", description = "Elimina un producto del carrito de compras")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Producto eliminado correctamente", 
@@ -68,17 +72,26 @@ public class CheckoutController {
             @RequestHeader(value = "User-ID", required = false) String userId,
             HttpServletRequest request) {
         
-        // Obtener ID de sesión
+        logger.info("[removeItemFromCart] Parámetros recibidos: itemId={}, userId={}, sessionId={}", itemId, userId, request.getSession().getId());
         String sessionId = getOrCreateSessionId(request);
-        
-        Cart updatedCart = checkoutService.removeItemFromCart(sessionId, userId, itemId);
-        return ResponseEntity.ok(updatedCart);
+        try {
+            logger.info("[removeItemFromCart] Llamando a checkoutService.removeItemFromCart...");
+            Cart updatedCart = checkoutService.removeItemFromCart(sessionId, userId, itemId);
+            logger.info("[removeItemFromCart] Respuesta del servicio: {}", updatedCart);
+            return ResponseEntity.ok(updatedCart);
+        } catch (com.infinia.sports.exception.ResourceNotFoundException e) {
+            logger.warn("[removeItemFromCart] Carrito no encontrado: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            logger.error("[removeItemFromCart] Error al eliminar item del carrito", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     
     /**
      * Obtiene el contenido del carrito
      */
-    @GetMapping("/carrito")
+    @GetMapping("/cart")
     @Operation(summary = "Obtener carrito", description = "Obtiene el contenido del carrito de compras")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Carrito obtenido correctamente", 

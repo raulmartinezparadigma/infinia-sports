@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 // Lista de productos con filtros
-import Grid from "@mui/material/Grid";
+
 import Box from "@mui/material/Box";
 import ProductCard from "./ProductCard";
 import Typography from "@mui/material/Typography";
@@ -49,10 +49,6 @@ function ProductList({ searchTerm = "" }) {
 
   // Productos a mostrar en la página actual
   const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-  // Cambiar de página
-  const handlePrev = () => setPage((prev) => Math.max(prev - 1, 1));
-  const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
 
   // Resetear a la primera página si cambia el filtro
   useEffect(() => {

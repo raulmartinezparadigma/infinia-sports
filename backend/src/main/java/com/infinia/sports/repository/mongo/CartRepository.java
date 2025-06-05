@@ -1,4 +1,4 @@
-package com.infinia.sports.repository;
+package com.infinia.sports.repository.mongo;
 
 import com.infinia.sports.model.Cart;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,27 +11,26 @@ import java.util.Optional;
  */
 @Repository
 public interface CartRepository extends MongoRepository<Cart, String> {
-    
     /**
      * Busca un carrito por el ID de usuario
      * @param userId ID del usuario
      * @return Optional con el carrito si existe
      */
     Optional<Cart> findByUserId(String userId);
-    
+
     /**
      * Busca un carrito por el ID de sesión
      * @param sessionId ID de la sesión
      * @return Optional con el carrito si existe
      */
     Optional<Cart> findBySessionId(String sessionId);
-    
+
     /**
      * Elimina los carritos asociados a un usuario
      * @param userId ID del usuario
      */
     void deleteByUserId(String userId);
-    
+
     /**
      * Elimina los carritos asociados a una sesión
      * @param sessionId ID de la sesión

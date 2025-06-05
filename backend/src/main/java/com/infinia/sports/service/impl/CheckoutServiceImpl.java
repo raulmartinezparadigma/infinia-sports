@@ -6,10 +6,12 @@ import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
-import com.infinia.sports.repository.CartRepository;
-import com.infinia.sports.repository.OrderRepository;
+import com.infinia.sports.repository.mongo.CartRepository;
+import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.CheckoutService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CheckoutServiceImpl implements CheckoutService {
+    // Logger para trazas de depuración
+    private static final Logger logger = LoggerFactory.getLogger(CheckoutServiceImpl.class);
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
@@ -47,10 +51,12 @@ public class CheckoutServiceImpl implements CheckoutService {
         if (existingItem.isPresent()) {
             // Actualizar cantidad si el producto ya existe
             Cart.CartItem item = existingItem.get();
+            logger.info("Actualizando cantidad del producto existente en el carrito: {} (cantidad +{})", item.getProductId(), cartItemDTO.getQuantity());
             item.setQuantity(item.getQuantity() + cartItemDTO.getQuantity());
             item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         } else {
             // Añadir nuevo producto al carrito
+            logger.info("Añadiendo nuevo producto al carrito: {} ({} unidades)", cartItemDTO.getProductId(), cartItemDTO.getQuantity());
             Cart.CartItem newItem = Cart.CartItem.builder()
                     .id(UUID.randomUUID().toString())
                     .productId(cartItemDTO.getProductId())
@@ -66,29 +72,43 @@ public class CheckoutServiceImpl implements CheckoutService {
         
         // Actualizar totales
         updateCartTotals(cart);
-        
+
         // Guardar y devolver el carrito actualizado
         cart.setUpdatedAt(LocalDateTime.now());
-        return cartRepository.save(cart);
+        logger.info("Guardando carrito con {} productos. ID de carrito: {}", cart.getItems().size(), cart.getId());
+        Cart savedCart = null;
+        try {
+            savedCart = cartRepository.save(cart);
+            logger.info("Carrito guardado correctamente en la base de datos. ID: {}", savedCart.getId());
+        } catch (Exception e) {
+            logger.error("Error al guardar el carrito en MongoDB: {}", e.getMessage(), e);
+            throw e;
+        }
+        return savedCart;
     }
 
     @Override
     public Cart removeItemFromCart(String sessionId, String userId, String itemId) {
         // Obtener el carrito
         Cart cart = getCart(sessionId, userId);
-        
+        logger.info("[removeItemFromCart] Carrito encontrado: id={}, sessionId={}, userId={}, items={}", cart.getId(), cart.getSessionId(), cart.getUserId(), cart.getItems());
+        logger.info("[removeItemFromCart] Intentando eliminar itemId={}", itemId);
+
         // Eliminar el producto del carrito
         boolean removed = cart.getItems().removeIf(item -> item.getId().equals(itemId));
-        
+        logger.info("[removeItemFromCart] Resultado de removeIf: {}", removed);
+
         if (!removed) {
+            logger.warn("[removeItemFromCart] No se encontró el itemId={} en el carrito", itemId);
             throw new ResourceNotFoundException("Producto no encontrado en el carrito");
         }
-        
+
         // Actualizar totales
         updateCartTotals(cart);
-        
+
         // Guardar y devolver el carrito actualizado
         cart.setUpdatedAt(LocalDateTime.now());
+        logger.info("[removeItemFromCart] Carrito actualizado y guardado tras eliminación de item. id={}", cart.getId());
         return cartRepository.save(cart);
     }
 

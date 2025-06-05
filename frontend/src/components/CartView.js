@@ -14,6 +14,9 @@ function CartView() {
     return <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>El carrito está vacío.</Typography>;
   }
 
+  // Depuración: mostrar estructura real del carrito
+  console.log("CART DEBUG:", cart);
+
   return (
     <>
       <TableContainer component={Paper} sx={{ mt: 2 }}>
