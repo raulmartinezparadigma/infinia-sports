@@ -35,3 +35,12 @@ export async function updateItemQuantity(itemId, quantity, productId) {
   );
   return response.data;
 }
+
+// Guarda la dirección de envío en el backend
+export async function saveShippingAddress(cartId, address, sameAsBillingAddress = true) {
+  const response = await axios.post(
+    `${API_BASE}/checkout/direccion?cartId=${cartId}&sameAsBillingAddress=${sameAsBillingAddress}`,
+    address
+  );
+  return response.data;
+}

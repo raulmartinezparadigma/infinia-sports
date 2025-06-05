@@ -5,6 +5,9 @@ import { useState } from "react";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import BackgroundCarousel from './BackgroundCarousel';
 
+import { saveShippingAddress } from '../cartApi';
+import { useCart } from './CartContext';
+
 function ShippingForm({ onNext, onBack }) {
   const [values, setValues] = useState({
     fullName: "",
@@ -37,19 +40,60 @@ function ShippingForm({ onNext, onBack }) {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
+  const { cartId } = useCart();
+
+  // Maneja el envío del formulario y la integración con backend
+  const handleSubmit = async e => {
     e.preventDefault();
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
-      setSubmitted(true);
-      localStorage.setItem("shippingAddress", JSON.stringify(values));
-      if (onNext) {
-        onNext();
+      // Log para depuración
+      console.log('[ShippingForm] Submit:', { cartId, values });
+      if (!cartId) {
+        setErrors({ general: 'No se ha podido obtener el identificador del carrito.' });
+        console.error('[ShippingForm] No cartId');
+        return;
       }
-      setTimeout(() => setSubmitted(false), 2500);
+      setSubmitted(true);
+      try {
+        // Llamada al backend para guardar dirección
+        // Adaptar los campos del formulario al DTO esperado por el backend
+        let firstName = "";
+        let lastName = "";
+        if (values.fullName) {
+          const split = values.fullName.trim().split(" ");
+          firstName = split.shift() || "";
+          lastName = split.join(" ") || "";
+        }
+        const addressDTO = {
+          firstName,
+          lastName,
+          addressLine1: values.address,
+          addressLine2: values.addressLine2 || "",
+          city: values.city,
+          state: values.province || values.state || "",
+          postalCode: values.postalCode,
+          country: values.country,
+          phoneNumber: values.phone || values.phoneNumber || ""
+        };
+        console.log('[ShippingForm] AddressDTO enviado:', addressDTO);
+        const resp = await saveShippingAddress(cartId, addressDTO, true);
+        console.log('[ShippingForm] Dirección guardada. Respuesta backend:', resp);
+        localStorage.setItem("shippingAddress", JSON.stringify(values));
+        if (onNext) {
+          onNext();
+        }
+      } catch (error) {
+        setErrors({ general: 'Error al guardar la dirección. Inténtalo de nuevo.' });
+        console.error('[ShippingForm] Error al guardar dirección:', error);
+      } finally {
+        setTimeout(() => setSubmitted(false), 2500);
+      }
     }
   };
+
+
 
   return (
     <Box sx={{ position: 'relative', mt: 4, mb: 4, minHeight: 500 }}>
@@ -131,6 +175,11 @@ function ShippingForm({ onNext, onBack }) {
         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
           Guardar dirección
         </Button>
+        {errors.general && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {errors.general}
+          </Typography>
+        )}
         {typeof onBack === 'function' && (
           <Box mt={2} display="flex" justifyContent="center">
             <Button variant="contained" color="secondary" size="large" startIcon={<span style={{fontSize:20}}>&larr;</span>} onClick={onBack}>

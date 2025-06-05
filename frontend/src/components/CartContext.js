@@ -9,6 +9,7 @@ export function useCart() {
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+const [cartId, setCartId] = useState(null);
   // Opcional: User-ID para usuarios autenticados
   const userId = null; // Sustituir por lógica real si se implementa autenticación
 
@@ -19,6 +20,7 @@ export function CartProvider({ children }) {
         const data = await getCart(userId);
         // Adaptar los items al formato esperado por el frontend
         setCart((data.items || []).map(adaptCartItem));
+        setCartId(data.id); // Guardar cartId del backend
       } catch (err) {
         // Si falla el backend, intentar recuperar del localStorage como fallback
         try {
@@ -43,6 +45,7 @@ export function CartProvider({ children }) {
       const updatedCart = await addItemToCart(product, userId);
       // Adaptar los items al formato esperado por el frontend
       setCart((updatedCart.items || []).map(adaptCartItem));
+      setCartId(updatedCart.id); // Sincronizar cartId también
     } catch (err) {
       // Fallback en caso de error
       setCart(prev => {
@@ -63,6 +66,7 @@ export function CartProvider({ children }) {
       const updatedCart = await removeItemFromCart(itemId, userId);
       // Adaptar los items al formato esperado por el frontend
       setCart((updatedCart.items || []).map(adaptCartItem));
+      setCartId(updatedCart.id); // Sincronizar cartId también
     } catch (err) {
       setCart(prev => prev.filter(item => item.id !== itemId));
     }
@@ -89,6 +93,7 @@ export function CartProvider({ children }) {
         // Ahora pasamos también el productId real
         const updatedCart = await updateItemQuantity(itemId, quantity, item.productId);
         setCart((updatedCart.items || []).map(adaptCartItem));
+        setCartId(updatedCart.id); // Sincronizar cartId también
       } catch (err) {
         setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity } : i));
       }
@@ -101,7 +106,7 @@ export function CartProvider({ children }) {
   }
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, cartId, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
