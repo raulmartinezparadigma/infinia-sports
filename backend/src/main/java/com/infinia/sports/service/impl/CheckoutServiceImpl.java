@@ -169,10 +169,57 @@ public class CheckoutServiceImpl implements CheckoutService {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
         
-        // En un caso real, aquí guardaríamos las direcciones en el carrito o en una entidad relacionada
-        // Para este ejemplo, simplemente devolvemos el carrito sin cambios
+        // Si las direcciones son iguales, usamos la misma para ambos casos
+        
+        // Crear y guardar la entidad Order
+        Order order = mapToOrder(cart, shippingAddress, billingAddress);
+        orderRepository.save(order);
+        logger.info("Orden creada y guardada con ID: {}", order.getOrderId());
         
         return cart;
+    }
+    
+    /**
+     * Mapea los datos del carrito y las direcciones a una entidad Order
+     * @param cart Carrito de compras
+     * @param shippingAddress Dirección de envío
+     * @param billingAddress Dirección de facturación
+     * @return Entidad Order mapeada
+     */
+    private Order mapToOrder(Cart cart, AddressDTO shippingAddress, AddressDTO billingAddress) {
+        // Crear la entidad Order con los campos requeridos
+        Order order = new Order();
+        order.setOrderId(cart.getSessionId());
+        order.setLanguage("ES");
+        order.setSubmitDate(LocalDateTime.now());
+        order.setStatus("pending");
+        order.setEmail(shippingAddress.getEmail());
+        
+        // Crear ShippingGroup
+        Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
+        shippingGroup.setId("0"); // Índice como String
+        shippingGroup.setShippingMethod("Infinia Sports");
+        shippingGroup.setShippingCost(cart.getSubtotal());
+        
+        // Obtener los IDs de los items del carrito
+        List<String> lineItemIds = cart.getItems().stream()
+                .map(Cart.CartItem::getId)
+                .collect(Collectors.toList());
+        shippingGroup.setLineItemIds(lineItemIds);
+        
+        // Añadir el ShippingGroup a la lista
+        order.setShippingGroups(List.of(shippingGroup));
+        
+        // Mapear direcciones
+        order.setShippingAddress(mapAddressDtoToOrderAddress(shippingAddress));
+        order.setBillingAddress(mapAddressDtoToOrderAddress(billingAddress));
+        
+        // Configurar PriceInfo
+        Order.PriceInfo priceInfo = new Order.PriceInfo();
+        priceInfo.setSubtotal(cart.getSubtotal());
+        order.setPriceInfo(priceInfo);
+        
+        return order;
     }
 
     @Override

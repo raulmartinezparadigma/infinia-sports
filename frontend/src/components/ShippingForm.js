@@ -16,7 +16,8 @@ function ShippingForm({ onNext, onBack }) {
     postalCode: "",
     province: "",
     country: "",
-    phone: ""
+    phone: "",
+    email: "" // Añadido campo email
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -33,6 +34,8 @@ function ShippingForm({ onNext, onBack }) {
     if (!values.country) errs.country = "Obligatorio";
     if (!values.phone) errs.phone = "Obligatorio";
     if (!/^\d{9}$/.test(values.phone)) errs.phone = "Teléfono inválido";
+    if (!values.email) errs.email = "Obligatorio";
+    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(values.email)) errs.email = "Email inválido";
     return errs;
   };
 
@@ -75,7 +78,8 @@ function ShippingForm({ onNext, onBack }) {
           state: values.province || values.state || "",
           postalCode: values.postalCode,
           country: values.country,
-          phoneNumber: values.phone || values.phoneNumber || ""
+          phoneNumber: values.phone || values.phoneNumber || "",
+          email: values.email // Añadido campo email
         };
         console.log('[ShippingForm] AddressDTO enviado:', addressDTO);
         const resp = await saveShippingAddress(cartId, addressDTO, true);
@@ -169,6 +173,17 @@ function ShippingForm({ onNext, onBack }) {
           onChange={handleChange}
           error={!!errors.phone}
           helperText={errors.phone}
+          fullWidth
+          margin="dense"
+        />
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          error={!!errors.email}
+          helperText={errors.email}
           fullWidth
           margin="dense"
         />

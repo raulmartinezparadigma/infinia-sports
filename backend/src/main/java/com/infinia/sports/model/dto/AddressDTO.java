@@ -37,6 +37,10 @@ public class AddressDTO {
     @Pattern(regexp = "^[0-9]{5}(?:-[0-9]{4})?$", message = "Formato de código postal inválido")
     private String postalCode;
     
+    @NotBlank(message = "El email es obligatorio")
+    @Pattern(regexp = "^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Formato de email inválido")
+    private String email; // Email del cliente asociado a la dirección
+    
     @NotBlank(message = "El país es obligatorio")
     private String country;
     
