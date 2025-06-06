@@ -59,18 +59,8 @@ function PaymentSelector({ onNext, onBack }) {
   // Renderiza el contenido del modal según método
   const renderModalContent = () => {
     if (selected === "bizum") {
-      return (
-        <Box>
-          <Typography>Introduce tu número de teléfono Bizum:</Typography>
-          <TextField
-            label="Teléfono"
-            value={bizumPhone}
-            onChange={e => setBizumPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 9))}
-            fullWidth
-            margin="normal"
-          />
-        </Box>
-      );
+      // Modal simplificado: solo botones Confirmar y Cancelar
+      return null;
     }
     if (selected === "redsys") {
       return (
