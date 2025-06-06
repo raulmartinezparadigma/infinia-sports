@@ -57,6 +57,13 @@ public interface CheckoutService {
     Order confirmOrder(CheckoutDTO checkoutDTO);
     
     /**
+     * Elimina todo el carrito (todos los productos) para el usuario o sesión actual
+     * @param sessionId ID de la sesión
+     * @param userId ID del usuario (opcional)
+     */
+    void clearCart(String sessionId, String userId);
+
+    /**
      * Obtiene información de un pedido
      * @param orderId ID del pedido
      * @return La orden

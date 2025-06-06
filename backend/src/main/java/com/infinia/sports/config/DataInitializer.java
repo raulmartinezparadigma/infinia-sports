@@ -3,7 +3,7 @@ package com.infinia.sports.config;
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
 import com.infinia.sports.repository.jpa.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +18,11 @@ import java.util.Arrays;
 @Configuration
 public class DataInitializer {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
+    public DataInitializer(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     /**
      * Carga datos de prueba al iniciar la aplicación

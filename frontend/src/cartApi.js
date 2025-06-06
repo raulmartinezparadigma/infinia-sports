@@ -46,11 +46,19 @@ export async function saveShippingAddress(cartId, address, sameAsBillingAddress 
 }
 
 // Procesa un pago Bizum llamando al backend
-export async function processBizumPayment(paymentId, phoneNumber) {
+// Procesa un pago Bizum llamando al backend
+export async function processBizumPayment({ paymentId, orderId, phoneNumber, userId }) {
   // Llama al endpoint real del backend para pagos Bizum
   const response = await axios.post(`${API_BASE}/payments/bizum`, {
     paymentId,
-    phoneNumber
+    orderId,
+    phoneNumber,
+    userId
   });
   return response.data;
+}
+
+// Vacía todo el carrito en el backend (DELETE /cart)
+export async function clearCartBackend() {
+  await axios.delete(`${API_BASE}/cart`);
 }

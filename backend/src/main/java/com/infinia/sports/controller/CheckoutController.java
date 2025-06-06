@@ -119,6 +119,29 @@ public class CheckoutController {
     }
     
     /**
+     * Elimina todo el carrito del usuario o sesión actual
+     */
+    @DeleteMapping("/cart")
+    @Operation(summary = "Vaciar carrito", description = "Elimina todos los productos del carrito del usuario o sesión actual")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Carrito vaciado correctamente"),
+            @ApiResponse(responseCode = "400", description = "No se pudo vaciar el carrito")
+    })
+    public ResponseEntity<Void> clearCart(
+            @RequestHeader(value = "User-ID", required = false) String userId,
+            HttpServletRequest request) {
+        String sessionId = getOrCreateSessionId(request);
+        logger.info("[clearCart] Endpoint llamado. userId={}, sessionId={}", userId, sessionId);
+        try {
+            checkoutService.clearCart(sessionId, userId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("[clearCart] Error al vaciar el carrito: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
      * Obtiene el contenido del carrito
      */
     @GetMapping("/cart")

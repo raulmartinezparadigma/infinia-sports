@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getCart, addItemToCart, removeItemFromCart, updateItemQuantity } from "../cartApi";
+import { getCart, addItemToCart, removeItemFromCart, updateItemQuantity, clearCartBackend } from "../cartApi";
 
 const CartContext = createContext();
 
@@ -100,13 +100,30 @@ const [cartId, setCartId] = useState(null);
     }
   }
 
+  // Limpia el carrito tanto en backend como en frontend y fuerza recarga tras un pago exitoso
+  async function clearCartAndReload() {
+    // Primero vacía el carrito en el backend
+    await clearCartBackend();
+    setCart([]);
+    setCartId(null);
+    try {
+      // Recargar el carrito desde el backend (debe venir vacío si el backend lo ha eliminado)
+      const data = await getCart(userId);
+      setCart((data.items || []).map(adaptCartItem));
+      setCartId(data.id);
+    } catch {
+      setCart([]);
+      setCartId(null);
+    }
+  }
+
   function clearCart() {
     setCart([]);
     // Aquí podrías llamar a un endpoint para limpiar el carrito en el backend si existe
   }
 
   return (
-    <CartContext.Provider value={{ cart, cartId, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, cartId, addToCart, removeFromCart, updateQuantity, clearCart, clearCartAndReload }}>
       {children}
     </CartContext.Provider>
   );

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useCart } from "./CartContext";
+import { getCart } from "../cartApi";
 import { Box, Typography, Button, CircularProgress, Alert, Paper, TextField } from "@mui/material";
 import { processBizumPayment } from "../cartApi";
 
@@ -9,14 +11,23 @@ function PaymentSimulator({ onSuccess, onBack }) {
   const [error, setError] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentId, setPaymentId] = useState(() => Math.random().toString(36).substring(2, 12)); // ID mock aleatorio
+  const { userId, clearCartAndReload, cartId } = useCart();
+  const [cart, setCart] = useState([]);
 
   // Llama al backend para procesar el pago Bizum
   const handleRealBizumPayment = async () => {
     setLoading(true);
     setError(null);
     setSuccess(false);
+    if (!cartId) {
+      setError("No se ha podido obtener el identificador de la orden. Intenta refrescar la página o volver a crear el pedido.");
+      setLoading(false);
+      return;
+    }
     try {
-      const response = await processBizumPayment(paymentId, phoneNumber);
+      const response = await processBizumPayment({ paymentId, orderId: cartId, phoneNumber, userId });
+      // Vacía y sincroniza el carrito con el backend tras el pago exitoso
+      await clearCartAndReload(); // Esto asegura máxima sincronización UI-backend
       setLoading(false);
       setSuccess(true);
       // Espera 5 segundos tras mostrar el mensaje de éxito para que el usuario pueda leerlo

@@ -3,7 +3,7 @@ package com.infinia.sports.controller;
 import com.infinia.sports.model.dto.BizumPaymentRequestDTO;
 import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.service.impl.BizumPaymentServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,6 @@ public class PaymentController {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PaymentController.class);
     private final BizumPaymentServiceImpl bizumPaymentService;
 
-    @Autowired
     public PaymentController(BizumPaymentServiceImpl bizumPaymentService) {
         this.bizumPaymentService = bizumPaymentService;
     }

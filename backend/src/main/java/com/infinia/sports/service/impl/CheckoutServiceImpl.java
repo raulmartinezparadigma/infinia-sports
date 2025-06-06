@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CheckoutServiceImpl implements CheckoutService {
-    // Logger para trazas de depuración
     private static final Logger logger = LoggerFactory.getLogger(CheckoutServiceImpl.class);
 
     private final CartRepository cartRepository;
@@ -37,6 +36,21 @@ public class CheckoutServiceImpl implements CheckoutService {
     
     // Tasa de impuesto por defecto (21% IVA)
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.21");
+
+    @Override
+    public void clearCart(String sessionId, String userId) {
+        // Elimina todos los carritos asociados al usuario o sesión
+        logger.info("[clearCart] Solicitando vaciado de carrito. userId={}, sessionId={}", userId, sessionId);
+        if (userId != null && !userId.isEmpty()) {
+            cartRepository.deleteByUserId(userId);
+            logger.info("[clearCart] Carritos eliminados por userId={}", userId);
+        } else if (sessionId != null && !sessionId.isEmpty()) {
+            cartRepository.deleteBySessionId(sessionId);
+            logger.info("[clearCart] Carritos eliminados por sessionId={}", sessionId);
+        } else {
+            logger.warn("[clearCart] No se proporcionó userId ni sessionId válido para vaciar el carrito");
+        }
+    }
 
     @Override
     public Cart updateCartItemQuantity(String sessionId, String userId, String itemId, Integer quantity) {
@@ -189,7 +203,9 @@ public class CheckoutServiceImpl implements CheckoutService {
     private Order mapToOrder(Cart cart, AddressDTO shippingAddress, AddressDTO billingAddress) {
         // Crear la entidad Order con los campos requeridos
         Order order = new Order();
-        order.setOrderId(cart.getSessionId());
+        // Vincular el ID del pedido y el orderId al id del carrito para trazabilidad
+        order.setId(cart.getId());
+        order.setOrderId(cart.getId());
         order.setLanguage("ES");
         order.setSubmitDate(LocalDateTime.now());
         order.setStatus("pending");
@@ -234,9 +250,18 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Guardar la orden
         Order savedOrder = orderRepository.save(order);
         
-        // Eliminar el carrito
-        cartRepository.delete(cart);
-        
+        // Vaciar el carrito tras confirmar el pedido
+        // Si el carrito tiene userId, eliminar todos los carritos asociados a ese usuario para máxima limpieza (multi-dispositivo)
+        if (cart.getUserId() != null && !cart.getUserId().isEmpty()) {
+            cartRepository.deleteByUserId(cart.getUserId());
+        } else if (cart.getSessionId() != null && !cart.getSessionId().isEmpty()) {
+            // Si no hay userId, eliminar por sessionId
+            cartRepository.deleteBySessionId(cart.getSessionId());
+        } else {
+            // Eliminar solo el carrito actual como fallback
+            cartRepository.delete(cart);
+        }
+        // Nota: el frontend debe recargar el carrito tras el pedido para máxima sincronización
         return savedOrder;
     }
 
@@ -372,8 +397,8 @@ public class CheckoutServiceImpl implements CheckoutService {
         
         // Crear la orden
         return Order.builder()
-                .orderId(generateOrderId())
-                .language("es") // En un caso real, se tomaría del contexto o preferencias del usuario
+                .orderId(cart.getId())
+                .language("es") 
                 .submitDate(LocalDateTime.now())
                 .status("PENDIENTE")
                 .email(checkoutDTO.getEmail())
@@ -405,12 +430,5 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .country(addressDTO.getCountry())
                 .phoneNumber(addressDTO.getPhoneNumber())
                 .build();
-    }
-    
-    /**
-     * Genera un ID de orden único
-     */
-    private String generateOrderId() {
-        return "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
 }

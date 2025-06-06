@@ -19,6 +19,12 @@ public class BizumPaymentRequestDTO {
     @NotBlank(message = "El identificador de pago es obligatorio")
     private String paymentId;
 
+    @NotBlank(message = "El identificador de la orden es obligatorio")
+    private String orderId;
+
+    // Campo opcional para identificar el usuario (puede ser null si no está logueado)
+    private String userId;
+
     @NotBlank(message = "El número de teléfono es obligatorio")
     @Pattern(regexp = "^[0-9]{9}$", message = "Formato de teléfono inválido (debe tener 9 dígitos)")
     private String phoneNumber;
