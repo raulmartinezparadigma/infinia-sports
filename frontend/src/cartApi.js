@@ -44,3 +44,13 @@ export async function saveShippingAddress(cartId, address, sameAsBillingAddress 
   );
   return response.data;
 }
+
+// Procesa un pago Bizum llamando al backend
+export async function processBizumPayment(paymentId, phoneNumber) {
+  // Llama al endpoint real del backend para pagos Bizum
+  const response = await axios.post(`${API_BASE}/payments/bizum`, {
+    paymentId,
+    phoneNumber
+  });
+  return response.data;
+}
