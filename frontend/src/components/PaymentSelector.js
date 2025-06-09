@@ -1,5 +1,5 @@
 import React from "react";
-
+import RedsysPayment from "./RedsysPayment";
 // Selector de método de pago
 import { useState } from "react";
 import {
@@ -63,30 +63,13 @@ function PaymentSelector({ onNext, onBack }) {
       return null;
     }
     if (selected === "redsys") {
+      // Mostrar el formulario Redsys real
       return (
         <Box>
-          <Typography>Introduce los datos de tu tarjeta:</Typography>
-          <TextField
-            label="Número de tarjeta"
-            value={redsysData.card}
-            onChange={e => setRedsysData({ ...redsysData, card: e.target.value.replace(/[^0-9]/g, '').slice(0, 16) })}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Caducidad (MM/AA)"
-            value={redsysData.expiry}
-            onChange={e => setRedsysData({ ...redsysData, expiry: e.target.value.replace(/[^0-9/]/g, '').slice(0, 5) })}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="CVV"
-            value={redsysData.cvv}
-            onChange={e => setRedsysData({ ...redsysData, cvv: e.target.value.replace(/[^0-9]/g, '').slice(0, 3) })}
-            fullWidth
-            margin="normal"
-          />
+          <RedsysPayment onSuccess={() => {
+            setModalOpen(false);
+            if (typeof onNext === 'function') onNext({ paymentMethod: 'redsys' });
+          }} />
         </Box>
       );
     }

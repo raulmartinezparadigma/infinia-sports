@@ -17,6 +17,7 @@ function Checkout() {
   const navigate = useNavigate();
   // Estado del paso actual
   const [step, setStep] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState(null);
 
   return (
     <div>
@@ -25,9 +26,16 @@ function Checkout() {
       {step === 1 && <BillingForm onNext={() => setStep(2)} onBack={() => setStep(0)} />}
       {step === 2 && <OrderSummary onNext={() => setStep(3)} onBack={() => setStep(1)} />}
 
-      {step === 3 && <PaymentSelector onNext={() => setStep(4)} onBack={() => setStep(1)} />}
+      {step === 3 && <PaymentSelector onNext={(args) => {
+        if (args && args.paymentMethod) {
+          setPaymentMethod(args.paymentMethod);
+          setStep(5);
+        } else {
+          setStep(4);
+        }
+      }} onBack={() => setStep(1)} />}
       {step === 4 && <PaymentSimulator onSuccess={() => setStep(5)} onBack={() => setStep(3)} />}
-      {step === 5 && <Confirmation />}
+      {step === 5 && <Confirmation paymentMethod={paymentMethod} />}
     </div>
   );
 }

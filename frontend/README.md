@@ -14,6 +14,13 @@ Este directorio contiene el frontend del e-commerce Infinia Sports, desarrollado
 ## Componentes y páginas principales
 Consulta el plan en `../plans/plan-frontend-react.md` para la descripción de todos los componentes y páginas a implementar.
 
+## Flujo de pagos y confirmación
+- Integrados métodos de pago Bizum, Redsys (tarjeta) y transferencia bancaria.
+- Tras cualquier pago, el usuario es dirigido a una pantalla de confirmación única, que muestra mensaje contextual según el método utilizado.
+- El método de pago se pasa mediante el state de React Router para mostrar el mensaje adecuado.
+- El carrito se vacía y sincroniza tras cualquier pago.
+- El flujo de checkout es homogéneo para todos los métodos.
+
 ## Integración con el backend (carrito)
 - La actualización de cantidad de productos en el carrito usa el endpoint `PUT /cart/items/{id}`.
 - El body debe incluir `{ id, productId, quantity }`.
