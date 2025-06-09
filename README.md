@@ -30,8 +30,11 @@ _E-commerce de productos deportivos_
 - PUT `/cart/items/{id}` requiere en el body `{ id, productId, quantity }` (ver troubleshooting)
 - Error 400 resuelto: el backend valida que `productId` sea obligatorio en el body para actualizar cantidad
 
-### 3. Módulo de Pagos (en planificación)
-- Integración con Bizum, Redsys y Transferencia bancaria
+### 3. Módulo de Pagos
+- Integración real con Bizum, Redsys (tarjeta) y Transferencia bancaria
+- Tras cualquier pago, el usuario es dirigido a una pantalla de confirmación única, con mensaje contextual según el método utilizado
+- El carrito se vacía y sincroniza tras cualquier pago para máxima coherencia frontend-backend
+- El frontend utiliza React Router y state para pasar el método de pago a la pantalla de confirmación
 - Envío de correo de confirmación tras pedido
 
 ## Tecnologías principales

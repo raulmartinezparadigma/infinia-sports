@@ -34,6 +34,12 @@ El módulo de checkout está compuesto por:
 5. **Controladores**:
    - `CheckoutController`: Endpoints REST para gestión del carrito y checkout
 
+## Integración de métodos de pago y confirmación
+
+- Integración real de pagos Bizum, Redsys (tarjeta) y transferencia bancaria.
+- Tras cualquier pago, el backend comunica el estado al frontend, que vacía y sincroniza el carrito.
+- El frontend redirige siempre a una pantalla de confirmación única, mostrando mensaje contextual según el método de pago.
+
 ## Ejecución de la Aplicación
 
 Para ejecutar la aplicación:

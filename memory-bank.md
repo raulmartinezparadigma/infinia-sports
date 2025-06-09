@@ -22,6 +22,12 @@ flowchart TD
     AC --> P[progress.md]
 \```
 
+### Actualización Junio 2025
+- Redsys integrado y probado: tras el pago, el usuario es dirigido a una pantalla de confirmación contextual (mensaje según método).
+- Checkout homogéneo: Bizum, Redsys y transferencia usan el mismo flujo y lógica de confirmación.
+- El carrito se vacía y sincroniza tras cualquier pago (frontend-backend).
+- UX y lógica alineadas para todos los métodos de pago.
+
 ### Core Files (Required)
 1. `projectbrief.md`
    - Foundation document that shapes all other files
