@@ -71,13 +71,15 @@ public class BizumPaymentServiceImpl {
         if (payment.getStatus() == PaymentStatus.COMPLETED && payment.getOrderId() != null && !payment.getOrderId().isEmpty()) {
             logger.info("[BizumService] Buscando orden con orderId: {} en OrderRepository", payment.getOrderId());
             try {
-                java.util.Optional<Order> optOrder = orderRepository.findByOrderId(payment.getOrderId());
-                if (optOrder.isPresent()) {
-                    Order order = optOrder.get();
-                    logger.info("[BizumService] Orden encontrada: orderId={}, id={}, status antes='{}'", order.getOrderId(), order.getId(), order.getStatus());
-                    order.setStatus("COMPLETED");
-                    orderRepository.save(order);
-                    logger.info("[BizumService] Estado de la orden actualizado a COMPLETED para orderId={}, status después='{}'", payment.getOrderId(), order.getStatus());
+                // Si hay varias órdenes por error histórico, actualiza todas para mantener consistencia
+                java.util.List<Order> orders = orderRepository.findByOrderId(payment.getOrderId()).stream().toList();
+                if (!orders.isEmpty()) {
+                    for (Order order : orders) {
+                        logger.info("[BizumService] Orden encontrada: orderId={}, id={}, status antes='{}'", order.getOrderId(), order.getId(), order.getStatus());
+                        order.setStatus(payment.getStatus().name()); // Usar el status EXACTO del Payment (mayúsculas)
+                        orderRepository.save(order);
+                        logger.info("[BizumService] Estado de la orden actualizado a {} para orderId={}, status después='{}'", payment.getStatus().name(), payment.getOrderId(), order.getStatus());
+                    }
                 } else {
                     logger.warn("[BizumService] No se encontró la orden para orderId={} al intentar actualizar estado tras pago Bizum", payment.getOrderId());
                 }

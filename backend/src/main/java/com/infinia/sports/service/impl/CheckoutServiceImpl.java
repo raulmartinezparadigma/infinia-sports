@@ -253,6 +253,12 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     @Override
     public Order confirmOrder(CheckoutDTO checkoutDTO) {
+        // Idempotencia: si ya existe una orden para este cartId/orderId, devuélvela
+        java.util.Optional<Order> existing = orderRepository.findByOrderId(checkoutDTO.getCartId());
+        if (existing.isPresent()) {
+            logger.info("[confirmOrder] Ya existe una orden para orderId={}, devolviendo la existente", checkoutDTO.getCartId());
+            return existing.get();
+        }
         // Obtener el carrito
         Cart cart = cartRepository.findById(checkoutDTO.getCartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));

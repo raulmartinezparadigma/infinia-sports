@@ -162,13 +162,15 @@ function PaymentSelector({ onNext, onBack, amount }) {
             ))}
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancelar</Button>
-          <Button onClick={() => {
-            handleClose();
-            if (typeof onNext === 'function') onNext();
-          }} variant="contained" color="primary">Confirmar</Button>
-        </DialogActions>
+        {(selected === 'bizum') && (
+          <DialogActions>
+            <Button onClick={handleClose} color="secondary">Cancelar</Button>
+            <Button onClick={() => {
+              handleClose();
+              if (typeof onNext === 'function') onNext();
+            }} variant="contained" color="primary">Confirmar</Button>
+          </DialogActions>
+        )}
       </Dialog>
       {typeof onBack === 'function' && (
         <Box mt={4} display="flex" justifyContent="center">
