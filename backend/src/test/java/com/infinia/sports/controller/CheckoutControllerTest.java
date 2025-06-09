@@ -130,7 +130,6 @@ public class CheckoutControllerTest {
         // Crear información de precios
         Order.PriceInfo priceInfo = Order.PriceInfo.builder()
                 .subtotal(new BigDecimal("99.98"))
-                .shipping(new BigDecimal("0.00"))
                 .tax(new BigDecimal("21.00"))
                 .discount(new BigDecimal("0.00"))
                 .total(new BigDecimal("120.98"))

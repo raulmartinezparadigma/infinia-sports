@@ -211,9 +211,9 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setStatus("pending");
         order.setEmail(shippingAddress.getEmail());
         
-        // Crear ShippingGroup
+        // Crear ShippingGroup con ID que empieza en 1
         Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
-        shippingGroup.setId("0"); // Índice como String
+        shippingGroup.setId("1"); // Empezamos en 1 para el primer grupo
         shippingGroup.setShippingMethod("Infinia Sports");
         shippingGroup.setShippingCost(cart.getSubtotal());
         
@@ -243,9 +243,14 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setShippingAddress(mapAddressDtoToOrderAddress(shippingAddress));
         order.setBillingAddress(mapAddressDtoToOrderAddress(billingAddress));
         
-        // Configurar PriceInfo
+        // Configurar PriceInfo con todos los valores del Cart
         Order.PriceInfo priceInfo = new Order.PriceInfo();
         priceInfo.setSubtotal(cart.getSubtotal());
+        priceInfo.setTax(cart.getTax());
+        // Calcular el total como la suma del total del carrito
+        priceInfo.setTotal(cart.getTotal());
+        // Establecer discount en cero por defecto
+        priceInfo.setDiscount(BigDecimal.ZERO);
         order.setPriceInfo(priceInfo);
         
         return order;
@@ -381,9 +386,9 @@ public class CheckoutServiceImpl implements CheckoutService {
                         .build())
                 .collect(Collectors.toList());
         
-        // Crear grupo de envío
+        // Crear grupo de envío con ID que empieza en 1
         Order.ShippingGroup shippingGroup = Order.ShippingGroup.builder()
-                .id(UUID.randomUUID().toString())
+                .id("1") // Empezamos en 1 para el primer grupo
                 .shippingMethod(checkoutDTO.getShippingMethod())
                 .shippingCost(BigDecimal.ZERO) // En un caso real, se calcularía según el método de envío
                 .lineItems(lineItems)
@@ -392,10 +397,9 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Crear información de precios
         Order.PriceInfo priceInfo = Order.PriceInfo.builder()
                 .subtotal(cart.getSubtotal())
-                .shipping(shippingGroup.getShippingCost())
                 .tax(cart.getTax())
                 .discount(BigDecimal.ZERO) // En un caso real, se aplicarían descuentos si los hay
-                .total(cart.getTotal().add(shippingGroup.getShippingCost()))
+                .total(cart.getTotal())
                 .build();
         
         // Crear información fiscal
