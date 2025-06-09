@@ -62,3 +62,15 @@ export async function processBizumPayment({ paymentId, orderId, phoneNumber, use
 export async function clearCartBackend() {
   await axios.delete(`${API_BASE}/cart`);
 }
+
+// Confirma el pedido y lo envía al backend
+export async function confirmOrder(checkoutData) {
+  // Asegurarse de que el email está incluido en el DTO
+  if (!checkoutData.email && checkoutData.shippingAddress && checkoutData.shippingAddress.email) {
+    checkoutData.email = checkoutData.shippingAddress.email;
+  }
+  
+  console.log('[confirmOrder] Enviando datos de checkout:', checkoutData);
+  const response = await axios.post(`${API_BASE}/checkout/confirmar`, checkoutData);
+  return response.data;
+}

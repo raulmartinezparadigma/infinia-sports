@@ -108,13 +108,57 @@ public class CheckoutControllerTest {
                 .paymentMethod("CREDIT_CARD")
                 .build();
         
+        // Crear LineItem para la orden
+        Order.LineItem lineItem = Order.LineItem.builder()
+                .id(itemId)
+                .productId("PROD-001")
+                .productName("Balón de fútbol profesional")
+                .quantity(2)
+                .unitPrice(new BigDecimal("49.99"))
+                .totalPrice(new BigDecimal("99.98"))
+                .attributes(new HashMap<>())
+                .build();
+                
+        // Crear ShippingGroup con LineItems
+        Order.ShippingGroup shippingGroup = Order.ShippingGroup.builder()
+                .id("0")
+                .shippingMethod("STANDARD")
+                .shippingCost(new BigDecimal("0.00"))
+                .lineItems(List.of(lineItem))
+                .build();
+        
+        // Crear información de precios
+        Order.PriceInfo priceInfo = Order.PriceInfo.builder()
+                .subtotal(new BigDecimal("99.98"))
+                .shipping(new BigDecimal("0.00"))
+                .tax(new BigDecimal("21.00"))
+                .discount(new BigDecimal("0.00"))
+                .total(new BigDecimal("120.98"))
+                .build();
+        
+        // Crear dirección para la orden
+        Order.Address address = Order.Address.builder()
+                .firstName("Juan")
+                .lastName("Pérez")
+                .addressLine1("Calle Principal 123")
+                .city("Madrid")
+                .postalCode("28001")
+                .country("España")
+                .phoneNumber("+34600000000")
+                .build();
+                
         // Crear orden
         testOrder = Order.builder()
                 .id(UUID.randomUUID().toString())
                 .orderId("ORD-" + System.currentTimeMillis())
+                .language("es")
                 .status("PENDIENTE")
                 .email("juan.perez@example.com")
                 .submitDate(LocalDateTime.now())
+                .shippingGroups(List.of(shippingGroup))
+                .shippingAddress(address)
+                .billingAddress(address)
+                .priceInfo(priceInfo)
                 .build();
         
         // Configurar comportamiento del servicio mock

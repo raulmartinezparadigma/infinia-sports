@@ -35,8 +35,6 @@ public class Order {
     private Address shippingAddress;
     private Address billingAddress;
     
-    private List<LineItem> lineItems;
-    
     private PriceInfo priceInfo;
     private TaxInfo taxInfo;
     
@@ -51,7 +49,7 @@ public class Order {
         private String id;
         private String shippingMethod;
         private BigDecimal shippingCost;
-        private List<String> lineItemIds;
+        private List<LineItem> lineItems;
     }
     
     /**

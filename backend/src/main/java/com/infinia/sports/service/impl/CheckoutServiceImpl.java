@@ -217,11 +217,24 @@ public class CheckoutServiceImpl implements CheckoutService {
         shippingGroup.setShippingMethod("Infinia Sports");
         shippingGroup.setShippingCost(cart.getSubtotal());
         
-        // Obtener los IDs de los items del carrito
-        List<String> lineItemIds = cart.getItems().stream()
-                .map(Cart.CartItem::getId)
+        // Crear la lista de LineItems a partir de los CartItems
+        List<Order.LineItem> lineItems = cart.getItems().stream()
+                .map(cartItem -> {
+                    // Crear un LineItem a partir del CartItem
+                    return Order.LineItem.builder()
+                        .id(cartItem.getId())
+                        .productId(cartItem.getProductId())
+                        .productName(cartItem.getProductName())
+                        .quantity(cartItem.getQuantity())
+                        .unitPrice(cartItem.getUnitPrice())
+                        .totalPrice(cartItem.getTotalPrice())
+                        .attributes(cartItem.getAttributes())
+                        .build();
+                })
                 .collect(Collectors.toList());
-        shippingGroup.setLineItemIds(lineItemIds);
+        
+        // Asignar los LineItems al ShippingGroup
+        shippingGroup.setLineItems(lineItems);
         
         // Añadir el ShippingGroup a la lista
         order.setShippingGroups(List.of(shippingGroup));
@@ -344,7 +357,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         cart.setTax(tax);
         cart.setTotal(subtotal.add(tax));
     }
-    
+
     /**
      * Crea una orden a partir del carrito y los datos de checkout
      */
@@ -367,7 +380,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .id(UUID.randomUUID().toString())
                 .shippingMethod(checkoutDTO.getShippingMethod())
                 .shippingCost(BigDecimal.ZERO) // En un caso real, se calcularía según el método de envío
-                .lineItemIds(lineItems.stream().map(Order.LineItem::getId).collect(Collectors.toList()))
+                .lineItems(lineItems)
                 .build();
         
         // Crear información de precios
@@ -405,7 +418,6 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .shippingGroups(List.of(shippingGroup))
                 .shippingAddress(shippingAddress)
                 .billingAddress(billingAddress)
-                .lineItems(lineItems)
                 .priceInfo(priceInfo)
                 .taxInfo(taxInfo)
                 .build();
