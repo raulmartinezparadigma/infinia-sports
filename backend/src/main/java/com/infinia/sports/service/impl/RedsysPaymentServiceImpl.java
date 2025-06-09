@@ -48,6 +48,12 @@ public class RedsysPaymentServiceImpl {
                 .providerResponse(providerResponse)
                 .build();
         paymentRepository.save(payment);
+        // Actualizar estado del pedido a COMPLETED si existe
+        orderRepository.findByOrderId(request.getOrderId()).ifPresent(order -> {
+            order.setStatus("COMPLETED");
+            orderRepository.save(order);
+            logger.info("[RedsysService] Order actualizado a COMPLETED: {}", order.getOrderId());
+        });
         // Eliminar carrito tras pago exitoso
         try {
             cartRepository.deleteById(request.getOrderId());

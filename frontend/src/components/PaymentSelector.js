@@ -1,10 +1,12 @@
 import React from "react";
 import RedsysPayment from "./RedsysPayment";
+import { useCart } from "./CartContext";
+import { payByTransfer } from "../transferApi";
 // Selector de método de pago
 import { useState } from "react";
 import {
   Box, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Grid, Paper, TextField, IconButton
+  Typography, Grid, Paper, IconButton
 } from "@mui/material";
 import PaymentIcon from '@mui/icons-material/Payment';
 import EuroIcon from '@mui/icons-material/Euro';
@@ -31,11 +33,11 @@ const paymentMethods = [
   }
 ];
 
-function PaymentSelector({ onNext, onBack }) {
+function PaymentSelector({ onNext, onBack, amount }) {
+  const { cartId, clearCartAndReload } = useCart();
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [bizumPhone, setBizumPhone] = useState("");
-  const [redsysData, setRedsysData] = useState({ card: "", expiry: "", cvv: "" });
+
 
   // Abrir modal al seleccionar método
   const handleSelect = (key) => {
@@ -52,9 +54,8 @@ function PaymentSelector({ onNext, onBack }) {
   const handleClose = () => {
     setModalOpen(false);
     setSelected(null);
-    setBizumPhone("");
-    setRedsysData({ card: "", expiry: "", cvv: "" });
   };
+
 
   // Renderiza el contenido del modal según método
   const renderModalContent = () => {
@@ -83,7 +84,26 @@ function PaymentSelector({ onNext, onBack }) {
             <Typography variant="body2"><b>Concepto:</b> Tu nombre y número de pedido</Typography>
             <Typography variant="body2"><b>Importe:</b> El total de tu compra</Typography>
           </Paper>
-          <Typography>Cuando recibamos el pago, confirmaremos tu pedido por email.</Typography>
+          <Typography sx={{ mb: 2 }}>Cuando recibamos el pago, confirmaremos tu pedido por email.</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={async () => {
+              // Aquí deberías obtener orderId y amount reales del contexto o props
+              try {
+                await payByTransfer({ orderId: cartId, amount, titular: "Cliente" });
+              } catch (e) {
+                // Puedes mostrar un error si lo deseas
+              }
+              await clearCartAndReload();
+              setModalOpen(false);
+              if (typeof onNext === 'function') onNext({ paymentMethod: 'transferencia' });
+            }}
+          >
+            He realizado la transferencia
+          </Button>
         </Box>
       );
     }
