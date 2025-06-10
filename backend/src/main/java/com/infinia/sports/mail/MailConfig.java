@@ -1,10 +1,11 @@
 package com.infinia.sports.mail;
 
+import java.util.Properties;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import java.util.Properties;
+
 
 /**
  * Configuración del cliente JavaMailSender para envío de correos vía SMTP (Gmail)

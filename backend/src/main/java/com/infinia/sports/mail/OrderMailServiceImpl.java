@@ -1,10 +1,10 @@
 package com.infinia.sports.mail;
 
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 /**
  * Implementación del servicio de envío de correos de resumen de pedido

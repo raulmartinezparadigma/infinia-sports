@@ -1,6 +1,6 @@
 package com.infinia.sports.mail;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 /**
  * Servicio para envío de correos de resumen de pedido
