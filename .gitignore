@@ -21,7 +21,7 @@ backend/target/
 **/target/
 
 # Otros
-memory-bank/
+
 
 # Por defecto, mantenemos package-lock.json y los SVGs generados en public
 # Si quieres excluir más carpetas, añádelas aquí
