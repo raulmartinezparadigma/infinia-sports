@@ -28,6 +28,13 @@ flowchart TD
 - El carrito se vacía y sincroniza tras cualquier pago (frontend-backend).
 - UX y lógica alineadas para todos los métodos de pago.
 
+### Actualización 10 Junio 2025
+- Corrección del mapeo de LineItems en ShippingGroup: ahora los LineItems están contenidos exclusivamente dentro de cada ShippingGroup en la entidad Order.
+- Añadido campo email en Order y formularios: asegurado que se envía correctamente desde el frontend al backend.
+- Implementada idempotencia en confirmOrder: si ya existe una orden para un cartId, se devuelve la existente.
+- Corregida estructura de priceInfo en Order: eliminado campo shipping innecesario.
+- Estandarizado ID de ShippingGroup: ahora empieza en 1 para cada grupo.
+
 ### Core Files (Required)
 1. `projectbrief.md`
    - Foundation document that shapes all other files
