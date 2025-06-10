@@ -1,0 +1,30 @@
+<!-- Plantilla HTML sencilla para resumen de pedido -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de tu pedido</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f9f9f9; color: #222; }
+        .container { background: #fff; padding: 24px; border-radius: 8px; max-width: 600px; margin: auto; }
+        h2 { color: #0b6fa4; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #e6f2fa; }
+        .total { font-weight: bold; color: #0b6fa4; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>¡Gracias por tu compra, {{customerName}}!</h2>
+    <p>Resumen de tu pedido <b>#{{orderId}}</b> realizado el {{orderDate}}:</p>
+    <table>
+        <tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
+        {{orderLines}}
+    </table>
+    <p class="total">Total: {{orderTotal}}</p>
+    <p>Dirección de envío: {{shippingAddress}}</p>
+    <p>¡Gracias por confiar en Infinia Sports!</p>
+</div>
+</body>
+</html>
