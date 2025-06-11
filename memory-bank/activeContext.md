@@ -60,12 +60,20 @@ Actualmente, el proyecto Infinia Sports se encuentra en fase de planificación y
 
 ### Frontend
 - Planificación completa
-- Pendiente de implementación
+- Implementación en progreso
+- **ACTUALIZACIÓN (11/06/2025)**: Migración completa de pruebas unitarias de Vitest a Jest
+  - Eliminadas todas las dependencias y configuraciones de Vitest
+  - Configurado Jest con soporte completo para React Testing Library
+  - Implementados polyfills necesarios para TextEncoder/TextDecoder y fetch
+  - Solucionados problemas con importaciones de archivos estáticos
+  - Todos los tests (18) pasan correctamente
 
 ## Bloqueos o Impedimentos
 - No hay bloqueos identificados actualmente
 
 ## Notas Importantes
-- Mantener el idioma español en todo el código y documentación
-- Seguir las convenciones de código establecidas
+- Código (clases, métodos, variables): en inglés
+- Comentarios y documentación: en español
+- Seguir las convenciones de código establecidas (PascalCase para clases/componentes, camelCase para métodos/funciones/variables)
+- Mantener la arquitectura de 3 capas en backend
 - No realizar cambios que no se soliciten explícitamente
