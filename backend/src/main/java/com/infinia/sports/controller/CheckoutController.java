@@ -212,7 +212,7 @@ public class CheckoutController {
     /**
      * Obtiene información de un pedido
      */
-    @GetMapping("/pedidos/{id}")
+    @GetMapping("/orders/{id}")
     @Operation(summary = "Obtener pedido", description = "Obtiene información de un pedido")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pedido obtenido correctamente", 
