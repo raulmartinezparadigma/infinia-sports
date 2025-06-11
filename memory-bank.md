@@ -154,7 +154,7 @@ flowchart TD
     
     Start --> Learn
     Learn --> Apply
-\```
+```
 
 ### What to Capture
 - Critical implementation paths
@@ -165,5 +165,38 @@ flowchart TD
 - Tool usage patterns
 
 The format is flexible - focus on capturing valuable insights that help me work more effectively with you and the project. Think of .windsurf/rules as a living document that grows smarter as we work together.
+
+### Documentación y entrega (actualizado a 11/06/2025)
+
+- **README**
+  - Debe incluir instrucciones claras para arrancar backend y frontend (preferiblemente usando Git Bash en Windows).
+  - Detallar la configuración de PostgreSQL y MongoDB, así como variables de entorno necesarias.
+  - Guía para configurar y probar el envío de emails (SMTP, troubleshooting de autenticación).
+  - Descripción de la arquitectura (3 capas), estructura de carpetas y tecnologías usadas.
+  - Ejemplos de uso de la API y endpoints principales.
+  - Créditos, licencias y notas de despliegue si aplica.
+
+- **Planes y memory-bank**
+  - Los archivos de planes deben reflejar el estado real, hitos alcanzados, decisiones técnicas y tareas pendientes.
+  - El memory-bank debe estar actualizado y versionado, incluyendo convenciones (nomenclatura, sincronización de carrito, centralización de emails, uso de Git Bash, etc.).
+  - Eliminar información obsoleta y añadir workarounds relevantes descubiertos en la implementación.
+
+- **OpenAPI**
+  - La documentación debe estar alineada con la implementación:
+    - Todos los endpoints documentados con ejemplos de request/response.
+    - Descripción de errores comunes (400, 404, etc.).
+    - Instrucciones para probar la API (Swagger UI, Postman).
+    - Referencia a los modelos de datos (Product, Order, etc.).
+
+- **Guías rápidas**
+  - Incluir pasos para:
+    - Arrancar el proyecto en local desde cero.
+    - Realizar pruebas E2E básicas (crear producto, hacer pedido, recibir email).
+    - Solucionar problemas frecuentes (SMTP, conexión a BD, etc.).
+
+- **Convenciones**
+  - Mantener comentarios en español y nomenclatura en inglés.
+  - No usar imports con `*` en Java.
+  - Homogeneidad en el formato y estructura de la documentación.
 
 REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.

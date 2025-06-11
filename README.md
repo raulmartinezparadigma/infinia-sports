@@ -62,7 +62,49 @@ _E-commerce de productos deportivos_
 - Los nombres de clases, métodos y variables están en inglés; los comentarios en español.
 - Arquitectura y convenciones alineadas con la planificación del proyecto.
 
-## Próximos pasos
-- Implementar módulo de Checkout y Pagos
-- Desarrollar frontend React
-- Pruebas de integración y despliegue
+## Guía rápida de arranque y pruebas
+
+### Backend
+1. Asegúrate de tener **Java 17** y **Maven** instalados y configurados en tu PATH.
+2. Se recomienda usar **Git Bash** en Windows para evitar problemas de parámetros con Maven:
+   ```bash
+   cd /c/infinia-sports/backend
+   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+   ```
+   El backend arrancará en [http://localhost:8080](http://localhost:8080)
+3. Accede a la documentación Swagger UI en:
+   [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+### Frontend
+1. En una nueva terminal (Git Bash recomendado):
+   ```bash
+   cd /c/infinia-sports/frontend
+   npm install
+   npm start
+   ```
+   El frontend arrancará en [http://localhost:3000](http://localhost:3000)
+
+### Pruebas rápidas E2E
+- Crear producto (endpoint /productos)
+- Añadir al carrito, realizar checkout y pago (Bizum, Redsys o transferencia)
+- Confirmar recepción de email de resumen de pedido
+- Verificar sincronización de carrito tras pago
+
+## Troubleshooting
+- Si falla el envío de emails, revisa la configuración SMTP en `application.properties` o `mail-gmail-example.properties` y asegúrate de que las credenciales sean correctas.
+- Si usas Windows, ejecuta los comandos en Git Bash para evitar problemas de parámetros.
+- Para errores en el carrito, asegúrate de enviar `{id, productId, quantity}` en el body de PUT `/cart/items/{id}`.
+
+## Convenciones y arquitectura
+- Nombres de clases, métodos y variables en **inglés**.
+- Comentarios en **español**.
+- Arquitectura de 3 capas (Controller, Service, Persistence).
+- No usar imports con `*` en Java.
+- Homogeneidad en formato y estructura.
+
+## Estado del proyecto (junio 2025)
+- Todos los módulos implementados y probados: Productos, Checkout, Pagos, Emails.
+- Integración frontend-backend funcional.
+- Documentación y planes actualizados.
+
+---

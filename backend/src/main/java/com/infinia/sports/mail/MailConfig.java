@@ -65,6 +65,7 @@ public class MailConfig {
         props.put("mail.smtp.timeout", smtpTimeout);
         props.put("mail.smtp.writetimeout", writeTimeout);
         
+    
         return mailSender;
     }
 }

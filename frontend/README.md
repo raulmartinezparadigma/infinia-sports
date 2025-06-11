@@ -30,4 +30,16 @@ Consulta el plan en `../plans/plan-frontend-react.md` para la descripción de to
 
 ---
 
-> Comentarios y nombres de clases/métodos en inglés. Comentarios en español. Estructura y convenciones según las reglas del proyecto.
+## Guía rápida y troubleshooting
+- Usa **Git Bash** en Windows para evitar problemas con scripts npm.
+- Si tras el pago el carrito no se vacía, revisa que se esté llamando a `clearCartAndReload` tras el pago exitoso.
+- Para errores de cantidad en el carrito, asegúrate de enviar `{id, productId, quantity}` en el body del PUT.
+- Si no se muestra el mensaje correcto en la pantalla de confirmación, revisa el paso del método de pago por `state` en React Router.
+
+## Pruebas rápidas
+- Añadir producto al carrito, realizar checkout y pago, comprobar vaciado y sincronización del carrito, y recepción de email.
+
+## Convenciones
+- Nombres de clases, métodos y variables en **inglés**.
+- Comentarios en **español**.
+- Seguir estructura y convenciones del proyecto para componentes y estilos.

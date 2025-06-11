@@ -68,8 +68,16 @@
 - Gestión de pagos por transferencia bancaria
 - Envío de correo de confirmación
 
-## Próximos Pasos Inmediatos
-1. Crear estructura base del proyecto
-2. Definir especificación OpenAPI
-3. Implementar entidad Producto y su persistencia
-4. Comenzar con el diseño de la interfaz de usuario
+## Estado actual (junio 2025)
+- Estructura base, backend y frontend implementados.
+- Todos los módulos principales (productos, checkout, pagos, emails) finalizados y probados.
+- Integración frontend-backend y sincronización de carrito funcional.
+- Documentación y memory-bank actualizados.
+
+## Próximos pasos
+1. Pruebas E2E completas de todos los flujos (productos, pedidos, pagos, emails)
+2. Revisión de seguridad y validación de endpoints
+3. Ajustes finales en documentación y convenciones
+4. Preparar instrucciones de despliegue si aplica
+5. Revisión y mejora de plantillas de email y branding
+6. Validar que README, planes y OpenAPI estén alineados con la implementación real

@@ -1,0 +1,55 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* Estilos básicos para los componentes que se crearán */
+.order-search-form, .order-details-display {
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-width: 600px;
+  background-color: #f9f9f9;
+}
+
+.order-search-form input[type=\"text\"] {
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 70%;
+}
+
+.order-search-form button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.order-search-form button:hover {
+  background-color: #0056b3;
+}
+
+.order-details-display h2 {
+  color: #333;
+}
+
+.order-details-display p {
+  font-size: 1em;
+  line-height: 1.6;
+  color: #555;
+}
+
+.order-details-display strong {
+  color: #333;
+}
