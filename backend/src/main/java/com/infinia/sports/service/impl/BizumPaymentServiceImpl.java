@@ -25,10 +25,13 @@ public class BizumPaymentServiceImpl {
     private final com.infinia.sports.repository.mongo.CartRepository cartRepository;
     private final OrderRepository orderRepository;
 
-    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, com.infinia.sports.repository.mongo.CartRepository cartRepository, OrderRepository orderRepository) {
+    private final com.infinia.sports.service.CheckoutService checkoutService;
+
+    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, com.infinia.sports.repository.mongo.CartRepository cartRepository, OrderRepository orderRepository, com.infinia.sports.service.CheckoutService checkoutService) {
         this.paymentRepository = paymentRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
+        this.checkoutService = checkoutService;
     }
 
     /**
@@ -79,6 +82,8 @@ public class BizumPaymentServiceImpl {
                         order.setStatus(payment.getStatus().name()); // Usar el status EXACTO del Payment (mayúsculas)
                         orderRepository.save(order);
                         logger.info("[BizumService] Estado de la orden actualizado a {} para orderId={}, status después='{}'", payment.getStatus().name(), payment.getOrderId(), order.getStatus());
+                        // Enviar email de resumen de pedido tras pago exitoso (centralizado)
+                        checkoutService.sendOrderConfirmationEmail(order.getOrderId());
                     }
                 } else {
                     logger.warn("[BizumService] No se encontró la orden para orderId={} al intentar actualizar estado tras pago Bizum", payment.getOrderId());

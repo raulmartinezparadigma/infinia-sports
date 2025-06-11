@@ -69,4 +69,10 @@ public interface CheckoutService {
      * @return La orden
      */
     Order getOrder(String orderId);
+
+    /**
+     * Envía el correo de resumen de pedido tras pago exitoso (centralizado)
+     * @param orderId ID del pedido
+     */
+    void sendOrderConfirmationEmail(String orderId);
 }

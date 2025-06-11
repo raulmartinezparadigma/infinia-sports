@@ -6,7 +6,6 @@ import com.infinia.sports.model.dto.RedsysPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.mongo.PaymentRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,12 +14,19 @@ import org.springframework.stereotype.Service;
  * Servicio simulado para pagos Redsys
  */
 @Service
-@RequiredArgsConstructor
 public class RedsysPaymentServiceImpl {
     private static final Logger logger = LoggerFactory.getLogger(RedsysPaymentServiceImpl.class);
     private final PaymentRepository paymentRepository;
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    private final com.infinia.sports.service.CheckoutService checkoutService;
+
+    public RedsysPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, com.infinia.sports.service.CheckoutService checkoutService) {
+        this.paymentRepository = paymentRepository;
+        this.cartRepository = cartRepository;
+        this.orderRepository = orderRepository;
+        this.checkoutService = checkoutService;
+    }
 
     /**
      * Procesa el pago Redsys de forma simulada
@@ -53,6 +59,8 @@ public class RedsysPaymentServiceImpl {
             order.setStatus("COMPLETED");
             orderRepository.save(order);
             logger.info("[RedsysService] Order actualizado a COMPLETED: {}", order.getOrderId());
+            // Enviar email de resumen de pedido tras pago exitoso (centralizado)
+            checkoutService.sendOrderConfirmationEmail(order.getOrderId());
         });
         // Eliminar carrito tras pago exitoso
         try {

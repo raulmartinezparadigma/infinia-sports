@@ -18,17 +18,17 @@ public class MailConfig {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
-        mailSender.setUsername("TU_CORREO@gmail.com"); // Cambiar por el real o usar variable de entorno
-        mailSender.setPassword("CONTRASENA_APP"); // Contraseña de aplicación de Google
+        mailSender.setUsername("infiniasports@gmail.com"); // Cambiar por el real o usar variable de entorno
+        mailSender.setPassword("netm bksf qffg pbry"); // Contraseña de aplicación de Google
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "false");
-        props.put("mail.smtp.connectiontimeout", "5000");
-        props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
+        props.put("mail.smtp.connectiontimeout", "15000"); // Aumentado a 15 segundos
+        props.put("mail.smtp.timeout", "15000"); // Aumentado a 15 segundos
+        props.put("mail.smtp.writetimeout", "15000"); // Aumentado a 15 segundos
         return mailSender;
     }
 }

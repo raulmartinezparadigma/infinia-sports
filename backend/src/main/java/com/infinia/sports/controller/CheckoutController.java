@@ -203,6 +203,8 @@ public class CheckoutController {
             @ApiResponse(responseCode = "404", description = "Carrito no encontrado")
     })
     public ResponseEntity<Order> confirmOrder(@Valid @RequestBody CheckoutDTO checkoutDTO) {
+        logger.info("[confirmOrder] Llamamos al confirmOrder", checkoutDTO.getCartId());
+
         Order order = checkoutService.confirmOrder(checkoutDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }

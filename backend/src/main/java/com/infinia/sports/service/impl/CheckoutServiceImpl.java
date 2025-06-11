@@ -33,6 +33,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    private final com.infinia.sports.mail.OrderMailService orderMailService;
     
     // Tasa de impuesto por defecto (21% IVA)
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.21");
@@ -273,7 +274,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         
         // Guardar la orden
         Order savedOrder = orderRepository.save(order);
-        
+
         // Vaciar el carrito tras confirmar el pedido
         // Si el carrito tiene userId, eliminar todos los carritos asociados a ese usuario para máxima limpieza (multi-dispositivo)
         if (cart.getUserId() != null && !cart.getUserId().isEmpty()) {
@@ -293,6 +294,27 @@ public class CheckoutServiceImpl implements CheckoutService {
     public Order getOrder(String orderId) {
         return orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+    }
+
+    /**
+     * Envía el correo de resumen de pedido tras pago exitoso (centralizado)
+     * @param orderId ID del pedido
+     */
+    @Override
+    public void sendOrderConfirmationEmail(String orderId) {
+        try {
+            Order order = orderRepository.findByOrderId(orderId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado para envío de email"));
+            String html = com.infinia.sports.mail.OrderMailTemplateUtil.generateOrderSummaryHtml(order);
+            String subject = "Resumen de tu pedido Infinia Sports #" + order.getOrderId();
+            String to = order.getEmail();
+            orderMailService.sendOrderSummary(to, subject, html);
+            logger.info("[sendOrderConfirmationEmail] Email de resumen de pedido enviado a {} para orderId={}", to, orderId);
+        } catch (jakarta.mail.MessagingException e) {
+            logger.error("[sendOrderConfirmationEmail] Error enviando email de resumen de pedido: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("[sendOrderConfirmationEmail] Error inesperado al generar/enviar email de pedido: {}", e.getMessage(), e);
+        }
     }
     
     /**
