@@ -31,7 +31,6 @@ function RedsysPayment({ onSuccess }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const navigate = useNavigate();
   // Lógica para llamar al backend Redsys
   const handlePay = async (e) => {
     e.preventDefault();

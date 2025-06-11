@@ -2,6 +2,22 @@
 // Muestra los detalles relevantes de un pedido
 import React from 'react';
 
+// Función para formatear objetos de dirección en un string legible
+function formatAddress(address) {
+  if (!address) return "";
+  return [
+    address.firstName,
+    address.lastName,
+    address.addressLine1,
+    address.addressLine2,
+    address.city,
+    address.state,
+    address.postalCode,
+    address.country,
+    address.phoneNumber
+  ].filter(Boolean).join(", ");
+}
+
 function OrderDetailsDisplay({ order, notFound }) {
   if (notFound) {
     return (
@@ -35,8 +51,8 @@ function OrderDetailsDisplay({ order, notFound }) {
       <p><strong>Monto total:</strong> {totalAmount} €</p>
       <p><strong>Fecha:</strong> {createdAt}</p>
       <p><strong>Email cliente:</strong> {email}</p>
-      <p><strong>Dirección de envío:</strong> {shippingAddress}</p>
-      <p><strong>Dirección de facturación:</strong> {billingAddress}</p>
+      <p><strong>Dirección de envío:</strong> {formatAddress(shippingAddress)}</p>
+      <p><strong>Dirección de facturación:</strong> {formatAddress(billingAddress)}</p>
       <p><strong>Método de pago:</strong> {paymentMethod}</p>
       <p><strong>Estado del pago:</strong> {paymentStatus}</p>
       <h3>Artículos</h3>
@@ -50,5 +66,6 @@ function OrderDetailsDisplay({ order, notFound }) {
     </div>
   );
 }
+
 
 export default OrderDetailsDisplay;

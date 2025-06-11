@@ -14,13 +14,13 @@ function OrderSearchForm({ onSearch }) {
 
   return (
     <form className="order-search-form" onSubmit={handleSubmit}>
-      <label htmlFor="orderId">Order ID:</label>
+      <label htmlFor="orderId">Id del pedido: </label>
       <input
         type="text"
         id="orderId"
         value={orderId}
         onChange={e => setOrderId(e.target.value)}
-        placeholder="Introduce el Order ID"
+        placeholder="Introduce el Id del pedido"
       />
       <button type="submit">Buscar</button>
     </form>

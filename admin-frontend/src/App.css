@@ -19,12 +19,14 @@
   background-color: #f9f9f9;
 }
 
-.order-search-form input[type=\"text\"] {
+.order-search-form input[type="text"] {
   padding: 10px;
-  margin-right: 10px;
+  margin-right: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  width: 70%;
+  width: 220px;
+  min-width: 120px;
+  max-width: 100%;
 }
 
 .order-search-form button {
@@ -34,6 +36,8 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-right: 0;
+  margin-left: 0;
 }
 
 .order-search-form button:hover {
