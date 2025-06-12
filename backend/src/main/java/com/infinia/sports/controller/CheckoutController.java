@@ -6,32 +6,48 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
 import com.infinia.sports.service.CheckoutService;
+import com.infinia.sports.model.dto.PaymentInfoDTO;
+import com.infinia.sports.model.Payment; // Asegurarse que Payment está importado si no lo está ya
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.infinia.sports.repository.jpa.ProductRepository;
+import com.infinia.sports.repository.mongo.OrderRepository;
+import com.infinia.sports.repository.mongo.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  * Controlador para la gestión del carrito y el proceso de checkout
  */
 @RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "Checkout", description = "API para la gestión del carrito y el proceso de checkout")
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CheckoutController.class);
-    
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final ProductRepository productRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(CheckoutController.class);
+
     /**
      * Añade un producto al carrito
      */
@@ -213,15 +229,67 @@ public class CheckoutController {
      * Obtiene información de un pedido
      */
     @GetMapping("/orders/{id}")
-    @Operation(summary = "Obtener pedido", description = "Obtiene información de un pedido")
+    @Operation(summary = "Obtener información de un pedido", description = "Obtiene la información completa de un pedido por su ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pedido obtenido correctamente", 
+            @ApiResponse(responseCode = "200", description = "Pedido encontrado",
                     content = @Content(schema = @Schema(implementation = Order.class))),
             @ApiResponse(responseCode = "404", description = "Pedido no encontrado")
     })
     public ResponseEntity<Order> getOrder(@PathVariable("id") String orderId) {
-        Order order = checkoutService.getOrder(orderId);
-        return ResponseEntity.ok(order);
+        logger.info("[getOrder] Solicitud para orderId: {}", orderId);
+        try {
+            Optional<Order> orderOptional = orderRepository.findByOrderId(orderId);
+
+            if (orderOptional.isEmpty()) {
+                logger.warn("[getOrder] Pedido no encontrado para orderId: {}. Devolviendo 404.", orderId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            Order order = orderOptional.get();
+            logger.info("Pedido encontrado con orderId: {}. Hidratando line items con datos de producto...", orderId);
+
+            // Iterar sobre los line items para enriquecerlos con la información del producto
+            order.getShippingGroups().forEach(shippingGroup -> {
+                shippingGroup.getLineItems().forEach(lineItem -> {
+                    if (lineItem.getProductId() != null) {
+                        // Usamos el productRepository para buscar el producto y asignarlo
+                        try {
+                            UUID productId = UUID.fromString(lineItem.getProductId());
+                            productRepository.findById(productId).ifPresent(lineItem::setProduct);
+                        } catch (IllegalArgumentException e) {
+                            logger.warn("El productId '{}' no es un UUID válido para el lineItem '{}'", lineItem.getProductId(), lineItem.getId());
+                        }
+                    }
+                });
+            });
+
+            logger.info("Pedido {} completamente hidratado.", orderId);
+            return ResponseEntity.ok(order);
+
+        } catch (Exception e) {
+            logger.error("[getOrder] Error inesperado al obtener el pedido para orderId: {}. Error: {}", orderId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Obtiene información de pago de un pedido
+     */
+    @GetMapping("/orders/{orderId}/payment")
+    @Operation(summary = "Obtener información de pago", description = "Obtiene información de pago de un pedido")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Información de pago obtenida correctamente", 
+                    content = @Content(schema = @Schema(implementation = PaymentInfoDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Pago no encontrado")
+    })
+    public ResponseEntity<PaymentInfoDTO> getPaymentInfoByOrderId(@PathVariable String orderId) {
+        logger.info("[getPaymentInfoByOrderId] Solicitud para orderId: {}", orderId);
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pago no encontrado para el orderId: " + orderId));
+
+        PaymentInfoDTO dto = new PaymentInfoDTO(payment.getMethod().name(), payment.getStatus().name());
+        logger.info("[getPaymentInfoByOrderId] Pago encontrado y devuelto para orderId: {}. Método: {}, Estado: {}", orderId, dto.getMethod(), dto.getStatus());
+        return ResponseEntity.ok(dto);
     }
     
     /**

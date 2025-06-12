@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from 'axios'; // Importar axios
 import { useCart } from "./CartContext";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -9,6 +10,8 @@ import {
   CircularProgress, 
   Paper 
 } from "@mui/material";
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080'; // Definir API_BASE
 
 // Formulario y lógica de pago Redsys
 function RedsysPayment({ onSuccess }) {
@@ -39,23 +42,18 @@ function RedsysPayment({ onSuccess }) {
     setSuccess(false);
 
     try {
-      const response = await fetch("/payments/redsys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: cartId,
-          cardNumber: form.cardNumber,
-          cardHolder: form.cardHolder,
-          expiryDate: form.expiryDate,
-          cvv: form.cvv,
-          amount,
-        }),
+      const response = await axios.post(`${API_BASE}/api/payments/redsys`, {
+        orderId: cartId,
+        cardNumber: form.cardNumber,
+        cardHolder: form.cardHolder,
+        expiryDate: form.expiryDate,
+        cvv: form.cvv,
+        amount,
       });
 
-      if (!response.ok) throw new Error("Error en el pago Redsys");
-
-      const data = await response.json();
-      if (data.status === "COMPLETED") {
+      // axios lanza errores para respuestas no 2xx automáticamente
+      // la propiedad data ya contiene el JSON
+      if (response.data && response.data.status === "COMPLETED") {
         // Sincroniza el carrito tras el pago exitoso
         await clearCartAndReload();
         setSuccess(true);

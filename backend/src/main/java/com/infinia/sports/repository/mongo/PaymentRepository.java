@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface PaymentRepository extends MongoRepository<Payment, String> {
+    java.util.Optional<Payment> findByOrderId(String orderId);
     // Métodos personalizados si es necesario
 }

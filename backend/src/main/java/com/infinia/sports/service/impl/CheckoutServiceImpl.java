@@ -8,8 +8,9 @@ import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
+import com.infinia.sports.repository.jpa.ProductRepository;
+import com.infinia.sports.model.Product;
 import com.infinia.sports.service.CheckoutService;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,12 +28,20 @@ import java.util.stream.Collectors;
  * Implementación del servicio de checkout
  */
 @Service
-@RequiredArgsConstructor
 public class CheckoutServiceImpl implements CheckoutService {
+
+    public CheckoutServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, com.infinia.sports.mail.OrderMailService orderMailService) {
+        this.cartRepository = cartRepository;
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.orderMailService = orderMailService;
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(CheckoutServiceImpl.class);
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final com.infinia.sports.mail.OrderMailService orderMailService;
     
     // Tasa de impuesto por defecto (21% IVA)
@@ -77,7 +86,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         cart.setUpdatedAt(LocalDateTime.now());
         Cart savedCart = cartRepository.save(cart);
         logger.info("[updateCartItemQuantity] Carrito guardado tras actualización de cantidad. ID: {}", savedCart.getId());
-        return savedCart;
+        return enrichCartItemsWithImages(savedCart);
     }
     
     @Override
@@ -126,7 +135,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             logger.error("Error al guardar el carrito en MongoDB: {}", e.getMessage(), e);
             throw e;
         }
-        return savedCart;
+        return enrichCartItemsWithImages(savedCart);
     }
 
     @Override
@@ -151,7 +160,8 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Guardar y devolver el carrito actualizado
         cart.setUpdatedAt(LocalDateTime.now());
         logger.info("[removeItemFromCart] Carrito actualizado y guardado tras eliminación de item. id={}", cart.getId());
-        return cartRepository.save(cart);
+        Cart savedCart = cartRepository.save(cart);
+        return enrichCartItemsWithImages(savedCart);
     }
 
     @Override
@@ -175,6 +185,50 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
         }
         
+        return enrichCartItemsWithImages(cart);
+    }
+
+    /**
+     * Enriquece los items de un carrito con la URL de la imagen del producto.
+     */
+    private Cart enrichCartItemsWithImages(Cart cart) {
+        if (cart == null) {
+            logger.warn("[enrichCartItemsWithImages] Cart is null, cannot enrich.");
+            return null;
+        }
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            logger.info("[enrichCartItemsWithImages] Cart has no items to enrich. Cart ID: {}", cart.getId());
+            return cart;
+        }
+        logger.info("[enrichCartItemsWithImages] Enriching cart ID: {}. Number of items: {}", cart.getId(), cart.getItems().size());
+
+        for (Cart.CartItem item : cart.getItems()) {
+            logger.info("[enrichCartItemsWithImages] Processing item with Product ID: {}", item.getProductId());
+            if (item.getProductId() == null || item.getProductId().trim().isEmpty()) {
+                logger.warn("[enrichCartItemsWithImages] Item has null or empty Product ID. Skipping enrichment for this item.");
+                continue;
+            }
+            // Evitar búsqueda si la URL ya está presente (optimización)
+            if (item.getProductImageUrl() != null && !item.getProductImageUrl().isEmpty()) {
+                logger.info("[enrichCartItemsWithImages] ProductImageUrl already present for Product ID: {}. Skipping.", item.getProductId());
+                continue;
+            }
+            try {
+                Product product = productRepository.findById(UUID.fromString(item.getProductId()))
+                        .orElse(null);
+                if (product != null) {
+                    logger.info("[enrichCartItemsWithImages] Found product for ID: {}. ImageUrl: {}", item.getProductId(), product.getImageUrl());
+                    item.setProductImageUrl(product.getImageUrl());
+                } else {
+                    logger.warn("[enrichCartItemsWithImages] Product not found in repository for ID: {}", item.getProductId());
+                }
+            } catch (IllegalArgumentException iae) {
+                logger.error("[enrichCartItemsWithImages] Invalid Product ID format for ID: {}. Error: {}", item.getProductId(), iae.getMessage());
+            } catch (Exception e) {
+                logger.error("[enrichCartItemsWithImages] Error during product lookup for Product ID: {}. Error: {}", item.getProductId(), e.getMessage(), e);
+            }
+        }
+        logger.info("[enrichCartItemsWithImages] Finished enriching cart ID: {}", cart.getId());
         return cart;
     }
 
@@ -217,22 +271,43 @@ public class CheckoutServiceImpl implements CheckoutService {
         shippingGroup.setId("1"); // Empezamos en 1 para el primer grupo
         shippingGroup.setShippingMethod("Infinia Sports");
         shippingGroup.setShippingCost(cart.getSubtotal());
-        
         // Crear la lista de LineItems a partir de los CartItems
         List<Order.LineItem> lineItems = cart.getItems().stream()
-                .map(cartItem -> {
-                    // Crear un LineItem a partir del CartItem
-                    return Order.LineItem.builder()
-                        .id(cartItem.getId())
-                        .productId(cartItem.getProductId())
-                        .productName(cartItem.getProductName())
-                        .quantity(cartItem.getQuantity())
-                        .unitPrice(cartItem.getUnitPrice())
-                        .totalPrice(cartItem.getTotalPrice())
-                        .attributes(cartItem.getAttributes())
-                        .build();
-                })
-                .collect(Collectors.toList());
+            .map(cartItem -> {
+                String imageUrl = cartItem.getProductImageUrl(); // Priorizar la URL del CartItem
+
+                if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                    logger.warn("[mapToOrder] productImageUrl no encontrada en CartItem para Product ID: {}. Intentando obtenerla del repositorio.", cartItem.getProductId());
+                    try {
+                        Product product = productRepository.findById(UUID.fromString(cartItem.getProductId()))
+                                .orElse(null);
+                        if (product != null) {
+                            imageUrl = product.getImageUrl();
+                            logger.info("[mapToOrder] URL de imagen obtenida del repositorio para Product ID: {}: {}", cartItem.getProductId(), imageUrl);
+                        } else {
+                            logger.warn("[mapToOrder] Producto no encontrado en el repositorio con ID: {} durante el intento de fallback.", cartItem.getProductId());
+                        }
+                    } catch (IllegalArgumentException e) {
+                        logger.error("[mapToOrder] ProductId inválido durante el fallback: {} no es un UUID válido.", cartItem.getProductId(), e);
+                    } catch (Exception e) {
+                        logger.error("[mapToOrder] Error inesperado durante el fallback al obtener producto con ID: {}.", cartItem.getProductId(), e);
+                    }
+                } else {
+                    logger.info("[mapToOrder] Usando productImageUrl preexistente del CartItem para Product ID: {}: {}", cartItem.getProductId(), imageUrl);
+                }
+
+                return Order.LineItem.builder()
+                    .id(cartItem.getId())
+                    .productId(cartItem.getProductId())
+                    .productName(cartItem.getProductName())
+                    .quantity(cartItem.getQuantity())
+                    .unitPrice(cartItem.getUnitPrice())
+                    .totalPrice(cartItem.getTotalPrice())
+                    .attributes(cartItem.getAttributes())
+                    .productImageUrl(imageUrl) // Use the determined imageUrl
+                    .build();
+            })
+            .collect(Collectors.toList());
         
         // Asignar los LineItems al ShippingGroup
         shippingGroup.setLineItems(lineItems);
@@ -392,67 +467,19 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
 
     /**
-     * Crea una orden a partir del carrito y los datos de checkout
+     * Crea una orden a partir del carrito y los datos de checkout, delegando en mapToOrder.
      */
     private Order createOrderFromCart(Cart cart, CheckoutDTO checkoutDTO) {
-        // Convertir items del carrito a items de orden
-        List<Order.LineItem> lineItems = cart.getItems().stream()
-                .map(cartItem -> Order.LineItem.builder()
-                        .id(cartItem.getId())
-                        .productId(cartItem.getProductId())
-                        .productName(cartItem.getProductName())
-                        .quantity(cartItem.getQuantity())
-                        .unitPrice(cartItem.getUnitPrice())
-                        .totalPrice(cartItem.getTotalPrice())
-                        .attributes(cartItem.getAttributes())
-                        .build())
-                .collect(Collectors.toList());
-        
-        // Crear grupo de envío con ID que empieza en 1
-        Order.ShippingGroup shippingGroup = Order.ShippingGroup.builder()
-                .id("1") // Empezamos en 1 para el primer grupo
-                .shippingMethod(checkoutDTO.getShippingMethod())
-                .shippingCost(BigDecimal.ZERO) // En un caso real, se calcularía según el método de envío
-                .lineItems(lineItems)
-                .build();
-        
-        // Crear información de precios
-        Order.PriceInfo priceInfo = Order.PriceInfo.builder()
-                .subtotal(cart.getSubtotal())
-                .tax(cart.getTax())
-                .discount(BigDecimal.ZERO) // En un caso real, se aplicarían descuentos si los hay
-                .total(cart.getTotal())
-                .build();
-        
-        // Crear información fiscal
-        Order.TaxInfo taxInfo = Order.TaxInfo.builder()
-                .taxRate(DEFAULT_TAX_RATE)
-                .taxRegion("ES") // En un caso real, se determinaría según la dirección
-                .build();
-        
-        // Convertir direcciones
-        Order.Address shippingAddress = mapAddressDtoToOrderAddress(checkoutDTO.getShippingAddress());
-        
-        Order.Address billingAddress;
-        if (checkoutDTO.isSameAsBillingAddress()) {
-            billingAddress = shippingAddress;
-        } else {
-            billingAddress = mapAddressDtoToOrderAddress(checkoutDTO.getBillingAddress());
+        // Delegar la creación base de la orden a mapToOrder para centralizar la lógica
+        Order order = mapToOrder(cart, checkoutDTO.getShippingAddress(), checkoutDTO.getBillingAddress());
+
+        // Sobrescribir o añadir detalles específicos del CheckoutDTO que no están en mapToOrder
+        // Por ejemplo, el método de envío que en mapToOrder está hardcodeado
+        if (checkoutDTO.getShippingMethod() != null && !order.getShippingGroups().isEmpty()) {
+            order.getShippingGroups().get(0).setShippingMethod(checkoutDTO.getShippingMethod());
         }
-        
-        // Crear la orden
-        return Order.builder()
-                .orderId(cart.getId())
-                .language("es") 
-                .submitDate(LocalDateTime.now())
-                .status("PENDIENTE")
-                .email(checkoutDTO.getEmail())
-                .shippingGroups(List.of(shippingGroup))
-                .shippingAddress(shippingAddress)
-                .billingAddress(billingAddress)
-                .priceInfo(priceInfo)
-                .taxInfo(taxInfo)
-                .build();
+
+        return order;
     }
     
     /**

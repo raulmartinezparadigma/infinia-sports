@@ -53,6 +53,7 @@ public class Cart {
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;
         private Map<String, String> attributes;
+        private String productImageUrl;
     }
     
     /**

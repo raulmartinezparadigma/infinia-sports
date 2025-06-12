@@ -79,6 +79,7 @@ const [cartId, setCartId] = useState(null);
       name: item.productName || item.name || item.description,
       price: item.unitPrice ?? item.price,
       id: item.id,
+      productImageUrl: item.productImageUrl, // <-- ARREGLO: Asegurar que la URL de la imagen se propague
     };
   }
 

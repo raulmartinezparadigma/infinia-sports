@@ -1,14 +1,13 @@
+import axios from 'axios';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
 // API para pago por transferencia bancaria
 export async function payByTransfer({ orderId, amount, titular }) {
-  const response = await fetch("/payments/transfer", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ orderId, amount, titular })
+  const response = await axios.post(`${API_BASE}/api/payments/transfer`, {
+    orderId,
+    amount,
+    titular
   });
-  if (!response.ok) {
-    throw new Error("Error al registrar el pago por transferencia");
-  }
-  return await response.json();
+  return response.data;
 }

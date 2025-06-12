@@ -8,21 +8,21 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 // Obtiene el carrito actual
 export async function getCart() {
   // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.get(`${API_BASE}/cart`);
+  const response = await axios.get(`${API_BASE}/api/cart`);
   return response.data;
 }
 
 // Añade un producto al carrito
 export async function addItemToCart(item) {
   // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.post(`${API_BASE}/cart/items`, item);
+  const response = await axios.post(`${API_BASE}/api/cart/items`, item);
   return response.data;
 }
 
 // Elimina un producto del carrito
 export async function removeItemFromCart(itemId) {
   // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.delete(`${API_BASE}/cart/items/${itemId}`);
+  const response = await axios.delete(`${API_BASE}/api/cart/items/${itemId}`);
   return response.data;
 }
 
@@ -30,7 +30,7 @@ export async function removeItemFromCart(itemId) {
 export async function updateItemQuantity(itemId, quantity, productId) {
   // El backend espera un objeto CartItemDTO con productId obligatorio
   const response = await axios.put(
-    `${API_BASE}/cart/items/${itemId}`,
+    `${API_BASE}/api/cart/items/${itemId}`,
     { id: itemId, productId, quantity }
   );
   return response.data;
@@ -39,7 +39,7 @@ export async function updateItemQuantity(itemId, quantity, productId) {
 // Guarda la dirección de envío en el backend
 export async function saveShippingAddress(cartId, address, sameAsBillingAddress = true) {
   const response = await axios.post(
-    `${API_BASE}/checkout/direccion?cartId=${cartId}&sameAsBillingAddress=${sameAsBillingAddress}`,
+    `${API_BASE}/api/checkout/direccion?cartId=${cartId}&sameAsBillingAddress=${sameAsBillingAddress}`,
     address
   );
   return response.data;
@@ -49,7 +49,9 @@ export async function saveShippingAddress(cartId, address, sameAsBillingAddress 
 // Procesa un pago Bizum llamando al backend
 export async function processBizumPayment({ paymentId, orderId, phoneNumber, userId }) {
   // Llama al endpoint real del backend para pagos Bizum
-  const response = await axios.post(`${API_BASE}/payments/bizum`, {
+  const bizumUrl = `${API_BASE}/api/payments/bizum`;
+  console.log('[cartApi] Attempting to POST to Bizum URL:', bizumUrl);
+  const response = await axios.post(bizumUrl, {
     paymentId,
     orderId,
     phoneNumber,
@@ -60,7 +62,7 @@ export async function processBizumPayment({ paymentId, orderId, phoneNumber, use
 
 // Vacía todo el carrito en el backend (DELETE /cart)
 export async function clearCartBackend() {
-  await axios.delete(`${API_BASE}/cart`);
+  await axios.delete(`${API_BASE}/api/cart`);
 }
 
 // Confirma el pedido y lo envía al backend
@@ -71,6 +73,6 @@ export async function confirmOrder(checkoutData) {
   }
   
   console.log('[confirmOrder] Enviando datos de checkout:', checkoutData);
-  const response = await axios.post(`${API_BASE}/checkout/confirmar`, checkoutData);
+  const response = await axios.post(`${API_BASE}/api/checkout/confirmar`, checkoutData);
   return response.data;
 }

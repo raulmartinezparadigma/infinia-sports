@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
  * (Solo Bizum mock por ahora)
  */
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 @Validated
 public class PaymentController {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PaymentController.class);
