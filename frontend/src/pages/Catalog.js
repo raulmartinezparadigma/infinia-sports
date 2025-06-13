@@ -13,56 +13,113 @@ function Catalog() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#fff', // Fondo completamente blanco
+      background: '#e0e7ff', // Fondo general gris claro
       padding: '40px 0',
       position: 'relative',
     }}>
-      <div style={{
-        maxWidth: 1100,
-        margin: '0 auto',
-        background: '#fff',
-        borderRadius: 0,
-        boxShadow: 'none',
-        border: 'none',
-        overflow: 'hidden',
-        padding: '32px 24px 24px 24px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-start', // Alinea arriba
-      }}>
-        {/* Logo grande alineado arriba a la izquierda, dentro del contenedor blanco */}
-        <div style={{ minWidth: 220, width: 300, height: 180, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', marginRight: 36, marginTop: 0 }}>
-          <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports logo" style={{ maxHeight: 180, maxWidth: 300, objectFit: 'contain', display: 'block', marginTop: 0 }} />
-        </div>
-        {/* Contenido principal del catálogo a la derecha del logo */}
-        <div style={{ flex: 1 }}>
-          <h2 style={{
-            color: '#1a237e',
-            fontWeight: 900,
-            letterSpacing: 1.5,
-            fontSize: 44,
-            textAlign: 'center',
-            marginBottom: 18,
-            textShadow: '0 2px 8px #b3c6ff',
+      {/* Banner tipo hero */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', marginBottom: 36 }}>
+        <div
+          style={{
+            minHeight: 260,
+            background: '#fff', // Banner hero blanco
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 16,
-            fontFamily: `'Oswald', 'Montserrat', 'Bebas Neue', Arial, sans-serif'`
+            justifyContent: 'space-between',
+            padding: '32px 48px 24px 48px',
+            position: 'relative',
+            boxSizing: 'border-box',
+            borderRadius: 16,
+            boxShadow: '0 2px 16px #b3c6ff33'
+          }}
+        >
+          {/* Logo grande a la izquierda */}
+          <div style={{ minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <img
+              src={process.env.PUBLIC_URL + '/infinia_sports.jpg'}
+              alt="Infinia Sports logo"
+              style={{ maxHeight: 120, maxWidth: 220, objectFit: 'contain', marginBottom: 12 }}
+            />
+            <span style={{ fontWeight: 700, color: '#1a237e', fontSize: 18 }}>¡Equípate como un pro!</span>
+          </div>
+          {/* Título y buscador centrados */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h1 style={{
+              fontSize: 46,
+              fontWeight: 900,
+              color: '#1a237e',
+              margin: 0,
+              letterSpacing: 2,
+              textShadow: '0 2px 8px #b3c6ff',
+              fontFamily: `'Bangers', 'Luckiest Guy', 'Permanent Marker', 'Comic Sans MS', 'cursive', 'sans-serif'`
+            }}>
+              Nuestros productos
+            </h1>
+            <div style={{ marginTop: 18, width: 340 }}>
+              <SearchBar value={searchTerm} onChange={handleSearch} />
+            </div>
+            <div style={{ marginTop: 12, color: '#374151', fontWeight: 500 }}>
+              ¡Zapatillas, ropa y suplementos premium en un solo lugar!
+            </div>
+          </div>
+          {/* Producto destacado a la derecha */}
+          <div style={{
+            minWidth: 220,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end'
           }}>
-            <span role="img" aria-label="zapatillas">👟</span>
-            Catálogo de Productos
-            <span role="img" aria-label="pesas">🏋️‍♂️</span>
-          </h2>
-          <div style={{ margin: '0 auto 30px auto', maxWidth: 400 }}>
-            <SearchBar value={searchTerm} onChange={handleSearch} />
+            <img
+              src={process.env.PUBLIC_URL + '/infinia_sports.jpg'}
+              alt="Producto destacado"
+              style={{ maxHeight: 140, maxWidth: 180, objectFit: 'contain', display: 'block' }}
+            />
           </div>
-          <div style={{marginBottom: 8, textAlign: 'center', color: '#374151', fontWeight: 500}}>
-            ¡Equípate para tu mejor entrenamiento con zapatillas, ropa y suplementos premium!
-          </div>
-          <ProductList searchTerm={searchTerm} />
         </div>
       </div>
+
+      {/* Lista de productos debajo del banner */}
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <ProductList searchTerm={searchTerm} />
+      </div>
+
+      {/* Franja de ventajas */}
+      <div style={{
+        maxWidth: 1100,
+        margin: '32px auto 0 auto',
+        background: '#f3f4f6',
+        borderRadius: 14,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '24px 32px',
+        gap: 12,
+        boxShadow: '0 1px 8px #b3c6ff22',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ flex: 1, minWidth: 180, textAlign: 'center' }}>
+          <div style={{ fontSize: 30 }}>⏰</div>
+          <div style={{ fontWeight: 700, color: '#1a237e', marginBottom: 4 }}>ENTREGAS 24H</div>
+          <div style={{ fontSize: 14, color: '#374151' }}>Recibe tu pedido en 24h o 48h si es festivo.</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 180, textAlign: 'center' }}>
+          <div style={{ fontSize: 30 }}>🚚</div>
+          <div style={{ fontWeight: 700, color: '#1a237e', marginBottom: 4 }}>ENVÍOS GRATIS</div>
+          <div style={{ fontSize: 14, color: '#374151' }}>En pedidos superiores a 25&nbsp;€ envío gratis.</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 180, textAlign: 'center' }}>
+          <div style={{ fontSize: 30 }}>🔒</div>
+          <div style={{ fontWeight: 700, color: '#1a237e', marginBottom: 4 }}>PAGO SEGURO</div>
+          <div style={{ fontSize: 14, color: '#374151' }}>Certificado SSL y métodos de pago seguros.</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 180, textAlign: 'center' }}>
+          <div style={{ fontSize: 30 }}>💬</div>
+          <div style={{ fontWeight: 700, color: '#1a237e', marginBottom: 4 }}>ATENCIÓN RÁPIDA</div>
+          <div style={{ fontSize: 14, color: '#374151' }}>Clientes satisfechos y soporte ágil.</div>
+        </div>
+      </div>
+
     </div>
   );
 }
