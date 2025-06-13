@@ -6,7 +6,7 @@ import { Box, Typography, Button, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 function CartSummary() {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
   const navigate = useNavigate();
 
   // Cálculo de totales
@@ -33,6 +33,16 @@ function CartSummary() {
         onClick={() => navigate("/checkout")}
       >
         Ir a Checkout
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        fullWidth
+        sx={{ mt: 2 }}
+        disabled={cart.length === 0}
+        onClick={clearCart}
+      >
+        Vaciar carrito
       </Button>
     </Paper>
   );

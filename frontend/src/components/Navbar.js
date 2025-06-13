@@ -23,6 +23,7 @@ function Navbar() {
       </a>
 
       <div style={{ flex: 1 }} />
+
       <Link to="/cart">
         <IconButton sx={{ color: '#fff' }}>
           <Badge badgeContent={totalCount} color="error">

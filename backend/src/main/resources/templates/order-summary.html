@@ -16,10 +16,14 @@
 </head>
 <body>
 <div class="container">
+    <!-- Logo grande de Infinia Sports -->
+    <div style="text-align:center; margin-bottom:18px;">
+      <img src="cid:infinia_logo" alt="Infinia Sports" style="height:90px; width:auto; display:block; margin:auto;"/>
+    </div>
     <h2>¡Gracias por tu compra, {{customerName}}!</h2>
     <p>Resumen de tu pedido <b>#{{orderId}}</b> realizado el {{orderDate}}:</p>
     <table>
-        <tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
+        <tr><th>Imagen</th><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
         {{orderLines}}
     </table>
     <p class="total">Total: {{orderTotal}}</p>

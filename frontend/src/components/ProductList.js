@@ -11,6 +11,11 @@ import Pagination from "@mui/material/Pagination";
 
 // Lista de productos con filtros
 function ProductList({ searchTerm = "" }) {
+  // Añade fondo blanco solo mientras está montado este componente (catálogo)
+  React.useEffect(() => {
+    document.body.classList.add('catalog-page');
+    return () => document.body.classList.remove('catalog-page');
+  }, []);
   // Estado para productos, loading y error
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,8 +61,8 @@ function ProductList({ searchTerm = "" }) {
   }, [searchTerm, products]);
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>Catálogo de productos</Typography>
+    <Box sx={{ mt: 2, background: '#fff', boxShadow: 'none', borderRadius: 0, border: 'none' }}>
+
       {loading && <CircularProgress />}
       {error && <Alert severity="error">{error}</Alert>}
       {!loading && !error && (
@@ -88,9 +93,10 @@ function ProductList({ searchTerm = "" }) {
                 showFirstButton
                 showLastButton
                 sx={{
-                  background: '#f5f7fa',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px 0 rgba(50, 50, 80, 0.10)',
+                  background: '#fff', // Fondo blanco liso
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  border: 'none',
                   p: 1,
                   '& .Mui-selected': {
                     backgroundColor: '#1976d2 !important',
