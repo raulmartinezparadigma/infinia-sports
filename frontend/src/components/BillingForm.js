@@ -6,14 +6,18 @@ import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import BackgroundCarousel from './BackgroundCarousel';
 
 function BillingForm({ onNext, onBack }) {
-  const [values, setValues] = useState({
-    fullName: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    province: "",
-    country: "",
-    nif: ""
+  // Inicializa con datos previos si existen
+  const [values, setValues] = useState(() => {
+    const stored = localStorage.getItem('billingAddress');
+    return stored ? JSON.parse(stored) : {
+      fullName: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      province: "",
+      country: "",
+      nif: ""
+    };
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);

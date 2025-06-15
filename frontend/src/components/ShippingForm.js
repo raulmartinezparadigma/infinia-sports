@@ -9,15 +9,19 @@ import { saveShippingAddress } from '../cartApi';
 import { useCart } from './CartContext';
 
 function ShippingForm({ onNext, onBack }) {
-  const [values, setValues] = useState({
-    fullName: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    province: "",
-    country: "",
-    phone: "",
-    email: "" // Añadido campo email
+  // Inicializa con datos previos si existen
+  const [values, setValues] = useState(() => {
+    const stored = localStorage.getItem('shippingAddress');
+    return stored ? JSON.parse(stored) : {
+      fullName: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      province: "",
+      country: "",
+      phone: "",
+      email: ""
+    };
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -51,6 +55,8 @@ function ShippingForm({ onNext, onBack }) {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length === 0) {
+      // Guarda en localStorage
+      localStorage.setItem("shippingAddress", JSON.stringify(values));
       // Log para depuración
       console.log('[ShippingForm] Submit:', { cartId, values });
       if (!cartId) {
