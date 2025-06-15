@@ -8,6 +8,15 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Pagination from "@mui/material/Pagination";
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Slider from '@mui/material/Slider';
+import Divider from '@mui/material/Divider';
+
 
 // Lista de productos con filtros
 function ProductList({ searchTerm = "" }) {
@@ -18,6 +27,13 @@ function ProductList({ searchTerm = "" }) {
   }, []);
   // Estado para productos, loading y error
   const [products, setProducts] = useState([]);
+
+  // Estado para Drawer de filtros y orden
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [priceRange, setPriceRange] = useState([0, 200]); // Rango ejemplo
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -40,12 +56,40 @@ function ProductList({ searchTerm = "" }) {
       });
   }, []);
 
-  // Filtro por término de búsqueda
-  const filtered = products.filter(
-    (p) =>
-      (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Estado para aplicar filtros/orden solo al pulsar 'Aplicar'
+  const [appliedFilters, setAppliedFilters] = useState({ sortOrder: '', typeFilter: '', priceRange: [0, 200] });
+
+  // Lógica de filtrado y ordenado
+  const filtered = products
+    .filter((p) => {
+      // Filtro por término de búsqueda
+      const matchesSearch =
+        (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      // Filtro por tipo
+      const matchesType = !appliedFilters.typeFilter || (p.type === appliedFilters.typeFilter);
+      // Filtro por rango de precio
+      const matchesPrice = typeof p.price === 'number' &&
+        p.price >= appliedFilters.priceRange[0] &&
+        p.price <= appliedFilters.priceRange[1];
+      return matchesSearch && matchesType && matchesPrice;
+    })
+    .sort((a, b) => {
+      switch (appliedFilters.sortOrder) {
+        case 'price-asc':
+          return (a.price ?? 0) - (b.price ?? 0);
+        case 'price-desc':
+          return (b.price ?? 0) - (a.price ?? 0);
+        case 'new':
+          // Novedades: id descendente (simulación, si hay campo date usarlo)
+          return (b.id || '').localeCompare(a.id || '');
+        case 'bestseller':
+          // Más vendidos: usar campo ficticio 'sales' si existe
+          return (b.sales ?? 0) - (a.sales ?? 0);
+        default:
+          return 0;
+      }
+    });
 
   // Estado de paginación
   const [page, setPage] = useState(1);
@@ -58,10 +102,87 @@ function ProductList({ searchTerm = "" }) {
   // Resetear a la primera página si cambia el filtro
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, products]);
+  }, [searchTerm, products, appliedFilters]);
 
   return (
-    <Box sx={{ mt: 2, background: '#fff', boxShadow: 'none', borderRadius: 0, border: 'none' }}>
+    <Box sx={{ mt: 2, background: '#fff', boxShadow: 'none', borderRadius: 0, border: 'none', position: 'relative' }}>
+      {/* Botón Filtrar y ordenar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          sx={{ mr: 2 }}
+          onClick={() => setDrawerOpen(true)}
+        >
+          Filtrar y ordenar
+        </Button>
+      </Box>
+
+      {/* Drawer lateral */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        <Box sx={{ width: 320, p: 3 }} role="presentation">
+          <Typography variant="h6" gutterBottom>Filtrar y ordenar</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="sort-label">Ordenar por</InputLabel>
+            <Select
+              labelId="sort-label"
+              value={sortOrder}
+              label="Ordenar por"
+              onChange={e => setSortOrder(e.target.value)}
+            >
+              <MenuItem value="">Ninguno</MenuItem>
+              <MenuItem value="price-asc">Precio: menor a mayor</MenuItem>
+              <MenuItem value="price-desc">Precio: mayor a menor</MenuItem>
+              <MenuItem value="new">Novedades</MenuItem>
+              <MenuItem value="bestseller">Más vendidos</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="type-label">Tipo</InputLabel>
+            <Select
+              labelId="type-label"
+              value={typeFilter}
+              label="Tipo"
+              onChange={e => setTypeFilter(e.target.value)}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="SNEAKERS">Zapatillas</MenuItem>
+              <MenuItem value="CLOTHING">Ropa</MenuItem>
+              <MenuItem value="SUPPLEMENT">Suplemento</MenuItem>
+            </Select>
+          </FormControl>
+          <Typography gutterBottom sx={{ mt: 2 }}>Precio</Typography>
+          <Slider
+            value={priceRange}
+            onChange={(_, val) => setPriceRange(val)}
+            valueLabelDisplay="auto"
+            min={0}
+            max={200}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => {
+              setAppliedFilters({
+                sortOrder,
+                typeFilter,
+                priceRange,
+              });
+              setDrawerOpen(false);
+            }}
+          >
+            Aplicar
+          </Button>
+        </Box>
+      </Drawer>
 
       {loading && <CircularProgress />}
       {error && <Alert severity="error">{error}</Alert>}

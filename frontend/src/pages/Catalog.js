@@ -13,7 +13,6 @@ function Catalog() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#e0e7ff', // Fondo general gris claro
       padding: '40px 0',
       position: 'relative',
     }}>

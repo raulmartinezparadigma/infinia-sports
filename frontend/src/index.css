@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #fff !important;
 }
 
 /* Fondo blanco solo para la página de catálogo (homogeneidad visual) */
