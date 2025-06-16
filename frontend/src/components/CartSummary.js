@@ -6,7 +6,7 @@ import { Box, Typography, Button, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 function CartSummary() {
-  const { cart, clearCart } = useCart();
+  const { cart, clearCartAndReload } = useCart();
   const navigate = useNavigate();
 
   // Cálculo de totales
@@ -40,7 +40,7 @@ function CartSummary() {
         fullWidth
         sx={{ mt: 2 }}
         disabled={cart.length === 0}
-        onClick={clearCart}
+        onClick={clearCartAndReload}
       >
         Vaciar carrito
       </Button>

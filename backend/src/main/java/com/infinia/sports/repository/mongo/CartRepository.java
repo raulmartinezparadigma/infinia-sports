@@ -10,7 +10,7 @@ import java.util.Optional;
  * Repositorio para operaciones con el carrito de compras
  */
 @Repository
-public interface CartRepository extends MongoRepository<Cart, String> {
+public interface CartRepository extends MongoRepository<Cart, String>, CartRepositoryCustom {
     /**
      * Busca un carrito por el ID de usuario
      * @param userId ID del usuario
@@ -36,4 +36,6 @@ public interface CartRepository extends MongoRepository<Cart, String> {
      * @param sessionId ID de la sesión
      */
     void deleteBySessionId(String sessionId);
+
+
 }

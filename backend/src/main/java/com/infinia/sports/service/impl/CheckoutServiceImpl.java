@@ -49,14 +49,10 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     @Override
     public void clearCart(String sessionId, String userId) {
-        // Elimina todos los carritos asociados al usuario o sesión
         logger.info("[clearCart] Solicitando vaciado de carrito. userId={}, sessionId={}", userId, sessionId);
-        if (userId != null && !userId.isEmpty()) {
-            cartRepository.deleteByUserId(userId);
-            logger.info("[clearCart] Carritos eliminados por userId={}", userId);
-        } else if (sessionId != null && !sessionId.isEmpty()) {
-            cartRepository.deleteBySessionId(sessionId);
-            logger.info("[clearCart] Carritos eliminados por sessionId={}", sessionId);
+        if ((userId != null && !userId.isEmpty()) || (sessionId != null && !sessionId.isEmpty())) {
+            cartRepository.deleteByUserIdOrSessionId(userId, sessionId);
+            logger.info("[clearCart] Carritos eliminados por userId o sessionId: userId={}, sessionId={}", userId, sessionId);
         } else {
             logger.warn("[clearCart] No se proporcionó userId ni sessionId válido para vaciar el carrito");
         }
