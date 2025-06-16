@@ -75,4 +75,13 @@ public interface CheckoutService {
      * @param orderId ID del pedido
      */
     void sendOrderConfirmationEmail(String orderId);
+    
+    /**
+     * Vincula un carrito existente con un usuario autenticado
+     * @param cartId ID del carrito
+     * @param userId ID del usuario autenticado
+     * @param userEmail Email del usuario autenticado
+     * @return El carrito actualizado
+     */
+    Cart linkCartToUser(String cartId, String userId, String userEmail);
 }

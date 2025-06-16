@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getCart, addItemToCart, removeItemFromCart, updateItemQuantity, clearCartBackend } from "../cartApi";
+import { linkCartToUser } from "../authApi";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
@@ -9,19 +11,30 @@ export function useCart() {
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
-const [cartId, setCartId] = useState(null);
-  // Opcional: User-ID para usuarios autenticados
-  const userId = null; // Sustituir por lógica real si se implementa autenticación
+  const [cartId, setCartId] = useState(null);
+  const { currentUser } = useAuth();
 
   // Al montar, obtener el carrito desde el backend
   useEffect(() => {
     async function fetchCart() {
       try {
-        const data = await getCart(userId);
-        // Adaptar los items al formato esperado por el frontend
+        const sessionId = localStorage.getItem("cartSessionId") || "anonymous-" + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem("cartSessionId", sessionId);
+
+        // Usar el ID de usuario si está autenticado, de lo contrario usar sessionId
+        const userIdParam = currentUser ? currentUser.username : null;
+        const sessionIdParam = !currentUser ? sessionId : null;
+
+        // Si tenemos un usuario autenticado y un carrito existente, vincularlos
+        if (currentUser && cartId) {
+          await linkCartToUser(cartId);
+        }
+
+        const data = await getCart(sessionIdParam, userIdParam);
         setCart((data.items || []).map(adaptCartItem));
-        setCartId(data.id); // Guardar cartId del backend
+        setCartId(data.id);
       } catch (err) {
+        console.error("Error al cargar el carrito:", err);
         // Si falla el backend, intentar recuperar del localStorage como fallback
         try {
           const stored = localStorage.getItem("cart");
@@ -31,8 +44,9 @@ const [cartId, setCartId] = useState(null);
         }
       }
     }
+    
     fetchCart();
-  }, [userId]);
+  }, [currentUser, cartId]);
 
   // Sincronizar el carrito en localStorage para fallback/offline
   useEffect(() => {
@@ -42,7 +56,11 @@ const [cartId, setCartId] = useState(null);
   // Añadir producto al carrito y sincronizar con backend
   async function addToCart(product) {
     try {
-      const updatedCart = await addItemToCart(product, userId);
+      // Usar sessionId o userId según el estado de autenticación
+      const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
+      const userId = currentUser ? currentUser.username : null;
+      
+      const updatedCart = await addItemToCart(product, sessionId, userId);
       // Adaptar los items al formato esperado por el frontend
       setCart((updatedCart.items || []).map(adaptCartItem));
       setCartId(updatedCart.id); // Sincronizar cartId también
@@ -63,7 +81,11 @@ const [cartId, setCartId] = useState(null);
   // Eliminar producto del carrito y sincronizar con backend
   async function removeFromCart(itemId) {
     try {
-      const updatedCart = await removeItemFromCart(itemId, userId);
+      // Usar sessionId o userId según el estado de autenticación
+      const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
+      const userId = currentUser ? currentUser.username : null;
+      
+      const updatedCart = await removeItemFromCart(itemId, sessionId, userId);
       // Adaptar los items al formato esperado por el frontend
       setCart((updatedCart.items || []).map(adaptCartItem));
       setCartId(updatedCart.id); // Sincronizar cartId también
@@ -90,8 +112,12 @@ const [cartId, setCartId] = useState(null);
       await removeFromCart(itemId);
     } else {
       try {
+        // Usar sessionId o userId según el estado de autenticación
+        const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
+        const userId = currentUser ? currentUser.username : null;
+        
         // Ahora pasamos también el productId real
-        const updatedCart = await updateItemQuantity(itemId, quantity, item.productId);
+        const updatedCart = await updateItemQuantity(itemId, quantity, item.productId, sessionId, userId);
         setCart((updatedCart.items || []).map(adaptCartItem));
         setCartId(updatedCart.id); // Sincronizar cartId también
       } catch (err) {
@@ -102,13 +128,17 @@ const [cartId, setCartId] = useState(null);
 
   // Limpia el carrito tanto en backend como en frontend y fuerza recarga tras un pago exitoso
   async function clearCartAndReload() {
+    // Usar sessionId o userId según el estado de autenticación
+    const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
+    const userId = currentUser ? currentUser.username : null;
+    
     // Primero vacía el carrito en el backend
-    await clearCartBackend();
+    await clearCartBackend(sessionId, userId);
     setCart([]);
     setCartId(null);
     try {
       // Recargar el carrito desde el backend (debe venir vacío si el backend lo ha eliminado)
-      const data = await getCart(userId);
+      const data = await getCart(sessionId, userId);
       setCart((data.items || []).map(adaptCartItem));
       setCartId(data.id);
     } catch {

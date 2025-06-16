@@ -475,4 +475,24 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .phoneNumber(addressDTO.getPhoneNumber())
                 .build();
     }
+    
+    @Override
+    public Cart linkCartToUser(String cartId, String userId, String userEmail) {
+        logger.info("[linkCartToUser] Vinculando carrito {} con usuario {}", cartId, userId);
+        
+        // Buscar el carrito por su ID
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado con ID: " + cartId));
+        
+        // Actualizar los datos del usuario en el carrito
+        cart.setUserId(userId);
+        cart.setUserEmail(userEmail);
+        cart.setUpdatedAt(LocalDateTime.now());
+        
+        // Guardar y devolver el carrito actualizado
+        Cart updatedCart = cartRepository.save(cart);
+        logger.info("[linkCartToUser] Carrito vinculado correctamente con usuario {}", userId);
+        
+        return updatedCart;
+    }
 }
