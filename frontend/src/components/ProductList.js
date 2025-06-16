@@ -105,6 +105,8 @@ function ProductList({ searchTerm = "" }) {
   }, [searchTerm, products, appliedFilters]);
 
   return (
+    <>
+    {/* Encabezado eliminado por solicitud del usuario. Solo queda el catálogo limpio */}
     <Box sx={{ mt: 2, background: '#fff', boxShadow: 'none', borderRadius: 0, border: 'none', position: 'relative' }}>
       {/* Botón Filtrar y ordenar */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -230,6 +232,7 @@ function ProductList({ searchTerm = "" }) {
         </>
       )}
     </Box>
+    </>
   );
 }
 

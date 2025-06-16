@@ -33,13 +33,12 @@ function Catalog() {
           }}
         >
           {/* Logo grande a la izquierda */}
-          <div style={{ minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <div style={{ minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <img
               src={process.env.PUBLIC_URL + '/infinia_sports.jpg'}
               alt="Infinia Sports logo"
-              style={{ maxHeight: 120, maxWidth: 220, objectFit: 'contain', marginBottom: 12 }}
+              style={{ maxHeight: 188, maxWidth: 344, objectFit: 'contain', marginBottom: 12 }}
             />
-            <span style={{ fontWeight: 700, color: '#1a237e', fontSize: 18 }}>¡Equípate como un pro!</span>
           </div>
           {/* Título y buscador centrados */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -61,18 +60,12 @@ function Catalog() {
               ¡Zapatillas, ropa y suplementos premium en un solo lugar!
             </div>
           </div>
-          {/* Producto destacado a la derecha */}
-          <div style={{
-            minWidth: 220,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end'
-          }}>
+          {/* Logo grande a la derecha */}
+          <div style={{ minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <img
               src={process.env.PUBLIC_URL + '/infinia_sports.jpg'}
-              alt="Producto destacado"
-              style={{ maxHeight: 140, maxWidth: 180, objectFit: 'contain', display: 'block' }}
+              alt="Infinia Sports logo"
+              style={{ maxHeight: 188, maxWidth: 344, objectFit: 'contain', marginBottom: 12 }}
             />
           </div>
         </div>
