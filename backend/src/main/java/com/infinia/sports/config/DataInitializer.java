@@ -2,7 +2,8 @@ package com.infinia.sports.config;
 
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
-import com.infinia.sports.repository.jpa.ProductRepository;
+import com.infinia.sports.kafka.ProductProducer;
+import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -18,10 +19,10 @@ import java.util.Arrays;
 @Configuration
 public class DataInitializer {
 
-    private final ProductRepository productRepository;
+    private final ProductProducer productProducer;
 
-    public DataInitializer(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public DataInitializer(ProductProducer productProducer) {
+        this.productProducer = productProducer;
     }
 
     /**
@@ -32,12 +33,12 @@ public class DataInitializer {
     @Profile("dev")
     public CommandLineRunner loadData() {
         return args -> {
-            // Verificar si ya existen productos
-            if (productRepository.count() == 0) {
-                System.out.println("Inicializando datos de prueba...");
-                
+            // No se verifica si existen productos, ya que la carga se realiza vía Kafka
+            System.out.println("Inicializando datos de prueba (Kafka)...");
+            
                 // Crear productos de prueba
                 Product product1 = new Product();
+                product1.setId(java.util.UUID.randomUUID());
                 product1.setType(ProductType.SNEAKERS);
                 product1.setDescription("Nike Air Max 90");
                 product1.setPrice(new BigDecimal("129.99"));
@@ -45,6 +46,7 @@ public class DataInitializer {
                 product1.setImageUrl("nike_air_max_90.jpg");
 
                 Product product2 = new Product();
+                product2.setId(java.util.UUID.randomUUID());
                 product2.setType(ProductType.SNEAKERS);
                 product2.setDescription("Adidas Ultraboost");
                 product2.setPrice(new BigDecimal("159.99"));
@@ -52,6 +54,7 @@ public class DataInitializer {
                 product2.setImageUrl("adidas_ultraboost.jpg");
 
                 Product product3 = new Product();
+                product3.setId(java.util.UUID.randomUUID());
                 product3.setType(ProductType.CLOTHING);
                 product3.setDescription("Camiseta Nike Dri-FIT");
                 product3.setPrice(new BigDecimal("34.99"));
@@ -59,6 +62,7 @@ public class DataInitializer {
                 product3.setImageUrl("nike_dri_fit_shirt.jpg");
 
                 Product product4 = new Product();
+                product4.setId(java.util.UUID.randomUUID());
                 product4.setType(ProductType.CLOTHING);
                 product4.setDescription("Pantalón Adidas Training");
                 product4.setPrice(new BigDecimal("49.99"));
@@ -66,6 +70,7 @@ public class DataInitializer {
                 product4.setImageUrl("adidas_training_pants.jpg");
 
                 Product product5 = new Product();
+                product5.setId(java.util.UUID.randomUUID());
                 product5.setType(ProductType.SUPPLEMENT);
                 product5.setDescription("Proteína Whey Gold Standard");
                 product5.setPrice(new BigDecimal("29.99"));
@@ -74,6 +79,7 @@ public class DataInitializer {
 
                 // Productos sintéticos adicionales para pruebas de paginación
                 Product product6 = new Product();
+                product6.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product6.setType(ProductType.SNEAKERS);
                 product6.setDescription("Puma Velocity Nitro 2");
                 product6.setPrice(new BigDecimal("119.99"));
@@ -81,6 +87,7 @@ public class DataInitializer {
                 product6.setImageUrl("puma_velocity_nitro_2.jpg");
 
                 Product product7 = new Product();
+                product7.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product7.setType(ProductType.SNEAKERS);
                 product7.setDescription("New Balance Fresh Foam 1080");
                 product7.setPrice(new BigDecimal("139.99"));
@@ -88,6 +95,7 @@ public class DataInitializer {
                 product7.setImageUrl("nb_fresh_foam_1080.jpg");
 
                 Product product8 = new Product();
+                product8.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product8.setType(ProductType.CLOTHING);
                 product8.setDescription("Shorts Under Armour Training");
                 product8.setPrice(new BigDecimal("24.99"));
@@ -95,6 +103,7 @@ public class DataInitializer {
                 product8.setImageUrl("ua_training_shorts.jpg");
 
                 Product product9 = new Product();
+                product9.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product9.setType(ProductType.CLOTHING);
                 product9.setDescription("Sudadera Nike Therma-FIT");
                 product9.setPrice(new BigDecimal("54.99"));
@@ -102,6 +111,7 @@ public class DataInitializer {
                 product9.setImageUrl("nike_therma_fit_hoodie.jpg");
 
                 Product product10 = new Product();
+                product10.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product10.setType(ProductType.SUPPLEMENT);
                 product10.setDescription("Creatina Monohidrato 500g");
                 product10.setPrice(new BigDecimal("19.99"));
@@ -109,6 +119,7 @@ public class DataInitializer {
                 product10.setImageUrl("creatina_monohidrato.jpg");
 
                 Product product11 = new Product();
+                product11.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product11.setType(ProductType.SUPPLEMENT);
                 product11.setDescription("Barrita Proteica Chocolate");
                 product11.setPrice(new BigDecimal("2.99"));
@@ -116,6 +127,7 @@ public class DataInitializer {
                 product11.setImageUrl("barrita_chocolate.jpg");
 
                 Product product12 = new Product();
+                product12.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product12.setType(ProductType.CLOTHING);
                 product12.setDescription("Calcetines Deportivos Pack x3");
                 product12.setPrice(new BigDecimal("9.99"));
@@ -123,6 +135,7 @@ public class DataInitializer {
                 product12.setImageUrl("pack_calcetines.jpg");
 
                 Product product13 = new Product();
+                product13.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product13.setType(ProductType.SNEAKERS);
                 product13.setDescription("Asics Gel-Kayano 28");
                 product13.setPrice(new BigDecimal("149.99"));
@@ -130,6 +143,7 @@ public class DataInitializer {
                 product13.setImageUrl("asics_gel_kayano_28.jpg");
 
                 Product product14 = new Product();
+                product14.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product14.setType(ProductType.SUPPLEMENT);
                 product14.setDescription("BCAA 2:1:1 300g");
                 product14.setPrice(new BigDecimal("15.99"));
@@ -137,6 +151,7 @@ public class DataInitializer {
                 product14.setImageUrl("bcaa_211.jpg");
 
                 Product product15 = new Product();
+                product15.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product15.setType(ProductType.CLOTHING);
                 product15.setDescription("Mallas Running Mujer");
                 product15.setPrice(new BigDecimal("39.99"));
@@ -144,6 +159,7 @@ public class DataInitializer {
                 product15.setImageUrl("mallas_running_mujer.jpg");
 
                 Product product16 = new Product();
+                product16.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product16.setType(ProductType.SNEAKERS);
                 product16.setDescription("Reebok Nano X2");
                 product16.setPrice(new BigDecimal("129.99"));
@@ -151,6 +167,7 @@ public class DataInitializer {
                 product16.setImageUrl("reebok_nano_x2.jpg");
 
                 Product product17 = new Product();
+                product17.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product17.setType(ProductType.SUPPLEMENT);
                 product17.setDescription("Pre-entreno Energy Shot");
                 product17.setPrice(new BigDecimal("3.99"));
@@ -158,6 +175,7 @@ public class DataInitializer {
                 product17.setImageUrl("energy_shot.jpg");
 
                 Product product18 = new Product();
+                product18.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product18.setType(ProductType.CLOTHING);
                 product18.setDescription("Camiseta Adidas Aeroready");
                 product18.setPrice(new BigDecimal("29.99"));
@@ -165,6 +183,7 @@ public class DataInitializer {
                 product18.setImageUrl("adidas_aeroready_shirt.jpg");
 
                 Product product19 = new Product();
+                product19.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product19.setType(ProductType.SNEAKERS);
                 product19.setDescription("Mizuno Wave Rider 25");
                 product19.setPrice(new BigDecimal("134.99"));
@@ -172,22 +191,31 @@ public class DataInitializer {
                 product19.setImageUrl("mizuno_wave_rider_25.jpg");
 
                 Product product20 = new Product();
+                product20.setId(java.util.UUID.randomUUID()); // Asignar UUID único
                 product20.setType(ProductType.SUPPLEMENT);
                 product20.setDescription("Proteína Vegana 750g");
                 product20.setPrice(new BigDecimal("32.99"));
                 product20.setSize("750g");
                 product20.setImageUrl("proteina_vegana.jpg");
 
-                // Guardar productos en la base de datos
-                productRepository.saveAll(Arrays.asList(
-                    product1, product2, product3, product4, product5,
-                    product6, product7, product8, product9, product10,
-                    product11, product12, product13, product14, product15,
-                    product16, product17, product18, product19, product20
-                ));
-                
-                System.out.println("Datos de prueba cargados correctamente.");
-            }
+                // Enviar productos a Kafka uno a uno
+                for (Product product : Arrays.asList(
+                        product1, product2, product3, product4, product5,
+                        product6, product7, product8, product9, product10,
+                        product11, product12, product13, product14, product15,
+                        product16, product17, product18, product19, product20
+                )) {
+                    ProductKafkaMessage message = new ProductKafkaMessage(
+                        product.getId() != null ? product.getId().toString() : null,
+                        product.getType().name(),
+                        product.getDescription(),
+                        product.getPrice(),
+                        product.getSize(),
+                        product.getImageUrl()
+                    );
+                    productProducer.sendProduct(message);
+                }
+                System.out.println("Datos de prueba enviados a Kafka correctamente.");
         };
     }
 }

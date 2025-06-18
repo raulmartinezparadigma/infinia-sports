@@ -17,6 +17,74 @@ Desacoplar la carga de productos del DataInitializer usando una cola Kafka, perm
   - Un consumidor Kafka en el backend escuchará ese topic y persistirá los productos en la base de datos.
 - El panel de administración (frontend) podrá enviar productos al topic Kafka mediante un endpoint REST (a implementar en el futuro).
 
+---
+
+## 4. Guía de instalación y configuración para infraestructura Kafka
+
+### 4.1. Requisitos previos (Windows y Mac)
+- **Docker Desktop** ([descargar](https://www.docker.com/products/docker-desktop/))
+- **Git**
+  - Windows: [descargar Git Bash](https://git-scm.com/download/win)
+  - Mac: `brew install git`
+
+### 4.2. Pasos para ambos sistemas
+
+1. **Clona el repositorio**
+   ```bash
+   git clone <URL_DEL_REPO>
+   cd infinia-sports
+   ```
+
+2. **Arranca Kafka y Zookeeper con Docker Compose**
+   - Asegúrate de que Docker Desktop está abierto y en ejecución.
+   - Ejecuta:
+     ```bash
+     docker-compose up -d kafka zookeeper
+     ```
+   - (Opcional) Para probar persistencia real, puedes arrancar también PostgreSQL:
+     ```bash
+     docker-compose up -d postgres
+     ```
+
+3. **Verifica que los contenedores están corriendo**
+   ```bash
+   docker ps
+   ```
+
+### 4.3. Notas específicas por sistema
+
+#### Windows
+- Se recomienda usar **Git Bash** o **PowerShell** para los comandos.
+- Si tienes conflictos de puertos, asegúrate de que no hay otro PostgreSQL o Kafka local ejecutándose.
+- Para limpiar todo y reiniciar:
+  ```bash
+  docker-compose down -v
+  docker-compose up -d
+  ```
+
+#### Mac
+- Si usas Apple Silicon (M1/M2), Docker Desktop lo soporta sin problemas.
+- Si algún comando da error de permisos, usa `chmod +x <script>`.
+- Puedes instalar Git y otras utilidades con Homebrew: `brew install git`
+
+### 4.4. Resumen rápido de comandos
+
+```bash
+# 1. Clonar el repositorio
+git clone <URL_DEL_REPO>
+cd infinia-sports
+
+# 2. Arrancar Kafka y Zookeeper
+# (igual en Windows y Mac)
+docker-compose up -d kafka zookeeper
+
+# 3. (Opcional) Arrancar PostgreSQL para pruebas completas
+docker-compose up -d postgres
+```
+
+---
+
+
 ### 3.2. Configuración de Kafka (backend)
 - Crear una configuración dedicada de Kafka en un archivo separado (ej: `KafkaConfig.java`).
 - Definir propiedades de productor y consumidor (bootstrap servers, serializadores, etc).
@@ -53,6 +121,12 @@ Desacoplar la carga de productos del DataInitializer usando una cola Kafka, perm
 - `backend/src/main/java/com/infinia/sports/config/DataInitializer.java` (refactor)
 - `plans/plan-kafka-carga-productos.md` (este plan)
 - `memory-bank/` (inicialización y actualización)
+
+## 4.1. Persistencia robusta e idempotencia
+
+- El DataInitializer asigna un UUID único a cada producto antes de enviarlo a Kafka. El campo `id` del ProductKafkaMessage siempre es un UUID válido como String.
+- El consumidor (ProductConsumer) convierte el id de String a UUID y antes de guardar comprueba si ya existe en la base de datos (`existsById`). Si existe, no lo inserta de nuevo (control idempotente).
+- Así se garantiza que los productos se almacenan de forma persistente en PostgreSQL y no se duplican aunque el flujo se repita.
 
 ## 5. Estructura del mensaje de producto para Kafka
 
