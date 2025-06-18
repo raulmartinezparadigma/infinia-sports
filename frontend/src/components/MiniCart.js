@@ -32,6 +32,14 @@ function MiniCart() {
           <List dense>
             {cart.map(item => (
               <ListItem key={item.id} sx={{ pl: 0 }}>
+                <Box sx={{ mr: 1 }}>
+                  <img
+                    src={item?.productImageUrl ? `${process.env.PUBLIC_URL}/${item.productImageUrl}` : `${process.env.PUBLIC_URL}/logo512.png`}
+                    alt={item?.name || item?.description || 'Producto'}
+                    style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }}
+                    onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/logo512.png"; }}
+                  />
+                </Box>
                 <ListItemText
                   primary={`${item.name || item.description} x${item.quantity}`}
                   secondary={`${item.price.toFixed(2)} € c/u`}

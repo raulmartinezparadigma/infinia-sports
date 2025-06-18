@@ -114,7 +114,7 @@ function PaymentSimulator({ onSuccess, onBack }) {
   return (
     <Paper elevation={2} sx={{ p: 4, maxWidth: 400, mx: "auto", mt: 6, textAlign: "center" }}>
       <Typography variant="h6" gutterBottom>
-        Pago Bizum real
+        Pago con Bizum
       </Typography>
       {success ? (
         // Solo mostrar mensaje de éxito cuando el pago ha sido procesado
@@ -131,7 +131,7 @@ function PaymentSimulator({ onSuccess, onBack }) {
       ) : (
         <>
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Introduce tu número de teléfono para simular un pago Bizum real contra el backend.
+            Introduce tu número de teléfono para simular un pago con Bizum contra el backend.
           </Typography>
           <form onSubmit={e => { e.preventDefault(); handleRealBizumPayment(); }}>
             <TextField

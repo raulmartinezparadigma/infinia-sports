@@ -264,6 +264,10 @@ export function CartProvider({ children }) {
     await clearCartBackend(sessionId, userId);
     setCart([]);
     setCartId(null);
+    // Limpia también localStorage completamente al vaciar el carrito tras pago
+    localStorage.removeItem('cart');
+    localStorage.removeItem('shippingAddress');
+    localStorage.removeItem('billingAddress');
     try {
       // Recargar el carrito desde el backend (debe venir vacío si el backend lo ha eliminado)
       const data = await getCart(sessionId, userId);
@@ -277,6 +281,9 @@ export function CartProvider({ children }) {
 
   function clearCart() {
     setCart([]);
+    // Limpia direcciones guardadas al vaciar el carrito
+    localStorage.removeItem('shippingAddress');
+    localStorage.removeItem('billingAddress');
     // Aquí podrías llamar a un endpoint para limpiar el carrito en el backend si existe
   }
 

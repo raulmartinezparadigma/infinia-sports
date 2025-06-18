@@ -37,7 +37,6 @@ public class OrderMailTemplateUtil {
             // Generar filas de la tabla con imagen de producto
             String orderLines = lineItems.stream()
                 .map(line -> "<tr>"
-                    + "<td><img src='" + line.getProductImageUrl() + "' style='height:60px;'></td>"
                     + "<td>" + line.getProductName() + "</td>"
                     + "<td>" + line.getQuantity() + "</td>"
                     + "<td>" + line.getUnitPrice() + "€</td>"

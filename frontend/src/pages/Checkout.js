@@ -22,6 +22,18 @@ function Checkout() {
   const { cart } = useCart();
   const { currentUser } = useAuth();
   
+
+  // Estado para forzar remount de formularios
+  const [formKey, setFormKey] = useState(() => Date.now());
+
+  // Si el carrito está vacío, borra direcciones guardadas y fuerza remount
+  React.useEffect(() => {
+    if (!cart || cart.length === 0) {
+      localStorage.removeItem('shippingAddress');
+      localStorage.removeItem('billingAddress');
+      setFormKey(Date.now());
+    }
+  }, [cart]);
   // Estado del paso actual
   const [step, setStep] = useState(-1); // -1 representa la selección de modo de checkout
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -80,6 +92,10 @@ function Checkout() {
           isAnonymous={isAnonymousCheckout}
         />
       )}
+      {step < 5 && <MiniCart position="top" />}
+      {step === 0 && <ShippingForm key={formKey} onNext={() => setStep(1)} onBack={() => navigate('/cart')} />}
+      {step === 1 && <BillingForm key={formKey} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+      {step === 2 && <OrderSummary onNext={() => setStep(3)} onBack={() => setStep(1)} />}
 
       {step === 3 && (
         <PaymentSelector 
