@@ -45,14 +45,21 @@ function CartView() {
           <TableBody>
             {cart.map((item) => (
               <TableRow key={item.id}>
-                <TableCell>{item.name || item.description}</TableCell>
-                <TableCell align="right">{item.price?.toFixed(2)} €</TableCell>
+                <TableCell>
+                  <div>
+                    <Typography variant="subtitle1">{item.name || 'Producto'}</Typography>
+                    {item.description && (
+                      <Typography variant="body2" color="text.secondary">{item.description}</Typography>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell align="right">{(item.price !== undefined ? item.price : 0).toFixed(2)} €</TableCell>
                 <TableCell align="center">
                   <Button size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
-                  <span style={{ margin: '0 8px' }}>{item.quantity}</span>
+                  <span style={{ margin: '0 8px' }}>{item.quantity || 1}</span>
                   <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
                 </TableCell>
-                <TableCell align="right">{(item.price * item.quantity).toFixed(2)} €</TableCell>
+                <TableCell align="right">{(item.totalPrice !== undefined ? item.totalPrice : 0).toFixed(2)} €</TableCell>
                 <TableCell align="center">
                   <IconButton color="error" onClick={() => removeFromCart(item.id)}>
                     <DeleteIcon />

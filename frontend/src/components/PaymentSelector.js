@@ -1,12 +1,13 @@
 import React from "react";
 import RedsysPayment from "./RedsysPayment";
 import { useCart } from "./CartContext";
+import { useAuth } from "./AuthContext";
 import { payByTransfer } from "../transferApi";
 // Selector de método de pago
 import { useState } from "react";
 import {
   Box, Button, Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Grid, Paper, IconButton
+  Typography, Grid, Paper, IconButton, Alert
 } from "@mui/material";
 import PaymentIcon from '@mui/icons-material/Payment';
 import EuroIcon from '@mui/icons-material/Euro';
@@ -33,8 +34,9 @@ const paymentMethods = [
   }
 ];
 
-function PaymentSelector({ onNext, onBack, amount }) {
+function PaymentSelector({ onNext, onBack, amount, isAnonymous = false }) {
   const { cartId, clearCartAndReload } = useCart();
+  const { currentUser } = useAuth();
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -111,10 +113,17 @@ function PaymentSelector({ onNext, onBack, amount }) {
   };
 
   return (
-    <Box sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h6" align="center" gutterBottom>
-        Selecciona tu método de pago
-      </Typography>
+    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4, p: 2 }}>
+      <Typography variant="h5" gutterBottom>Método de pago</Typography>
+      
+      {/* Mensaje informativo para checkout anónimo */}
+      {isAnonymous && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Estás realizando un checkout como usuario anónimo. Tu pedido no estará asociado a una cuenta.
+        </Alert>
+      )}
+      
+      <Typography variant="body2" sx={{ mb: 3 }}>Selecciona cómo quieres pagar tu pedido:</Typography>
       <Grid container spacing={3} justifyContent="center">
         {paymentMethods.map(method => (
           <Grid item xs={12} sm={4} key={method.key}>

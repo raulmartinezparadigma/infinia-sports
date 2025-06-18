@@ -27,6 +27,8 @@ public class CartItemDTO {
     
     private String productName;
     
+    private String description;
+    
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 1, message = "La cantidad mínima es 1")
     private Integer quantity;

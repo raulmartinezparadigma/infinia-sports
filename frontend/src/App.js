@@ -20,13 +20,19 @@ import Navbar from "./components/Navbar";
 import { CartProvider } from "./components/CartContext";
 import { AuthProvider } from "./components/AuthContext";
 
-// Componente para rutas protegidas
+// Componente para rutas protegidas que requieren autenticación
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("authToken");
   if (!token) {
     // Redirigir a login si no hay token
     return <Navigate to="/login" replace />;
   }
+  return children;
+};
+
+// Componente para checkout que permite tanto usuarios autenticados como anónimos
+const CheckoutRoute = ({ children }) => {
+  // No requiere autenticación, permite checkout anónimo
   return children;
 };
 
@@ -45,19 +51,19 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/checkout" element={
-              <ProtectedRoute>
+              <CheckoutRoute>
                 <Checkout />
-              </ProtectedRoute>
+              </CheckoutRoute>
             } />
             <Route path="/payment" element={
-              <ProtectedRoute>
+              <CheckoutRoute>
                 <Payment />
-              </ProtectedRoute>
+              </CheckoutRoute>
             } />
             <Route path="/confirmation" element={
-              <ProtectedRoute>
+              <CheckoutRoute>
                 <Confirmation />
-              </ProtectedRoute>
+              </CheckoutRoute>
             } />
             <Route path="/orders" element={
               <ProtectedRoute>

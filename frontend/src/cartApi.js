@@ -66,7 +66,7 @@ export async function removeItemFromCart(itemId, sessionId, userId) {
 }
 
 // Actualiza la cantidad de un producto en el carrito
-export async function updateItemQuantity(itemId, quantity, productId, sessionId, userId) {
+export async function updateItemQuantity(itemId, quantity, productId, sessionId, userId, description, productName, unitPrice) {
   // Construir los parámetros de consulta según los valores disponibles
   let url = `${API_BASE}/cart/items/${itemId}`;
   const params = [];
@@ -78,11 +78,21 @@ export async function updateItemQuantity(itemId, quantity, productId, sessionId,
     url += `?${params.join('&')}`;
   }
   
-  // El backend espera un objeto CartItemDTO con productId obligatorio
-  const response = await axios.put(
-    url,
-    { id: itemId, productId, quantity }
-  );
+  // Preparar el objeto CartItemDTO completo con todos los datos disponibles
+  const cartItemData = { 
+    id: itemId, 
+    productId, 
+    quantity,
+    // Incluir campos opcionales si están disponibles
+    ...(description && { description }),
+    ...(productName && { productName }),
+    ...(unitPrice && { unitPrice })
+  };
+  
+  console.log('Enviando actualización de cantidad con datos:', cartItemData);
+  
+  // Enviar al backend
+  const response = await axios.put(url, cartItemData);
   return response.data;
 }
 

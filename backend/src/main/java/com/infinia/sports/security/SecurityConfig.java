@@ -48,7 +48,10 @@ public class SecurityConfig {
                     "/api/auth/**",
                     "/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html"
+                    "/swagger-ui.html",
+                    "/productos/**",
+                    "/cart/**",
+                    "/checkout/**"
                 ).permitAll()
                 // Requerir autenticación para cualquier otro endpoint
                 .anyRequest().authenticated()

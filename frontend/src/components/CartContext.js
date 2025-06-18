@@ -31,7 +31,8 @@ export function CartProvider({ children }) {
         }
 
         const data = await getCart(sessionIdParam, userIdParam);
-        setCart((data.items || []).map(adaptCartItem));
+        const adaptedItems = (data.items || []).map(adaptCartItem);
+        setCart(adaptedItems);
         setCartId(data.id);
       } catch (err) {
         console.error("Error al cargar el carrito:", err);
@@ -94,36 +95,162 @@ export function CartProvider({ children }) {
     }
   }
 
-  // Adaptador de items del backend al formato del frontend
+  /**
+   * Adaptador de items del backend al formato del frontend
+   * Maneja diferentes formatos de datos que pueden venir del backend
+   */
   function adaptCartItem(item) {
-    return {
-      ...item,
-      name: item.productName || item.name || item.description,
-      price: item.unitPrice ?? item.price,
-      id: item.id,
-      productImageUrl: item.productImageUrl, // <-- ARREGLO: Asegurar que la URL de la imagen se propague
+    // Verificar que item sea un objeto válido
+    if (!item || typeof item !== 'object') {
+      console.error('Item inválido recibido en adaptCartItem:', item);
+      return {
+        id: `error-${Date.now()}`,
+        name: 'Error: Producto inválido',
+        price: 0,
+        quantity: 1,
+        totalPrice: 0,
+        productImageUrl: ''
+      };
+    }
+    
+    console.log('Adaptando item del carrito:', item);
+    
+    // Función auxiliar para convertir cualquier tipo de dato a número
+    const parseNumber = (value) => {
+      if (value === null || value === undefined) return 0;
+      
+      if (typeof value === 'number') {
+        return isNaN(value) ? 0 : value;
+      }
+      
+      if (typeof value === 'string') {
+        // Eliminar caracteres no numéricos excepto punto decimal
+        const cleanedValue = value.replace(/[^0-9.]/g, '');
+        const parsedValue = parseFloat(cleanedValue);
+        return isNaN(parsedValue) ? 0 : parsedValue;
+      }
+      
+      if (typeof value === 'object') {
+        // Manejar objetos BigDecimal de Java
+        try {
+          if (value.value !== undefined) {
+            // Formato típico de BigDecimal serializado
+            return parseFloat(value.value) || 0;
+          }
+          const parsedValue = parseFloat(String(value));
+          return isNaN(parsedValue) ? 0 : parsedValue;
+        } catch (e) {
+          console.error('Error al convertir objeto a número:', value, e);
+          return 0;
+        }
+      }
+      
+      return 0;
     };
+    
+    // Obtener precio unitario (priorizar unitPrice sobre price)
+    const unitPrice = parseNumber(item.unitPrice);
+    const price = parseNumber(item.price);
+    const finalPrice = unitPrice > 0 ? unitPrice : price;
+    
+    // Obtener cantidad (asegurar que sea un número entero positivo)
+    const quantity = Math.max(1, parseInt(item.quantity) || 1);
+    
+    // Calcular precio total (priorizar totalPrice del backend si existe)
+    let totalPrice = parseNumber(item.totalPrice);
+    if (totalPrice <= 0) {
+      totalPrice = finalPrice * quantity;
+    }
+    
+    // Asegurarse de que todos los campos importantes estén presentes
+    const productId = item.productId || item.id;
+    const itemId = item.id || productId || `temp-${Date.now()}`;
+    
+    // Crear objeto adaptado con valores normalizados y garantizados
+    const result = {
+      id: itemId,
+      productId: productId,
+      name: item.productName || item.name || 'Producto sin nombre',
+      description: item.description || '',  // Preservar la descripción del producto
+      price: finalPrice,
+      quantity: quantity,
+      totalPrice: totalPrice,
+      productImageUrl: item.productImageUrl || '',
+      // Preservar otros campos útiles
+      size: item.size,
+      type: item.type
+    };
+    
+    // Verificación final para asegurar que price y totalPrice son números válidos
+    if (typeof result.price !== 'number' || isNaN(result.price)) {
+      console.warn('Price inválido después de adaptación:', result.price);
+      result.price = 0;
+    }
+    
+    if (typeof result.totalPrice !== 'number' || isNaN(result.totalPrice)) {
+      console.warn('TotalPrice inválido después de adaptación:', result.totalPrice);
+      result.totalPrice = 0;
+    }
+    
+    console.log('Item adaptado:', result);
+    return result;
   }
 
   // Actualizar cantidad de producto (PUT si >=1, DELETE si 0)
   async function updateQuantity(itemId, quantity) {
     const item = cart.find(i => i.id === itemId);
     if (!item) return;
+    
+    // Si la cantidad es menor que 1, eliminar el producto
     if (quantity < 1) {
       await removeFromCart(itemId);
-    } else {
-      try {
-        // Usar sessionId o userId según el estado de autenticación
-        const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
-        const userId = currentUser ? currentUser.username : null;
-        
-        // Ahora pasamos también el productId real
-        const updatedCart = await updateItemQuantity(itemId, quantity, item.productId, sessionId, userId);
-        setCart((updatedCart.items || []).map(adaptCartItem));
-        setCartId(updatedCart.id); // Sincronizar cartId también
-      } catch (err) {
-        setCart(prev => prev.map(i => i.id === itemId ? { ...i, quantity } : i));
-      }
+      return;
+    }
+    
+    try {
+      // Usar sessionId o userId según el estado de autenticación
+      const sessionId = !currentUser ? localStorage.getItem("cartSessionId") : null;
+      const userId = currentUser ? currentUser.username : null;
+      
+      console.log('Actualizando cantidad para item:', item);
+      
+      // Preparar un objeto completo para la actualización
+      const updateData = {
+        id: itemId,
+        productId: item.productId || item.id,
+        quantity: quantity,
+        unitPrice: item.price || item.unitPrice,
+        description: item.description || '',
+        productName: item.name || item.productName
+      };
+      
+      // Enviar la actualización al backend con todos los datos disponibles
+      const updatedCart = await updateItemQuantity(
+        itemId, 
+        quantity, 
+        updateData.productId, 
+        sessionId, 
+        userId,
+        updateData.description,
+        updateData.productName,
+        updateData.unitPrice
+      );
+      
+      // Actualizar el estado local con los datos del backend
+      const adaptedItems = (updatedCart.items || []).map(adaptCartItem);
+      console.log('Items adaptados después de actualizar cantidad:', adaptedItems);
+      setCart(adaptedItems);
+      setCartId(updatedCart.id);
+    } catch (err) {
+      console.error('Error al actualizar cantidad:', err);
+      // Fallback: actualizar solo en el frontend
+      setCart(prev => prev.map(i => {
+        if (i.id === itemId) {
+          const totalPrice = i.price * quantity;
+          return { ...i, quantity, totalPrice };
+        }
+        return i;
+      }));
     }
   }
 

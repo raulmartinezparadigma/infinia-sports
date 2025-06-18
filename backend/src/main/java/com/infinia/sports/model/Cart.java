@@ -52,6 +52,7 @@ public class Cart {
         private String id;
         private String productId;
         private String productName;
+        private String description;
         private int quantity;
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;

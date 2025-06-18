@@ -3,11 +3,11 @@ import React from "react";
 // Página de confirmación de pedido
 import PaymentConfirmation from "../components/PaymentConfirmation";
 
-function Confirmation() {
+function Confirmation({ paymentMethod, isAnonymous = false }) {
   // Confirmación de pedido completado
   return (
     <div>
-      <PaymentConfirmation />
+      <PaymentConfirmation paymentMethod={paymentMethod} isAnonymous={isAnonymous} />
     </div>
   );
 }

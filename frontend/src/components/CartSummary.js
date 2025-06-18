@@ -9,9 +9,14 @@ function CartSummary() {
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
 
-  // Cálculo de totales
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Cálculo de totales con comprobaciones de seguridad
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalPrice = cart.reduce((sum, item) => {
+    // Asegurar que totalPrice es un número válido
+    const itemTotal = item.totalPrice !== undefined ? item.totalPrice : 
+                     (item.price !== undefined ? item.price * (item.quantity || 1) : 0);
+    return sum + itemTotal;
+  }, 0);
 
   return (
     <Paper elevation={2} sx={{ mt: 3, p: 3, maxWidth: 400, margin: '32px auto' }}>

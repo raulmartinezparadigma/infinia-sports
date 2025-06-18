@@ -78,14 +78,37 @@ public class CheckoutServiceImpl implements CheckoutService {
             cart.getItems().remove(item);
             logger.info("[updateCartItemQuantity] Item eliminado (cantidad <= 0): id={}", itemId);
         } else {
+            // Actualizar cantidad y recalcular precio total
             item.setQuantity(quantity);
+            
+            // Asegurarse de que unitPrice sea válido
+            if (item.getUnitPrice() == null) {
+                logger.warn("[updateCartItemQuantity] UnitPrice es null para itemId={}, usando 0", itemId);
+                item.setUnitPrice(BigDecimal.ZERO);
+            }
+            
+            // Calcular el precio total
             item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
-            logger.info("[updateCartItemQuantity] Cantidad actualizada: id={}, nueva cantidad={}", itemId, quantity);
+            
+            // Asegurarse de que la descripción se mantenga
+            if (item.getDescription() == null) {
+                logger.info("[updateCartItemQuantity] Descripción es null para itemId={}", itemId);
+                // No hacemos nada, mantenemos la descripción como null
+            }
+            
+            logger.info("[updateCartItemQuantity] Cantidad actualizada: id={}, nueva cantidad={}, precio unitario={}, precio total={}", 
+                    itemId, quantity, item.getUnitPrice(), item.getTotalPrice());
         }
+        
+        // Actualizar totales del carrito
         updateCartTotals(cart);
         cart.setUpdatedAt(LocalDateTime.now());
+        
+        // Guardar el carrito actualizado
         Cart savedCart = cartRepository.save(cart);
-        logger.info("[updateCartItemQuantity] Carrito guardado tras actualización de cantidad. ID: {}", savedCart.getId());
+        logger.info("[updateCartItemQuantity] Carrito guardado tras actualización de cantidad. ID: {}, items: {}", 
+                savedCart.getId(), savedCart.getItems().size());
+                
         return enrichCartItemsWithImages(savedCart);
     }
     
@@ -103,8 +126,26 @@ public class CheckoutServiceImpl implements CheckoutService {
             // Actualizar cantidad si el producto ya existe
             Cart.CartItem item = existingItem.get();
             logger.info("Actualizando cantidad del producto existente en el carrito: {} (cantidad +{})", item.getProductId(), cartItemDTO.getQuantity());
+            
+            // Actualizar cantidad
             item.setQuantity(item.getQuantity() + cartItemDTO.getQuantity());
+            
+            // Recalcular precio total
             item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            
+            // Actualizar descripción si viene en el DTO y la actual es nula o vacía
+            if (cartItemDTO.getDescription() != null && !cartItemDTO.getDescription().isEmpty() && 
+                (item.getDescription() == null || item.getDescription().isEmpty())) {
+                item.setDescription(cartItemDTO.getDescription());
+                logger.info("Actualizando descripción del producto en el carrito: {}", item.getProductId());
+            }
+            
+            // Actualizar nombre del producto si viene en el DTO y el actual es nulo o vacío
+            if (cartItemDTO.getProductName() != null && !cartItemDTO.getProductName().isEmpty() && 
+                (item.getProductName() == null || item.getProductName().isEmpty())) {
+                item.setProductName(cartItemDTO.getProductName());
+                logger.info("Actualizando nombre del producto en el carrito: {}", item.getProductId());
+            }
         } else {
             // Añadir nuevo producto al carrito
             logger.info("Añadiendo nuevo producto al carrito: {} ({} unidades)", cartItemDTO.getProductId(), cartItemDTO.getQuantity());
@@ -112,6 +153,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .id(UUID.randomUUID().toString())
                     .productId(cartItemDTO.getProductId())
                     .productName(cartItemDTO.getProductName())
+                    .description(cartItemDTO.getDescription())
                     .quantity(cartItemDTO.getQuantity())
                     .unitPrice(cartItemDTO.getUnitPrice())
                     .totalPrice(cartItemDTO.getUnitPrice().multiply(BigDecimal.valueOf(cartItemDTO.getQuantity())))
@@ -217,8 +259,23 @@ public class CheckoutServiceImpl implements CheckoutService {
                 Product product = productRepository.findById(UUID.fromString(item.getProductId()))
                         .orElse(null);
                 if (product != null) {
-                    logger.info("[enrichCartItemsWithImages] Found product for ID: {}. ImageUrl: {}", item.getProductId(), product.getImageUrl());
+                    logger.info("[enrichCartItemsWithImages] Found product for ID: {}. ImageUrl: {}, Description: {}", 
+                            item.getProductId(), product.getImageUrl(), product.getDescription());
+                    
+                    // Establecer la URL de la imagen
                     item.setProductImageUrl(product.getImageUrl());
+                    
+                    // Establecer la descripción del producto si no existe
+                    if (item.getDescription() == null || item.getDescription().isEmpty()) {
+                        item.setDescription(product.getDescription());
+                        logger.info("[enrichCartItemsWithImages] Added description for product ID: {}", item.getProductId());
+                    }
+                    
+                    // Si el nombre del producto está vacío, usar la descripción del producto como nombre
+                    if (item.getProductName() == null || item.getProductName().isEmpty()) {
+                        item.setProductName(product.getDescription());
+                        logger.info("[enrichCartItemsWithImages] Added name (from description) for product ID: {}", item.getProductId());
+                    }
                 } else {
                     logger.warn("[enrichCartItemsWithImages] Product not found in repository for ID: {}", item.getProductId());
                 }

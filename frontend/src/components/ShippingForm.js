@@ -2,13 +2,14 @@ import React from "react";
 
 // Formulario de dirección de envío
 import { useState } from "react";
-import { Box, TextField, Button, Typography, Paper } from "@mui/material";
+import { Box, TextField, Button, Typography, Paper, Alert } from "@mui/material";
 import BackgroundCarousel from './BackgroundCarousel';
 
 import { saveShippingAddress } from '../cartApi';
 import { useCart } from './CartContext';
+import { useAuth } from './AuthContext';
 
-function ShippingForm({ onNext, onBack }) {
+function ShippingForm({ onNext, onBack, isAnonymous = false }) {
   // Inicializa con datos previos si existen
   const [values, setValues] = useState(() => {
     const stored = localStorage.getItem('shippingAddress');
@@ -25,6 +26,7 @@ function ShippingForm({ onNext, onBack }) {
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const { currentUser } = useAuth();
 
   // Validación simple
   const validate = () => {
@@ -111,6 +113,13 @@ function ShippingForm({ onNext, onBack }) {
       <BackgroundCarousel borderRadius={4} minHeight={500} />
       <Paper elevation={2} sx={{ p: 1, maxWidth: 500, margin: '8px auto', position: 'relative', zIndex: 2, borderRadius: 4, backdropFilter: 'blur(0.5px)' }}>
       <Typography variant="h6" gutterBottom>Dirección de envío</Typography>
+      
+      {/* Mensaje informativo para checkout anónimo */}
+      {isAnonymous && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Estás realizando un checkout como usuario anónimo. Tus datos no se guardarán para futuras compras.
+        </Alert>
+      )}
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <TextField
           label="Nombre completo"
