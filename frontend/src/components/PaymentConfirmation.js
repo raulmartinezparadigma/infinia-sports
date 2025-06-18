@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Paper, Typography, Box, Button } from "@mui/material";
+import { Paper, Typography, Box, Button, Alert } from "@mui/material";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaymentIcon from '@mui/icons-material/Payment';
@@ -8,7 +8,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 
 // Confirmación de pago exitoso
 
-function PaymentConfirmation({ paymentMethod: paymentMethodProp }) {
+function PaymentConfirmation({ paymentMethod: paymentMethodProp, isAnonymous = false }) {
   const location = useLocation();
   const navigate = useNavigate();
   // Detecta el método de pago desde el estado de navegación (location.state) o desde la prop
@@ -18,6 +18,22 @@ function PaymentConfirmation({ paymentMethod: paymentMethodProp }) {
     <Paper elevation={3} sx={{ maxWidth: 480, mx: 'auto', mt: 8, p: 4, textAlign: 'center' }}>
       <CheckCircleOutlineIcon color="success" sx={{ fontSize: 64, mb: 2 }} />
       <Typography variant="h5" gutterBottom>¡Gracias por tu compra!</Typography>
+      
+      {/* Mensaje informativo para checkout anónimo */}
+      {isAnonymous && (
+        <Alert severity="info" sx={{ mb: 2, textAlign: 'left' }}>
+          Has realizado tu compra como usuario anónimo. Si deseas ver el historial de tus pedidos en el futuro, 
+          considera <Button 
+            variant="text" 
+            color="primary" 
+            size="small"
+            onClick={() => navigate('/register')}
+            sx={{ p: 0, minWidth: 'auto', verticalAlign: 'baseline' }}
+          >
+            crear una cuenta
+          </Button>.
+        </Alert>
+      )}
       {paymentMethod === "redsys" ? (
         <>
           <PaymentIcon color="success" sx={{ fontSize: 40, mb: 1 }} />

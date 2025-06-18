@@ -5,34 +5,94 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
+// Configura interceptor para añadir token JWT en las peticiones si existe
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Obtiene el carrito actual
-export async function getCart() {
-  // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.get(`${API_BASE}/api/cart`);
+export async function getCart(sessionId, userId) {
+  // Construir los parámetros de consulta según los valores disponibles
+  let url = `${API_BASE}/cart`;
+  const params = [];
+  
+  if (sessionId) params.push(`sessionId=${sessionId}`);
+  if (userId) params.push(`userId=${userId}`);
+  
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  
+  const response = await axios.get(url);
   return response.data;
 }
 
 // Añade un producto al carrito
-export async function addItemToCart(item) {
-  // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.post(`${API_BASE}/api/cart/items`, item);
+export async function addItemToCart(item, sessionId, userId) {
+  // Construir los parámetros de consulta según los valores disponibles
+  let url = `${API_BASE}/cart/items`;
+  const params = [];
+  
+  if (sessionId) params.push(`sessionId=${sessionId}`);
+  if (userId) params.push(`userId=${userId}`);
+  
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  
+  const response = await axios.post(url, item);
   return response.data;
 }
 
 // Elimina un producto del carrito
-export async function removeItemFromCart(itemId) {
-  // No se envía User-ID, solo se usa sessionId/cookie
-  const response = await axios.delete(`${API_BASE}/api/cart/items/${itemId}`);
+export async function removeItemFromCart(itemId, sessionId, userId) {
+  // Construir los parámetros de consulta según los valores disponibles
+  let url = `${API_BASE}/cart/items/${itemId}`;
+  const params = [];
+  
+  if (sessionId) params.push(`sessionId=${sessionId}`);
+  if (userId) params.push(`userId=${userId}`);
+  
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  
+  const response = await axios.delete(url);
   return response.data;
 }
 
 // Actualiza la cantidad de un producto en el carrito
-export async function updateItemQuantity(itemId, quantity, productId) {
-  // El backend espera un objeto CartItemDTO con productId obligatorio
-  const response = await axios.put(
-    `${API_BASE}/api/cart/items/${itemId}`,
-    { id: itemId, productId, quantity }
-  );
+export async function updateItemQuantity(itemId, quantity, productId, sessionId, userId, description, productName, unitPrice) {
+  // Construir los parámetros de consulta según los valores disponibles
+  let url = `${API_BASE}/cart/items/${itemId}`;
+  const params = [];
+  
+  if (sessionId) params.push(`sessionId=${sessionId}`);
+  if (userId) params.push(`userId=${userId}`);
+  
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  
+  // Preparar el objeto CartItemDTO completo con todos los datos disponibles
+  const cartItemData = { 
+    id: itemId, 
+    productId, 
+    quantity,
+    // Incluir campos opcionales si están disponibles
+    ...(description && { description }),
+    ...(productName && { productName }),
+    ...(unitPrice && { unitPrice })
+  };
+  
+  console.log('Enviando actualización de cantidad con datos:', cartItemData);
+  
+  // Enviar al backend
+  const response = await axios.put(url, cartItemData);
   return response.data;
 }
 
@@ -61,8 +121,19 @@ export async function processBizumPayment({ paymentId, orderId, phoneNumber, use
 }
 
 // Vacía todo el carrito en el backend (DELETE /cart)
-export async function clearCartBackend() {
-  await axios.delete(`${API_BASE}/api/cart`);
+export async function clearCartBackend(sessionId, userId) {
+  // Construir los parámetros de consulta según los valores disponibles
+  let url = `${API_BASE}/cart`;
+  const params = [];
+  
+  if (sessionId) params.push(`sessionId=${sessionId}`);
+  if (userId) params.push(`userId=${userId}`);
+  
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  
+  await axios.delete(url);
 }
 
 // Confirma el pedido y lo envía al backend
@@ -70,6 +141,25 @@ export async function confirmOrder(checkoutData) {
   // Asegurarse de que el email está incluido en el DTO
   if (!checkoutData.email && checkoutData.shippingAddress && checkoutData.shippingAddress.email) {
     checkoutData.email = checkoutData.shippingAddress.email;
+  }
+  
+  // Obtener el token de autenticación si existe
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    // Decodificar el token JWT para obtener el userId (no verificamos la firma aquí)
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const payload = JSON.parse(jsonPayload);
+      // Añadir el userId al DTO de checkout
+      checkoutData.userId = payload.sub; // 'sub' es el estándar para el ID de usuario en JWT
+    } catch (e) {
+      console.error('Error decodificando el token JWT:', e);
+    }
   }
   
   console.log('[confirmOrder] Enviando datos de checkout:', checkoutData);

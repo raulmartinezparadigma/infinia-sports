@@ -16,17 +16,31 @@ function ProductCard({ product }) {
   const [open, setOpen] = useState(false);
 
   const handleAdd = () => {
-    const price = typeof product.price === 'number' ? product.price : 0;
-    if (typeof product.price !== 'number') {
+    // Asegurarse de que el precio sea un número válido
+    const price = typeof product.price === 'number' ? product.price : 
+                 (typeof product.price === 'string' ? parseFloat(product.price) : 0);
+                 
+    if (price === 0) {
       console.warn(`Producto con ID ${product.id} ('${product.name}') no tiene un precio válido. Usando 0.`);
     }
+    
+    // Crear un objeto con toda la información necesaria
     const cartItem = {
+      id: product.id,  // Usar el ID del producto como ID del item
       productId: product.id,
-      productName: product.name || product.description,
+      productName: product.name || 'Producto',
+      description: product.description || '',  // Incluir la descripción
       quantity: 1,
       unitPrice: price,
-      productImageUrl: product.imageUrl, 
+      price: price,  // Añadir price explícitamente
+      totalPrice: price, // Añadir totalPrice explícitamente
+      productImageUrl: product.imageUrl,
+      // Incluir otros campos del producto que puedan ser útiles
+      size: product.size,
+      type: product.type
     };
+    
+    console.log('Añadiendo al carrito:', cartItem);
     addToCart(cartItem);
     setOpen(true);
   };

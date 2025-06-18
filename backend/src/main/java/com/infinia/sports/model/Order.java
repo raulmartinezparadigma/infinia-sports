@@ -5,9 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +31,9 @@ public class Order {
     private LocalDateTime submitDate;
     private String status;
     private String email;
+    
+    @Indexed
+    private String userId;     // ID del usuario autenticado
     
     private List<ShippingGroup> shippingGroups;
     private Address shippingAddress;

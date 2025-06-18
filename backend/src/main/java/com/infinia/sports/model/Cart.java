@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -26,10 +27,12 @@ public class Cart {
     @Id
     private String id;
     
-    private String userId;
-    private String sessionId;
+    @Indexed
+    private String userId;     // ID del usuario autenticado
+    private String sessionId;  // ID de sesión para usuarios no autenticados
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String userEmail;  // Email del usuario para facilitar la comunicación
     
     @Builder.Default
     private List<CartItem> items = new ArrayList<>();
@@ -49,6 +52,7 @@ public class Cart {
         private String id;
         private String productId;
         private String productName;
+        private String description;
         private int quantity;
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;
