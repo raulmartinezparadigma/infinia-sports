@@ -2,7 +2,7 @@ import React from "react";
 
 // Resumen del pedido completo
 import { useCart } from "./CartContext";
-import { Box, Typography, Paper, Divider, List, ListItem, ListItemText, Button } from "@mui/material";
+import { Box, Typography, Paper, Divider, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import BackgroundCarousel from './BackgroundCarousel';
 
 function OrderSummary({ onNext, onBack }) {
@@ -34,17 +34,42 @@ function OrderSummary({ onNext, onBack }) {
           NIF/CIF: {billing.nif}
         </Typography>
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Productos</Typography>
-        <List dense>
-          {cart.map(item => (
-            <ListItem key={item.id} sx={{ pl: 0 }}>
-              <ListItemText
-                primary={`${item.name || item.description} x${item.quantity}`}
-                secondary={`${(item.price * item.quantity).toFixed(2)} €`}
-              />
-            </ListItem>
-          ))}
-        </List>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Productos</Typography>
+        {cart.length === 0 ? (
+          <Typography variant="body2" sx={{ mb: 2 }}>No hay productos en el carrito.</Typography>
+        ) : (
+          <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ mb: 2 }}>
+            <Table size="small" aria-label="productos en el carrito">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Foto</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Cantidad</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Precio Unit.</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {cart.map(item => (
+                  <TableRow key={item?.id || Math.random()}>
+                    <TableCell sx={{ padding: '8px', width: '66px' }}>
+                      <img 
+                        src={item?.productImageUrl ? `${process.env.PUBLIC_URL}/${item.productImageUrl}` : `${process.env.PUBLIC_URL}/logo512.png`}
+                        alt={item?.name || item?.description || 'Producto'}
+                        style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                        onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/logo512.png"; }}
+                      />
+                    </TableCell>
+                    <TableCell>{item?.name || item?.description || 'Producto'}</TableCell>
+                    <TableCell align="right">{item?.quantity || 0}</TableCell>
+                    <TableCell align="right">{item?.price ? item.price.toFixed(2) : '0.00'} €</TableCell>
+                    <TableCell align="right">{item?.price && item?.quantity ? (item.price * item.quantity).toFixed(2) : '0.00'} €</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <Divider sx={{ my: 2 }} />
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Total:</Typography>

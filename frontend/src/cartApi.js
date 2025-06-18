@@ -89,7 +89,7 @@ export async function updateItemQuantity(itemId, quantity, productId, sessionId,
 // Guarda la dirección de envío en el backend
 export async function saveShippingAddress(cartId, address, sameAsBillingAddress = true) {
   const response = await axios.post(
-    `${API_BASE}/checkout/direccion?cartId=${cartId}&sameAsBillingAddress=${sameAsBillingAddress}`,
+    `${API_BASE}/api/checkout/direccion?cartId=${cartId}&sameAsBillingAddress=${sameAsBillingAddress}`,
     address
   );
   return response.data;
@@ -99,7 +99,9 @@ export async function saveShippingAddress(cartId, address, sameAsBillingAddress 
 // Procesa un pago Bizum llamando al backend
 export async function processBizumPayment({ paymentId, orderId, phoneNumber, userId }) {
   // Llama al endpoint real del backend para pagos Bizum
-  const response = await axios.post(`${API_BASE}/payments/bizum`, {
+  const bizumUrl = `${API_BASE}/api/payments/bizum`;
+  console.log('[cartApi] Attempting to POST to Bizum URL:', bizumUrl);
+  const response = await axios.post(bizumUrl, {
     paymentId,
     orderId,
     phoneNumber,
@@ -151,6 +153,6 @@ export async function confirmOrder(checkoutData) {
   }
   
   console.log('[confirmOrder] Enviando datos de checkout:', checkoutData);
-  const response = await axios.post(`${API_BASE}/checkout/confirmar`, checkoutData);
+  const response = await axios.post(`${API_BASE}/api/checkout/confirmar`, checkoutData);
   return response.data;
 }

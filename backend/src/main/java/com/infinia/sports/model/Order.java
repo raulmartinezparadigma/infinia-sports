@@ -5,9 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -83,6 +83,9 @@ public class Order {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LineItem {
+        @Transient
+        private Product product;
+
         private String id;
         private String productId;
         private String productName;
@@ -90,6 +93,8 @@ public class Order {
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;
         private Map<String, String> attributes;
+        private String productImageUrl;
+
     }
     
     /**

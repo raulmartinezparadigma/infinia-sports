@@ -48,5 +48,5 @@ public class Product {
      * URL o nombre de la imagen del producto
      */
     @NotBlank(message = "La imagen no puede estar vacía")
-    private String mage;
+    private String imageUrl;
 }

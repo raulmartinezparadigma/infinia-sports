@@ -11,18 +11,21 @@ import { useCart } from "./CartContext";
 
 // Tarjeta individual de producto
 function ProductCard({ product }) {
-  // Props: product { id, name, description, price, size, type }
+  // Props: product { id, name, description, price, size, type, imageUrl }
   const { addToCart } = useCart();
   const [open, setOpen] = useState(false);
 
   const handleAdd = () => {
-    // Adaptar el objeto al DTO esperado por el backend
+    const price = typeof product.price === 'number' ? product.price : 0;
+    if (typeof product.price !== 'number') {
+      console.warn(`Producto con ID ${product.id} ('${product.name}') no tiene un precio válido. Usando 0.`);
+    }
     const cartItem = {
-      productId: product.id, // Mapea 'id' a 'productId'
+      productId: product.id,
       productName: product.name || product.description,
-      quantity: 1, // Puedes cambiar esto si hay selector de cantidad
-      unitPrice: product.price,
-      // Puedes añadir más campos opcionales si lo deseas
+      quantity: 1,
+      unitPrice: price,
+      productImageUrl: product.imageUrl, 
     };
     addToCart(cartItem);
     setOpen(true);
@@ -33,9 +36,9 @@ function ProductCard({ product }) {
     <Card sx={{ minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center" }}>
       {/* Imagen del producto */}
       <img
-        src={product.mage ? process.env.PUBLIC_URL + "/" + (product.mage.endsWith('.svg') ? product.mage : product.mage.replace(/\.(jpg|png)$/i, '.svg')) : process.env.PUBLIC_URL + "/logo512.png"}
-        alt={product.description}
-        style={{ width: 160, height: 160, objectFit: "cover", marginTop: 16, borderRadius: 8, background: "#f5f5f5", border: "1px solid #ddd", display: "block" }}
+        src={product.imageUrl ? `${process.env.PUBLIC_URL}/${product.imageUrl}` : `${process.env.PUBLIC_URL}/logo512.png`}
+        alt={product.name || product.description}
+        style={{ height: 160, width: 160, objectFit: "contain", marginTop: 16, borderRadius: 8 }}
         onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/logo512.png"; }}
       />
       <CardContent sx={{ width: "100%" }}>

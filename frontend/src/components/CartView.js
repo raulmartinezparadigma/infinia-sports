@@ -6,12 +6,24 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import BackgroundCarousel from './BackgroundCarousel';
+import { useNavigate } from 'react-router-dom';
 
 function CartView() {
   const { cart, updateQuantity, removeFromCart } = useCart();
+  const navigate = useNavigate();
 
   if (cart.length === 0) {
-    return <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>El carrito está vacío.</Typography>;
+    // Mostrar logo grande de Infinia Sports si el carrito está vacío
+    // Mostrar logo grande de Infinia Sports a la izquierda si el carrito está vacío
+    // Mostrar logo grande de Infinia Sports centrado en el rectángulo si el carrito está vacío
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 36 }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
+          <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports logo" style={{ maxHeight: 240, maxWidth: 400, objectFit: 'contain', display: 'block' }} />
+        </div>
+        <Typography variant="h6" sx={{ textAlign: 'center' }}>El carrito está vacío.</Typography>
+      </div>
+    );
   }
 
   // Depuración: mostrar estructura real del carrito
@@ -63,6 +75,10 @@ function CartView() {
           pointerEvents: 'none',
           borderRadius: 4
         }} />
+      </Box>
+      {/* Botón para volver al catálogo */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Button variant="outlined" color="primary" onClick={() => navigate('/')}>Volver al catálogo</Button>
       </Box>
       {/* Aquí iría la sección 'Te puede interesar' */}
     </>

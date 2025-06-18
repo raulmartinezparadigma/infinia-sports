@@ -34,8 +34,14 @@ public class OrderMailTemplateUtil {
 
             // Construir las filas de productos del pedido
             List<LineItem> lineItems = shippingGroup.getLineItems();
+            // Generar filas de la tabla con imagen de producto
             String orderLines = lineItems.stream()
-                .map(line -> "<tr><td>" + line.getProductName() + "</td><td>" + line.getQuantity() + "</td><td>" + line.getUnitPrice() + "€</td></tr>")
+                .map(line -> "<tr>"
+                    + "<td><img src='" + line.getProductImageUrl() + "' style='height:60px;'></td>"
+                    + "<td>" + line.getProductName() + "</td>"
+                    + "<td>" + line.getQuantity() + "</td>"
+                    + "<td>" + line.getUnitPrice() + "€</td>"
+                    + "</tr>")
                 .collect(Collectors.joining());
 
             // Nombre completo del destinatario

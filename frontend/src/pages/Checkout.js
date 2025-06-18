@@ -13,6 +13,7 @@ import { useState } from "react";
 import MiniCart from "../components/MiniCart";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../components/CartContext";
+import { Button } from "@mui/material";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -49,6 +50,13 @@ function Checkout() {
       />}
       {step === 4 && <PaymentSimulator onSuccess={() => setStep(5)} onBack={() => setStep(3)} />}
       {step === 5 && <Confirmation paymentMethod={paymentMethod} />}
+
+      {/* Botón para volver al catálogo solo si no es confirmación final */}
+      {step !== 5 && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+          <Button variant="outlined" color="primary" onClick={() => navigate('/')}>Volver al catálogo</Button>
+        </div>
+      )}
     </div>
   );
 }

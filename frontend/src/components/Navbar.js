@@ -106,6 +106,26 @@ function Navbar() {
           </IconButton>
         </Link>
       </div>
+    <nav style={{ padding: "1rem", background: "#1976d2", display: 'flex', alignItems: 'center' }}>
+      {/* Enlace al panel de administración */}
+      <a
+        href="http://localhost:3001"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: '#fff', fontWeight: 'bold', marginRight: 24, textDecoration: 'none', background: '#1565c0', padding: '8px 16px', borderRadius: 4 }}
+      >
+        Panel de Administración
+      </a>
+
+      <div style={{ flex: 1 }} />
+
+      <Link to="/cart">
+        <IconButton sx={{ color: '#fff' }}>
+          <Badge badgeContent={totalCount} color="error">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
+      </Link>
     </nav>
   );
 }
