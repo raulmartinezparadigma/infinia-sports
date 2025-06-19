@@ -26,7 +26,6 @@ function ShippingForm({ onNext, onBack, isAnonymous = false }) {
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const { currentUser } = useAuth();
 
   // Validación simple
   const validate = () => {

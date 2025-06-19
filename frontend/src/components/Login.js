@@ -18,6 +18,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -26,13 +27,23 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setFieldErrors({});
     
     try {
       await login(username, password);
       // Redireccionar a la página principal después del login exitoso
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Error al iniciar sesión");
+      if (err.response?.data) {
+        if (typeof err.response.data === 'object' && !Array.isArray(err.response.data)) {
+          setFieldErrors(err.response.data);
+          setError(err.response.data.message || "Error al iniciar sesión");
+        } else {
+          setError(err.response.data.message || "Error al iniciar sesión");
+        }
+      } else {
+        setError("Error al iniciar sesión");
+      }
     } finally {
       setLoading(false);
     }
@@ -47,7 +58,18 @@ function Login() {
           </Typography>
           
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          
+          {/* Mostrar errores de validación de campos */}
+          {Object.keys(fieldErrors).length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              {Object.entries(fieldErrors).map(([field, msg]) =>
+                field !== 'message' ? (
+                  <Alert key={field} severity="error" sx={{ mb: 1 }}>
+                    {field.charAt(0).toUpperCase() + field.slice(1)}: {msg}
+                  </Alert>
+                ) : null
+              )}
+            </Box>
+          )}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
               margin="normal"
@@ -61,6 +83,8 @@ function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               disabled={loading}
+              error={Boolean(fieldErrors.username)}
+              helperText={fieldErrors.username}
             />
             
             <TextField
@@ -75,6 +99,8 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              error={Boolean(fieldErrors.password)}
+              helperText={fieldErrors.password}
             />
             
             <Button

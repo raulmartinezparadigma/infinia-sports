@@ -16,83 +16,74 @@ axios.interceptors.request.use(config => {
 
 // Obtiene el carrito actual
 export async function getCart(sessionId, userId) {
-  // Construir los parámetros de consulta según los valores disponibles
-  let url = `${API_BASE}/cart`;
+  let url = `${API_BASE}/api/cart`;
   const params = [];
-  
-  if (sessionId) params.push(`sessionId=${sessionId}`);
-  if (userId) params.push(`userId=${userId}`);
-  
+  const config = { withCredentials: true, headers: {} };
+
+  // Si hay userId, se envía como header; si no, sessionId como query param
+  if (userId) {
+    config.headers['User-ID'] = userId;
+  } else if (sessionId) {
+    params.push(`sessionId=${sessionId}`);
+  }
+
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  
-  const response = await axios.get(url);
+
+  const response = await axios.get(url, config);
   return response.data;
 }
 
 // Añade un producto al carrito
 export async function addItemToCart(item, sessionId, userId) {
-  // Construir los parámetros de consulta según los valores disponibles
-  let url = `${API_BASE}/cart/items`;
+  let url = `${API_BASE}/api/cart/items`;
   const params = [];
-  
-  if (sessionId) params.push(`sessionId=${sessionId}`);
-  if (userId) params.push(`userId=${userId}`);
-  
+  if (userId) {
+    params.push(`userId=${userId}`);
+  } else if (sessionId) {
+    params.push(`sessionId=${sessionId}`);
+  }
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  
   const response = await axios.post(url, item);
   return response.data;
 }
 
 // Elimina un producto del carrito
 export async function removeItemFromCart(itemId, sessionId, userId) {
-  // Construir los parámetros de consulta según los valores disponibles
-  let url = `${API_BASE}/cart/items/${itemId}`;
+  let url = `${API_BASE}/api/cart/items/${itemId}`;
   const params = [];
-  
-  if (sessionId) params.push(`sessionId=${sessionId}`);
-  if (userId) params.push(`userId=${userId}`);
-  
+  if (userId) {
+    params.push(`userId=${userId}`);
+  } else if (sessionId) {
+    params.push(`sessionId=${sessionId}`);
+  }
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  
   const response = await axios.delete(url);
   return response.data;
 }
 
 // Actualiza la cantidad de un producto en el carrito
 export async function updateItemQuantity(itemId, quantity, productId, sessionId, userId, description, productName, unitPrice) {
-  // Construir los parámetros de consulta según los valores disponibles
-  let url = `${API_BASE}/cart/items/${itemId}`;
+  let url = `${API_BASE}/api/cart/items/${itemId}`;
   const params = [];
-  
-  if (sessionId) params.push(`sessionId=${sessionId}`);
-  if (userId) params.push(`userId=${userId}`);
-  
+  if (userId) {
+    params.push(`userId=${userId}`);
+  } else if (sessionId) {
+    params.push(`sessionId=${sessionId}`);
+  }
+  if (productId) params.push(`productId=${productId}`);
+  if (description) params.push(`description=${encodeURIComponent(description)}`);
+  if (productName) params.push(`productName=${encodeURIComponent(productName)}`);
+  if (unitPrice) params.push(`unitPrice=${unitPrice}`);
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  
-  // Preparar el objeto CartItemDTO completo con todos los datos disponibles
-  const cartItemData = { 
-    id: itemId, 
-    productId, 
-    quantity,
-    // Incluir campos opcionales si están disponibles
-    ...(description && { description }),
-    ...(productName && { productName }),
-    ...(unitPrice && { unitPrice })
-  };
-  
-  console.log('Enviando actualización de cantidad con datos:', cartItemData);
-  
-  // Enviar al backend
-  const response = await axios.put(url, cartItemData);
+  const response = await axios.put(url, { quantity });
   return response.data;
 }
 
@@ -122,18 +113,18 @@ export async function processBizumPayment({ paymentId, orderId, phoneNumber, use
 
 // Vacía todo el carrito en el backend (DELETE /cart)
 export async function clearCartBackend(sessionId, userId) {
-  // Construir los parámetros de consulta según los valores disponibles
-  let url = `${API_BASE}/cart`;
+  let url = `${API_BASE}/api/cart`;
   const params = [];
-  
-  if (sessionId) params.push(`sessionId=${sessionId}`);
-  if (userId) params.push(`userId=${userId}`);
-  
+  if (userId) {
+    params.push(`userId=${userId}`);
+  } else if (sessionId) {
+    params.push(`sessionId=${sessionId}`);
+  }
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  
-  await axios.delete(url);
+  const response = await axios.delete(url);
+  return response.data;
 }
 
 // Confirma el pedido y lo envía al backend

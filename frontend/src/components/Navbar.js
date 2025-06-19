@@ -3,13 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
-import LogoutIcon from '@mui/icons-material/Logout';
+
 import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { useCart } from "./CartContext";
 import { useAuth } from "./AuthContext";
 

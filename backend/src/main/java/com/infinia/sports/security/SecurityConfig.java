@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * Configuración de seguridad para la aplicación.
@@ -42,6 +43,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(withDefaults())
             .authorizeHttpRequests(auth -> auth
                 // Permitir acceso público a estos endpoints
                 .requestMatchers(
@@ -51,7 +53,10 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/productos/**",
                     "/cart/**",
-                    "/checkout/**"
+                    "/checkout/**",
+                    "/api/cart/**",
+                    "/api/checkout/**",
+                    "/api/payments/**"
                 ).permitAll()
                 // Requerir autenticación para cualquier otro endpoint
                 .anyRequest().authenticated()

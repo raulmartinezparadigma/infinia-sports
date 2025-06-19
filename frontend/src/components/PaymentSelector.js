@@ -36,7 +36,7 @@ const paymentMethods = [
 
 function PaymentSelector({ onNext, onBack, amount, isAnonymous = false }) {
   const { cartId, clearCartAndReload } = useCart();
-  const { currentUser } = useAuth();
+  const {  } = useAuth();
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 

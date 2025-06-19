@@ -22,6 +22,7 @@ function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ function Register() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setFieldErrors({});
     
     // Validación básica
     if (formData.password !== formData.confirmPassword) {
@@ -58,7 +60,18 @@ function Register() {
       // Redireccionar a la página principal después del registro exitoso
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Error al registrar usuario");
+      // Si la respuesta es un objeto con errores de campo
+      if (err.response?.data) {
+        if (typeof err.response.data === 'object' && !Array.isArray(err.response.data)) {
+          // Si tiene errores de campo
+          setFieldErrors(err.response.data);
+          setError(err.response.data.message || "Error al registrar usuario");
+        } else {
+          setError(err.response.data.message || "Error al registrar usuario");
+        }
+      } else {
+        setError("Error al registrar usuario");
+      }
     } finally {
       setLoading(false);
     }
@@ -73,7 +86,18 @@ function Register() {
           </Typography>
           
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          
+          {/* Mostrar errores de validación de campos */}
+          {Object.keys(fieldErrors).length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              {Object.entries(fieldErrors).map(([field, msg]) =>
+                field !== 'message' ? (
+                  <Alert key={field} severity="error" sx={{ mb: 1 }}>
+                    {field.charAt(0).toUpperCase() + field.slice(1)}: {msg}
+                  </Alert>
+                ) : null
+              )}
+            </Box>
+          )}
           <Box component="form" onSubmit={handleSubmit} noValidate>
             <TextField
               margin="normal"
@@ -87,6 +111,8 @@ function Register() {
               value={formData.username}
               onChange={handleChange}
               disabled={loading}
+              error={Boolean(fieldErrors.username)}
+              helperText={fieldErrors.username}
             />
             
             <TextField
@@ -97,10 +123,11 @@ function Register() {
               label="Correo electrónico"
               name="email"
               autoComplete="email"
-              type="email"
               value={formData.email}
               onChange={handleChange}
               disabled={loading}
+              error={Boolean(fieldErrors.email)}
+              helperText={fieldErrors.email}
             />
             
             <TextField
@@ -115,6 +142,8 @@ function Register() {
               value={formData.password}
               onChange={handleChange}
               disabled={loading}
+              error={Boolean(fieldErrors.password)}
+              helperText={fieldErrors.password}
             />
             
             <TextField
@@ -129,6 +158,8 @@ function Register() {
               value={formData.confirmPassword}
               onChange={handleChange}
               disabled={loading}
+              error={Boolean(fieldErrors.confirmPassword)}
+              helperText={fieldErrors.confirmPassword}
             />
             
             <Button

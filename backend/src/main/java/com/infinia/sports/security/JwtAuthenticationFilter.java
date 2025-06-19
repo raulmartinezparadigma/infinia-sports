@@ -38,6 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
+        // Permitir acceso anónimo a rutas públicas aunque no haya token
+        String path = request.getRequestURI();
+        // Permitir acceso anónimo a rutas públicas usando regex más robusto
+        if (path.matches("^/(api/)?(cart|checkout)(/.*)?$")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // Si no hay token o no empieza con "Bearer ", continuar con la cadena de filtros
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);

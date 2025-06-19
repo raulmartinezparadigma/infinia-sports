@@ -71,32 +71,26 @@ function Checkout() {
       {/* Pasos del proceso de checkout */}
       {step === 0 && (
         <ShippingForm 
+          key={formKey}
           onNext={() => setStep(1)} 
           onBack={() => navigate('/cart')} 
           isAnonymous={isAnonymousCheckout}
         />
       )}
-      
       {step === 1 && (
         <BillingForm 
+          key={formKey}
           onNext={() => setStep(2)} 
           onBack={() => setStep(0)} 
           isAnonymous={isAnonymousCheckout}
         />
       )}
-      
       {step === 2 && (
         <OrderSummary 
           onNext={() => setStep(3)} 
           onBack={() => setStep(1)} 
-          isAnonymous={isAnonymousCheckout}
         />
       )}
-      {step < 5 && <MiniCart position="top" />}
-      {step === 0 && <ShippingForm key={formKey} onNext={() => setStep(1)} onBack={() => navigate('/cart')} />}
-      {step === 1 && <BillingForm key={formKey} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-      {step === 2 && <OrderSummary onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-
       {step === 3 && (
         <PaymentSelector 
           orderId={orderId}
