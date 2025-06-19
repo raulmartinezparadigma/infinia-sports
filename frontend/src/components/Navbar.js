@@ -1,8 +1,9 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
+import TextField from '@mui/material/TextField';
 
 import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
@@ -15,6 +16,8 @@ import { useAuth } from "./AuthContext";
 // Barra de navegación principal
 function Navbar() {
   const { cart } = useCart();
+  const [search, setSearch] = React.useState('');
+  const location = useLocation();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -44,18 +47,30 @@ function Navbar() {
   };
 
   return (
-    <nav style={{ padding: "1rem", background: "#1976d2", display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      {/* Enlace al panel de administración */ }
-     <a
-        href="http://localhost:3001"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ color: '#fff', fontWeight: 'bold', marginRight: 24, textDecoration: 'none', background: '#1565c0', padding: '8px 16px', borderRadius: 4 }}
-      >
-        Panel de Administración
-      </a>
+    <nav style={{ padding: '42px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 0 #e0e0e0' }}>
+      {/* Logo */}
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports" style={{ height: 180, objectFit: 'contain' }} />
+      </Link>
 
-      
+      {/* Buscador centrado */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+        <TextField
+          placeholder="Buscar productos"
+          variant="outlined"
+          size="small"
+          value={search}
+          onChange={e => {
+            const val = e.target.value;
+            setSearch(val);
+            const path = location.pathname === '/' ? '/catalog' : location.pathname;
+            navigate(`${path}?query=${encodeURIComponent(val)}`, { replace: true });
+          }}
+          sx={{ width: '100%', maxWidth: 600, background: '#fff' }}
+        />
+      </div>
+
+      {/* Menú usuario / carrito */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
         {currentUser ? (
           <>
@@ -63,7 +78,7 @@ function Navbar() {
               color="inherit" 
               startIcon={<PersonIcon />}
               onClick={handleMenuOpen}
-              sx={{ color: 'white', mr: 2 }}
+              sx={{ color: '#1a237e', mr: 2 }}
             >
               {currentUser.username}
             </Button>
@@ -87,7 +102,7 @@ function Navbar() {
               color="inherit" 
               startIcon={<LoginIcon />}
               onClick={handleLogin}
-              sx={{ color: 'white', mr: 1 }}
+              sx={{ color: '#1a237e', mr: 1 }}
             >
               Iniciar Sesión
             </Button>
@@ -95,7 +110,7 @@ function Navbar() {
               color="inherit" 
               startIcon={<PersonIcon />}
               onClick={handleRegister}
-              sx={{ color: 'white', mr: 2 }}
+              sx={{ color: '#1a237e', mr: 2 }}
             >
               Registrarse
             </Button>
@@ -103,7 +118,7 @@ function Navbar() {
         )}
         
         <Link to="/cart">
-          <IconButton sx={{ color: '#fff' }}>
+          <IconButton sx={{ color: '#1a237e' }}>
             <Badge badgeContent={totalCount} color="error">
               <ShoppingCartIcon />
             </Badge>

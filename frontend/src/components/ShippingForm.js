@@ -106,8 +106,9 @@ function ShippingForm({ onNext, onBack, isAnonymous = false }) {
 
 
 
+  // El formulario queda dentro del carrusel con margen de 25px arriba y abajo
   return (
-    <Box sx={{ position: 'relative', mt: 4, mb: 4, minHeight: 500 }}>
+    <Box sx={{ position: 'relative', mt: '25px', mb: '25px', minHeight: 500 }}>
       {/* Carrusel de fondo */}
       <BackgroundCarousel borderRadius={4} minHeight={500} />
       <Paper elevation={2} sx={{ p: 1, maxWidth: 500, margin: '8px auto', position: 'relative', zIndex: 2, borderRadius: 4, backdropFilter: 'blur(0.5px)' }}>

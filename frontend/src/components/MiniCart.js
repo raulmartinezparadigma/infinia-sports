@@ -4,16 +4,17 @@ import { Box, Paper, Typography, Divider, List, ListItem, ListItemText, Button }
 import { useNavigate } from "react-router-dom";
 
 // Minicesta fija visible en todas las páginas
-function MiniCart() {
+// Permite personalizar la posición top por prop
+function MiniCart({ top = 120 }) {
   const { cart } = useCart();
   const navigate = useNavigate();
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <Paper elevation={4} sx={{
-      position: 'fixed',
+      position: 'absolute',
       right: 24,
-      top: 120,
+      top: top,
       width: 320,
       zIndex: 1300,
       p: 2,

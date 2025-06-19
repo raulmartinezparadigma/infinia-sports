@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 
 import Box from "@mui/material/Box";
 import ProductCard from "./ProductCard";
+import CategoryBar from "./CategoryBar";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
@@ -32,6 +33,8 @@ function ProductList({ searchTerm = "" }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  // Estado para barra de categorías
+  const [category, setCategory] = useState('');
   const [priceRange, setPriceRange] = useState([0, 200]); // Rango ejemplo
 
   const [loading, setLoading] = useState(false);
@@ -66,8 +69,8 @@ function ProductList({ searchTerm = "" }) {
       const matchesSearch =
         (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      // Filtro por tipo
-      const matchesType = !appliedFilters.typeFilter || (p.type === appliedFilters.typeFilter);
+      // Filtro por tipo (desde drawer o barra de categorías)
+      const matchesType = (category ? p.type === category : true) && (!appliedFilters.typeFilter || (p.type === appliedFilters.typeFilter));
       // Filtro por rango de precio
       const matchesPrice = typeof p.price === 'number' &&
         p.price >= appliedFilters.priceRange[0] &&
@@ -93,7 +96,7 @@ function ProductList({ searchTerm = "" }) {
 
   // Estado de paginación
   const [page, setPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
   // Productos a mostrar en la página actual
@@ -106,20 +109,6 @@ function ProductList({ searchTerm = "" }) {
 
   return (
     <>
-    {/* Encabezado eliminado por solicitud del usuario. Solo queda el catálogo limpio */}
-    <Box sx={{ mt: 2, background: '#fff', boxShadow: 'none', borderRadius: 0, border: 'none', position: 'relative' }}>
-      {/* Botón Filtrar y ordenar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Button
-          variant="outlined"
-          color="primary"
-          sx={{ mr: 2 }}
-          onClick={() => setDrawerOpen(true)}
-        >
-          Filtrar y ordenar
-        </Button>
-      </Box>
-
       {/* Drawer lateral */}
       <Drawer
         anchor="right"
@@ -186,52 +175,75 @@ function ProductList({ searchTerm = "" }) {
         </Box>
       </Drawer>
 
-      {loading && <CircularProgress />}
-      {error && <Alert severity="error">{error}</Alert>}
-      {!loading && !error && (
-        <>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-            {[...paginated, ...Array(9 - paginated.length).fill(null)].map((product, idx) => (
-              <Box key={product ? product.id : `empty-${idx}`}
-                sx={{ flex: '0 0 33.33%', maxWidth: '33.33%', p: 2, boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
-                {product ? (
-                  <ProductCard product={product} sx={{ width: 320, minHeight: 380, maxWidth: 340 }} />
-                ) : null}
-              </Box>
-            ))}
-          </Box>
-          {filtered.length === 0 && (
-            <Typography variant="body1" sx={{ mt: 4 }}>No se encontraron productos.</Typography>
-          )}
-          {/* Controles de paginación con Material-UI */}
-          {filtered.length > itemsPerPage && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4 }}>
-              {/* Componente Pagination de Material-UI */}
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(e, value) => setPage(value)}
-                color="primary"
-                size="large"
-                showFirstButton
-                showLastButton
-                sx={{
-                  background: '#fff', // Fondo blanco liso
-                  borderRadius: 0,
-                  boxShadow: 'none',
-                  border: 'none',
-                  p: 1,
-                  '& .Mui-selected': {
-                    backgroundColor: '#1976d2 !important',
-                    color: '#fff',
-                  }
-                }}
-              />
-            </Box>
-          )}
-        </>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2, background: '#fff', borderRadius: 2, boxShadow: '0 2px 8px #b3c6ff22', px: 2, py: 1 }}>
+        <CategoryBar selected={category} onSelect={setCategory} />
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{ mr: 2, minWidth: 140, height: 40 }}
+            onClick={() => setDrawerOpen(true)}
+          >
+            Filtrar y ordenar
+          </Button>
+          {/* Contador de artículos */}
+          <span style={{ fontWeight: 500, color: '#555', marginLeft: 8, fontSize: 16 }}>
+            {filtered.length} artículos
+          </span>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: '1fr 1fr',
+            md: '1fr 1fr 1fr 1fr'
+          },
+          gap: 1.5,
+          width: '100%',
+          px: { xs: 0.5, sm: 1, md: 2 },
+          py: 2,
+          boxSizing: 'border-box',
+          alignItems: 'stretch',
+          justifyItems: 'center',
+          margin: 0
+        }}
+      >
+        {paginated.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </Box>
+
+      {filtered.length === 0 && (
+        <Typography variant="body1" sx={{ mt: 4, ml: 4 }}>No se encontraron productos.</Typography>
       )}
-    </Box>
+
+      {filtered.length > itemsPerPage && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4 }}>
+          {/* Componente Pagination de Material-UI */}
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+            sx={{
+              background: '#fff', // Fondo blanco liso
+              borderRadius: 0,
+              boxShadow: 'none',
+              border: 'none',
+              p: 1,
+              '& .Mui-selected': {
+                backgroundColor: '#1976d2 !important',
+                color: '#fff',
+              }
+            }}
+          />
+        </Box>
+      )}
     </>
   );
 }

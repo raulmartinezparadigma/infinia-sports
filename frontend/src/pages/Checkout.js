@@ -15,7 +15,7 @@ import MiniCart from "../components/MiniCart";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../components/CartContext";
 import { useAuth } from "../components/AuthContext";
-import { Button } from "@mui/material";
+import { Button, Box } from "@mui/material";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -58,75 +58,77 @@ function Checkout() {
     setStep(0);
   };
 
+  // Envolvemos los pasos centrales en un Box con margen vertical de 25px
+  // para separar visualmente del borde del carrusel
   return (
     <div>
       {/* Pantalla de selección de modo de checkout (anónimo o autenticado) */}
       {step === -1 && (
         <CheckoutOptions onContinueAnonymous={handleContinueAnonymous} />
       )}
-      
+
       {/* Mostrar MiniCart en todos los pasos excepto confirmación y selección de modo */}
-      {step >= 0 && step < 5 && <MiniCart position="top" />}
-      
-      {/* Pasos del proceso de checkout */}
-      {step === 0 && (
-        <ShippingForm 
-          key={formKey}
-          onNext={() => setStep(1)} 
-          onBack={() => navigate('/cart')} 
-          isAnonymous={isAnonymousCheckout}
-        />
-      )}
-      {step === 1 && (
-        <BillingForm 
-          key={formKey}
-          onNext={() => setStep(2)} 
-          onBack={() => setStep(0)} 
-          isAnonymous={isAnonymousCheckout}
-        />
-      )}
-      {step === 2 && (
-        <OrderSummary 
-          onNext={() => setStep(3)} 
-          onBack={() => setStep(1)} 
-        />
-      )}
-      {step === 3 && (
-        <PaymentSelector 
-          orderId={orderId}
-          amount={amount}
-          isAnonymous={isAnonymousCheckout}
-          onNext={(args) => {
-            if (args && args.paymentMethod) {
-              setPaymentMethod(args.paymentMethod);
-              setStep(5);
-            } else {
-              setStep(4);
-            }
-          }} 
-          onBack={() => setStep(1)} 
-        />
-      )}
-      
-      {step === 4 && (
-        <PaymentSimulator 
-          onSuccess={() => setStep(5)} 
-          onBack={() => setStep(3)} 
-          isAnonymous={isAnonymousCheckout}
-        />
-      )}
-      
-      {step === 5 && (
-        <Confirmation 
-          paymentMethod={paymentMethod} 
-          isAnonymous={isAnonymousCheckout}
-        />
-      )}
+      {step >= 0 && step < 5 && <MiniCart top={300} />}
+
+      {/* Contenedor con margen vertical para los pasos principales */}
+      <Box sx={{ mt: '25px', mb: '25px' }}>
+        {step === 0 && (
+          <ShippingForm
+            key={formKey}
+            onNext={() => setStep(1)}
+            onBack={() => navigate('/cart')}
+            isAnonymous={isAnonymousCheckout}
+          />
+        )}
+        {step === 1 && (
+          <BillingForm
+            key={formKey}
+            onNext={() => setStep(2)}
+            onBack={() => setStep(0)}
+            isAnonymous={isAnonymousCheckout}
+          />
+        )}
+        {step === 2 && (
+          <OrderSummary
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        )}
+        {step === 3 && (
+          <PaymentSelector
+            orderId={orderId}
+            amount={amount}
+            isAnonymous={isAnonymousCheckout}
+            onNext={(args) => {
+              if (args && args.paymentMethod) {
+                setPaymentMethod(args.paymentMethod);
+                setStep(5);
+              } else {
+                setStep(4);
+              }
+            }}
+            onBack={() => setStep(1)}
+          />
+        )}
+        {step === 4 && (
+          <PaymentSimulator
+            onSuccess={() => setStep(5)}
+            onBack={() => setStep(3)}
+            isAnonymous={isAnonymousCheckout}
+          />
+        )}
+        {step === 5 && (
+          <Confirmation
+            paymentMethod={paymentMethod}
+            isAnonymous={isAnonymousCheckout}
+          />
+        )}
+      </Box>
 
       {/* Botón para volver al catálogo solo si no es confirmación final ni selección de modo */}
       {step > -1 && step !== 5 && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
-          <Button variant="outlined" color="primary" onClick={() => navigate('/')}>Volver al catálogo</Button>
+          <Button variant="outlined" color="primary" sx={{ m: '20px' }} onClick={() => navigate('/')}>Volver al catálogo</Button>
         </div>
       )}
     </div>
