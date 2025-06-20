@@ -25,8 +25,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    @org.springframework.beans.factory.annotation.Qualifier("customUserDetailsService")
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final AdminUserDetailsService adminUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -61,8 +61,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             // Si hay un nombre de usuario y no hay autenticación en el contexto de seguridad
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Cargar los detalles del usuario desde la base de datos
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                // Seleccionar el servicio adecuado según la ruta
+                // Si la ruta es de administración, usar AdminUserDetailsService; si no, CustomUserDetailsService
+                UserDetails userDetails;
+                if (path.startsWith("/api/admin/")) {
+                    // Ruta de administración: buscar en adminUserDetailsService
+                    userDetails = this.adminUserDetailsService.loadUserByUsername(username);
+                } else {
+                    // Ruta normal: buscar en customUserDetailsService
+                    userDetails = this.customUserDetailsService.loadUserByUsername(username);
+                }
                 
                 // Validar el token
                 if (jwtService.isTokenValid(jwt, userDetails)) {
