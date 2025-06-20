@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Autenticación", description = "API para registro y autenticación de usuarios")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthService userAuthService;
 
     /**
      * Endpoint para registrar un nuevo usuario.
@@ -35,7 +35,7 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Registrar un nuevo usuario", description = "Registra un nuevo usuario en el sistema y devuelve un token JWT")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
-        return ResponseEntity.ok(authService.register(registerRequest));
+        return ResponseEntity.ok(userAuthService.register(registerRequest));
     }
 
     /**
@@ -47,6 +47,6 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario existente y devuelve un token JWT")
     public ResponseEntity<AuthResponseDTO> authenticate(@Valid @RequestBody AuthRequestDTO authRequest) {
-        return ResponseEntity.ok(authService.authenticate(authRequest));
+        return ResponseEntity.ok(userAuthService.authenticate(authRequest));
     }
 }

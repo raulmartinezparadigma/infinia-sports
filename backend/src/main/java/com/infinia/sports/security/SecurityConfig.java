@@ -22,6 +22,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 /**
  * Configuración de seguridad para la aplicación.
  */
+import org.springframework.beans.factory.annotation.Qualifier;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -29,8 +31,13 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    @Qualifier("customUserDetailsService")
     private final UserDetailsService userDetailsService;
+    private final AdminUserDetailsService adminUserDetailsService;
 
+    /**
+     * Bean de AuthenticationManager para inyección en controladores.
+     */
     /**
      * Configura la cadena de filtros de seguridad.
      * Define las reglas de acceso a los endpoints y la configuración de seguridad.
@@ -56,8 +63,11 @@ public class SecurityConfig {
                     "/checkout/**",
                     "/api/cart/**",
                     "/api/checkout/**",
-                    "/api/payments/**"
+                    "/api/payments/**",
+                    "/api/admin/auth/**" // Login admin público
                 ).permitAll()
+                // Proteger endpoints de administración
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Requerir autenticación para cualquier otro endpoint
                 .anyRequest().authenticated()
             )

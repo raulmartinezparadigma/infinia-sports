@@ -11,7 +11,10 @@ import com.infinia.sports.repository.jpa.UserRepository;
 /**
  * Servicio personalizado para cargar detalles de usuario para Spring Security.
  */
+import org.springframework.context.annotation.Primary;
+
 @Service
+@Primary
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 

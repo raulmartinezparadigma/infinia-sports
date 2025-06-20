@@ -3,9 +3,14 @@ import './App.css';
 import OrderSearchForm from './OrderSearchForm';
 import OrderDetailsDisplay from './OrderDetailsDisplay';
 import { fetchOrderById } from './api';
+import AdminKafkaPanel from './AdminKafkaPanel';
+import AdminLogin from './AdminLogin';
 
 // Componente principal del panel de administración
 function App() {
+  // Estado de autenticación admin
+  const [token, setToken] = useState(localStorage.getItem('admin_jwt'));
+
   // Estado para el pedido consultado y control de "no encontrado"
   const [order, setOrder] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -30,16 +35,39 @@ function App() {
     }
   };
 
+  const [tab, setTab] = useState('orders');
+
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem('admin_jwt');
+    setToken(null);
+  };
+
+  // Si no está autenticado, mostrar login
+  if (!token) {
+    return <AdminLogin onLogin={setToken} />;
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Panel de Administración de Pedidos</h1>
+        <h1>Panel de Administración</h1>
+        <button onClick={handleLogout} style={{ float: 'right', marginTop: 8 }}>Cerrar sesión</button>
+        <div style={{marginTop: 16, marginBottom: 24}}>
+          <button onClick={() => setTab('orders')} style={{marginRight: 12, fontWeight: tab==='orders'?'bold':'normal'}}>Pedidos</button>
+          <button onClick={() => setTab('kafka')} style={{fontWeight: tab==='kafka'?'bold':'normal'}}>Alta productos</button>
+        </div>
       </header>
-      {/* Formulario de búsqueda por Order ID */}
-      <OrderSearchForm onSearch={handleSearch} />
-      {loading && <p>Cargando...</p>}
-      {/* Muestra los detalles del pedido o mensaje de no encontrado */}
-      <OrderDetailsDisplay order={order} notFound={notFound} />
+      {tab === 'orders' && (
+        <>
+          <OrderSearchForm onSearch={handleSearch} />
+          {loading && <p>Cargando...</p>}
+          <OrderDetailsDisplay order={order} notFound={notFound} />
+        </>
+      )}
+      {tab === 'kafka' && (
+        <AdminKafkaPanel />
+      )}
     </div>
   );
 }

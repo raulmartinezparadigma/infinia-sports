@@ -25,6 +25,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    @org.springframework.beans.factory.annotation.Qualifier("customUserDetailsService")
     private final UserDetailsService userDetailsService;
 
     @Override

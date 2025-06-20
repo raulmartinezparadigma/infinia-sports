@@ -239,4 +239,11 @@ public class DataInitializer {
                 System.out.println("Datos de prueba enviados a Kafka correctamente.");
         };
     }
+
+    // --- Utilidad para generar hash BCrypt desde línea de comandos ---
+    public static void main(String[] args) {
+        String password = args.length > 0 ? args[0] : "admin123";
+        String hash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password);
+        System.out.println("Hash para '" + password + "': " + hash);
+    }
 }
