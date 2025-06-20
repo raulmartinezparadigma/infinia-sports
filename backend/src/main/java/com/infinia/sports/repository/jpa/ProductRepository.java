@@ -15,6 +15,12 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     /**
+     * Busca un producto por su skuId único
+     * @param skuId identificador de negocio
+     * @return Optional con el producto si existe
+     */
+    java.util.Optional<Product> findBySkuId(String skuId);
+    /**
      * Busca productos por tipo
      * @param type tipo de producto
      * @return lista de productos del tipo especificado

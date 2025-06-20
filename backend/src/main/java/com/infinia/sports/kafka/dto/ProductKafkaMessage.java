@@ -8,6 +8,10 @@ import java.math.BigDecimal;
  */
 public class ProductKafkaMessage {
     private String id;
+    /**
+     * Identificador único de negocio (SKU), 18 dígitos sin guiones
+     */
+    private String skuId;
     private String type;
     private String description;
     private BigDecimal price;
@@ -22,8 +26,9 @@ public class ProductKafkaMessage {
     /**
      * Constructor completo
      */
-    public ProductKafkaMessage(String id, String type, String description, BigDecimal price, String size, String imageUrl) {
+    public ProductKafkaMessage(String id, String skuId, String type, String description, BigDecimal price, String size, String imageUrl) {
         this.id = id;
+        this.skuId = skuId;
         this.type = type;
         this.description = description;
         this.price = price;
@@ -37,6 +42,14 @@ public class ProductKafkaMessage {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getSkuId() {
+        return skuId;
+    }
+
+    public void setSkuId(String skuId) {
+        this.skuId = skuId;
     }
 
     public String getType() {
@@ -83,6 +96,7 @@ public class ProductKafkaMessage {
     public String toString() {
         return "ProductKafkaMessage{" +
                 "id='" + id + '\'' +
+                ", skuId='" + skuId + '\'' +
                 ", type='" + type + '\'' +
                 ", description='" + description + '\'' +
                 ", price=" + price +

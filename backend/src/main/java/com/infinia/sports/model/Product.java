@@ -26,6 +26,14 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Product {
 
+    /**
+     * Identificador único de negocio para el producto (SKU de 18 dígitos sin guiones)
+     */
+    @jakarta.persistence.Column(unique = true, length = 18, nullable = false)
+    @NotBlank(message = "El skuId no puede estar vacío")
+    private String skuId;
+
+
     @Id
     @GeneratedValue
     private UUID id;

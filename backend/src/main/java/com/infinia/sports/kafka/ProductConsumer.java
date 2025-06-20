@@ -41,10 +41,13 @@ public class ProductConsumer {
             }
             // Conversión segura de String a UUID
             java.util.UUID uuid = java.util.UUID.fromString(message.getId());
-            // Control idempotente: solo guardar si no existe
-            if (!productRepository.existsById(uuid)) {
+            // Control idempotente: solo guardar si no existe ni por UUID ni por skuId
+            boolean existePorId = productRepository.existsById(uuid);
+            boolean existePorSku = message.getSkuId() != null && productRepository.findBySkuId(message.getSkuId()).isPresent();
+            if (!existePorId && !existePorSku) {
                 Product product = new Product();
                 product.setId(uuid);
+                product.setSkuId(message.getSkuId());
                 product.setType(ProductType.valueOf(message.getType().toUpperCase()));
                 product.setDescription(message.getDescription());
                 product.setPrice(message.getPrice() != null ? message.getPrice() : BigDecimal.ZERO);
@@ -53,7 +56,7 @@ public class ProductConsumer {
                 productRepository.save(product);
                 logger.info("Producto guardado en base de datos: {}", product.getId());
             } else {
-                logger.info("Producto con UUID {} ya existe. No se inserta duplicado.", uuid);
+                logger.info("Producto ya existe (UUID: {}, SKU: {}). No se inserta duplicado.", uuid, message.getSkuId());
             }
         } catch (Exception e) {
             logger.error("Error al procesar producto de Kafka: {}", message, e);
