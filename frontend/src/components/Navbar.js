@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import CheckoutStepperBar from './CheckoutStepperBar';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
@@ -53,22 +54,42 @@ function Navbar() {
         <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports" style={{ height: 180, objectFit: 'contain' }} />
       </Link>
 
-      {/* Buscador centrado */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
-        <TextField
-          placeholder="Buscar productos"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={e => {
-            const val = e.target.value;
-            setSearch(val);
-            const path = location.pathname === '/' ? '/catalog' : location.pathname;
-            navigate(`${path}?query=${encodeURIComponent(val)}`, { replace: true });
-          }}
-          sx={{ width: '100%', maxWidth: 600, background: '#fff' }}
-        />
-      </div>
+      {/* Buscador centrado o barra de progreso según ruta */}
+      {(() => {
+        if (["/cart", "/checkout", "/confirmation"].includes(location.pathname)) {
+          let step = 0;
+          if (location.pathname === "/cart") step = 0;
+          else if (location.pathname === "/checkout") {
+            const params = new URLSearchParams(location.search);
+            step = parseInt(params.get('step'), 10);
+            if (isNaN(step)) step = 1;
+          } else if (location.pathname === "/confirmation") step = 4;
+          return (
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+              <CheckoutStepperBar step={step} />
+            </div>
+          );
+        }
+        // Si no, muestra el buscador
+        return (
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+            <TextField
+              placeholder="Buscar productos"
+              variant="outlined"
+              size="small"
+              value={search}
+              onChange={e => {
+                const val = e.target.value;
+                setSearch(val);
+                const path = location.pathname === '/' ? '/catalog' : location.pathname;
+                navigate(`${path}?query=${encodeURIComponent(val)}`, { replace: true });
+              }}
+              sx={{ width: '100%', maxWidth: 600, background: '#fff' }}
+            />
+          </div>
+        );
+      })()}
+
 
       {/* Menú usuario / carrito */}
       <div style={{ display: 'flex', alignItems: 'center' }}>

@@ -12,7 +12,7 @@ import CheckoutOptions from "../components/CheckoutOptions";
 
 import { useState, useEffect } from "react";
 import MiniCart from "../components/MiniCart";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../components/CartContext";
 import { useAuth } from "../components/AuthContext";
 import { Button, Box } from "@mui/material";
@@ -35,7 +35,14 @@ function Checkout() {
     }
   }, [cart]);
   // Estado del paso actual
-  const [step, setStep] = useState(-1); // -1 representa la selección de modo de checkout
+  const location = useLocation();
+  // Lee el paso desde la query (?step=X) si existe
+  const initialStep = (() => {
+    const params = new URLSearchParams(location.search);
+    const s = parseInt(params.get('step'), 10);
+    return isNaN(s) ? -1 : s;
+  })();
+  const [step, setStep] = useState(initialStep); // -1 representa la selección de modo de checkout
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [isAnonymousCheckout, setIsAnonymousCheckout] = useState(false);
 
@@ -57,6 +64,16 @@ function Checkout() {
     setIsAnonymousCheckout(true);
     setStep(0);
   };
+
+  // Actualiza el parámetro ?step=X en la URL cada vez que cambia el paso
+  useEffect(() => {
+    if (step >= 0) {
+      const params = new URLSearchParams(location.search);
+      params.set('step', step);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
+    // eslint-disable-next-line
+  }, [step, location.pathname, location.search, navigate]);
 
   // Envolvemos los pasos centrales en un Box con margen vertical de 25px
   // para separar visualmente del borde del carrusel

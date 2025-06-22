@@ -69,8 +69,13 @@ function ProductList({ searchTerm = "" }) {
       const matchesSearch =
         (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      // Filtro por tipo (desde drawer o barra de categorías)
-      const matchesType = (category ? p.type === category : true) && (!appliedFilters.typeFilter || (p.type === appliedFilters.typeFilter));
+      // Filtro por tipo: si hay categoría visual, priorizarla; si no, usar la del Drawer
+      let matchesType = true;
+      if (category && ["SNEAKERS", "CLOTHING", "SUPPLEMENT"].includes(category)) {
+        matchesType = p.type === category;
+      } else if (appliedFilters.typeFilter && ["SNEAKERS", "CLOTHING", "SUPPLEMENT"].includes(appliedFilters.typeFilter)) {
+        matchesType = p.type === appliedFilters.typeFilter;
+      }
       // Filtro por rango de precio
       const matchesPrice = typeof p.price === 'number' &&
         p.price >= appliedFilters.priceRange[0] &&

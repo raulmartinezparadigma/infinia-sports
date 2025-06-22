@@ -59,6 +59,35 @@ const AdminKafkaPanel = () => {
         <Typography variant="body2" gutterBottom>
           Pega el JSON de un producto válido y pulsa "Enviar a Kafka". El producto se enviará directamente a la cola para procesamiento asíncrono.
         </Typography>
+        {/* Ayuda textual con los valores válidos de ProductType */}
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Valores válidos para <b>"type"</b>: <code>SNEAKERS</code>, <code>CLOTHING</code>, <code>SUPPLEMENT</code>
+        </Alert>
+        {/* Selector visual para el campo type */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Typography variant="body2">Selecciona tipo:</Typography>
+          <select
+            value={(() => {
+              try {
+                const parsed = JSON.parse(jsonInput);
+                return parsed.type || '';
+              } catch { return ''; }
+            })()}
+            onChange={e => {
+              try {
+                const parsed = JSON.parse(jsonInput);
+                parsed.type = e.target.value;
+                setJsonInput(JSON.stringify(parsed, null, 2));
+              } catch {}
+            }}
+            style={{ fontSize: '1rem', padding: '4px 8px' }}
+          >
+            <option value="">-- Selecciona --</option>
+            <option value="SNEAKERS">SNEAKERS</option>
+            <option value="CLOTHING">CLOTHING</option>
+            <option value="SUPPLEMENT">SUPPLEMENT</option>
+          </select>
+        </Box>
         <TextField
           label="JSON del producto"
           multiline
