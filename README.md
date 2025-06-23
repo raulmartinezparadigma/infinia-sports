@@ -37,6 +37,39 @@ _E-commerce de productos deportivos_
 - El frontend utiliza React Router y state para pasar el método de pago a la pantalla de confirmación
 - Envío de correo de confirmación tras pedido
 
+## Configuración de SendGrid (Backend)
+
+Para el envío de correos de confirmación se utiliza SendGrid. **Por seguridad, la clave API nunca debe incluirse en archivos versionados ni en el historial de git.**
+
+Debes exportar la variable de entorno `SENDGRID_API_KEY` antes de arrancar el backend:
+
+### En desarrollo local (Git Bash):
+```bash
+export SENDGRID_API_KEY='TU_NUEVA_CLAVE'
+```
+
+### En PowerShell:
+```powershell
+$env:SENDGRID_API_KEY="TU_NUEVA_CLAVE"
+```
+
+### En un servidor Linux:
+Agrega en tu archivo de entorno (`~/.bashrc`, `~/.profile`, etc.):
+```bash
+export SENDGRID_API_KEY='TU_NUEVA_CLAVE'
+```
+Y recarga el entorno:
+```bash
+source ~/.bashrc
+```
+
+La configuración del backend toma automáticamente esta variable mediante:
+```properties
+spring.mail.password=${SENDGRID_API_KEY:}
+```
+
+**No incluyas la clave en archivos como `application.properties`, `application-dev.properties` ni en ningún commit.**
+
 ## Tecnologías principales
 - Java 17
 - Spring Boot
