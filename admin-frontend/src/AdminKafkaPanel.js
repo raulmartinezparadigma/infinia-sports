@@ -13,7 +13,7 @@ function plantillaProducto(uuid) {
   return `{
   "id": "${uuid}",
   "skuId": "123456789012345678",
-  "type": "ZAPATILLAS",
+  "type": "SNEAKERS", 
   "description": "Zapatillas deportivas de ejemplo",
   "price": 59.99,
   "size": "42",
