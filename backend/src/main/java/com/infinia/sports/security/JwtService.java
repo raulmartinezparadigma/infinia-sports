@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para la generación y validación de tokens JWT.
@@ -54,7 +56,25 @@ public class JwtService {
      * @return Token JWT generado
      */
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        
+        System.out.println("[TRACE] JwtService - Generando token para usuario: " + userDetails.getUsername());
+        System.out.println("[TRACE] JwtService - Authorities del usuario: " + userDetails.getAuthorities());
+        
+        List<String> roles = userDetails.getAuthorities().stream()
+            .map(authority -> {
+                String role = authority.getAuthority();
+                System.out.println("[TRACE] JwtService - Añadiendo rol al token: " + role);
+                return role;
+            })
+            .collect(Collectors.toList());
+            
+        System.out.println("[TRACE] JwtService - Lista de roles para el claim: " + roles);
+        claims.put("roles", roles);
+        
+        String token = generateToken(claims, userDetails);
+        System.out.println("[TRACE] JwtService - Token generado con éxito");
+        return token;
     }
 
     /**
