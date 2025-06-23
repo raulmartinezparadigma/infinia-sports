@@ -26,6 +26,7 @@ public class OrderMailServiceImpl implements OrderMailService {
     public void sendOrderSummary(String to, String subject, String htmlContent) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom("infiniasports@gmail.com"); // Remitente verificado en SendGrid
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(htmlContent, true); // true para HTML
