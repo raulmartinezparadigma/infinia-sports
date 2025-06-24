@@ -5,10 +5,14 @@ import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/admin/kafka")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "admin-kafka", description = "API de administración de Kafka")
 public class AdminKafkaController {
+    private static final Logger logger = LoggerFactory.getLogger(AdminKafkaController.class);
     private final ProductProducer productProducer;
 
     public AdminKafkaController(ProductProducer productProducer) {

@@ -1,18 +1,25 @@
 package com.infinia.sports.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.infinia.sports.dto.AdminAuthRequestDTO;
 import com.infinia.sports.security.AdminUserDetailsService;
 import com.infinia.sports.security.JwtService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/admin/auth")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "admin-auth", description = "API de administración de autenticación")
 public class AdminAuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AdminAuthController.class);
 
     private final AuthenticationManager adminAuthenticationManager;
     private final AdminUserDetailsService adminUserDetailsService;
@@ -23,7 +30,7 @@ public class AdminAuthController {
             @org.springframework.beans.factory.annotation.Qualifier("adminAuthenticationManager") AuthenticationManager adminAuthenticationManager,
             AdminUserDetailsService adminUserDetailsService,
             JwtService jwtService) {
-        System.out.println("[TRACE] Constructor AdminAuthController: manager=" + adminAuthenticationManager.getClass().getName());
+        logger.info("[TRACE] Constructor AdminAuthController: manager={}", adminAuthenticationManager.getClass().getName());
         this.adminAuthenticationManager = adminAuthenticationManager;
         this.adminUserDetailsService = adminUserDetailsService;
         this.jwtService = jwtService;
@@ -31,7 +38,7 @@ public class AdminAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AdminAuthRequestDTO request) {
-        System.out.println("[TRACE] Entrando en login admin, manager=" + adminAuthenticationManager.getClass().getName());
+        logger.info("[TRACE] Entrando en login admin, manager={}", adminAuthenticationManager.getClass().getName());
         try {
             adminAuthenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
