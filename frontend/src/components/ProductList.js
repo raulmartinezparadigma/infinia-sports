@@ -44,7 +44,7 @@ function ProductList({ searchTerm = "" }) {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch("/productos") // Endpoint correcto según backend
+    fetch("/products") // Endpoint correcto según backend
       .then((res) => {
         if (!res.ok) throw new Error("Error al cargar productos");
         return res.json();

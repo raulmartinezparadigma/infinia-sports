@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
-@Tag(name = "Carrito", description = "API para gestionar el carrito de compras")
+@Tag(name = "cart", description = "API para gestionar el carrito de compras")
 public class CartController {
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
     

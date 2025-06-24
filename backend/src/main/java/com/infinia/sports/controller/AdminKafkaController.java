@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/kafka")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "admin-kafka", description = "API de administración de Kafka")
 public class AdminKafkaController {
     private final ProductProducer productProducer;
 

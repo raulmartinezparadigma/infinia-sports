@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/admin/auth")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "admin-auth", description = "API de administración de autenticación")
 public class AdminAuthController {
 
     private final AuthenticationManager adminAuthenticationManager;

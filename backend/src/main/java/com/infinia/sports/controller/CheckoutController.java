@@ -38,7 +38,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Tag(name = "Checkout", description = "API para la gestión del carrito y el proceso de checkout")
+@Tag(name = "checkout", description = "API para la gestión del carrito y el proceso de checkout")
 public class CheckoutController {
 
     private final CheckoutService checkoutService;

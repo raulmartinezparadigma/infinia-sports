@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/payments")
 @Validated
+@io.swagger.v3.oas.annotations.tags.Tag(name = "payment", description = "API para pagos")
 public class PaymentController {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PaymentController.class);
     private final BizumPaymentServiceImpl bizumPaymentService;
