@@ -27,12 +27,11 @@ import java.util.UUID;
 public class Product {
 
     /**
-     * Identificador único de negocio para el producto (SKU de 18 dígitos sin guiones)
+     * Unique business identifier for the product (18-digit SKU without dashes)
      */
     @jakarta.persistence.Column(unique = true, length = 18, nullable = false)
     @NotBlank(message = "El skuId no puede estar vacío")
     private String skuId;
-
 
     @Id
     @GeneratedValue
@@ -53,7 +52,7 @@ public class Product {
     private String size;
 
     /**
-     * URL o nombre de la imagen del producto
+     * URL or image name of the product
      */
     @NotBlank(message = "La imagen no puede estar vacía")
     private String imageUrl;
