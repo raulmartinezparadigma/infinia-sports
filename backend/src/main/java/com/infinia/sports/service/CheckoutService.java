@@ -9,6 +9,8 @@ import com.infinia.sports.model.dto.CheckoutDTO;
 /**
  * Interfaz para el servicio de checkout
  */
+import com.infinia.sports.model.dto.CartDTO;
+
 public interface CheckoutService {
     
     /**
@@ -83,5 +85,5 @@ public interface CheckoutService {
      * @param userEmail Email del usuario autenticado
      * @return El carrito actualizado
      */
-    Cart linkCartToUser(String cartId, String userId, String userEmail);
+    CartDTO linkCartToUser(String cartId, String userId, String userEmail);
 }

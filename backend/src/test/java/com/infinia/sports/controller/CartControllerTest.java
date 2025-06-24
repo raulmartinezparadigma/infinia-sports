@@ -1,7 +1,6 @@
 package com.infinia.sports.controller;
 
-import com.infinia.sports.mapper.CartMapper;
-import com.infinia.sports.model.Cart;
+import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.service.CheckoutService;
 
@@ -39,14 +38,13 @@ public class CartControllerTest {
         String cartId = "cart123";
         String userId = "user1";
         String userEmail = "user1@example.com";
-        Cart cart = Cart.builder().id(cartId).userId(userId).userEmail(userEmail).build();
-        CartDTO cartDTO = CartMapper.toDTO(cart);
+        CartDTO cartDTO = CartDTO.builder().id(cartId).userId(userId).userEmail(userEmail).build();
 
         // Mock SecurityContext
         SecurityContextHolder.clearContext();
         SecurityContextHolder.getContext().setAuthentication(authentication);
         when(authentication.getName()).thenReturn(userId);
-        when(checkoutService.linkCartToUser(cartId, userId, userId)).thenReturn(cart);
+        when(checkoutService.linkCartToUser(cartId, userId, userId)).thenReturn(cartDTO);
 
         // Act
         ResponseEntity<CartDTO> response = cartController.linkCartToUser(cartId);

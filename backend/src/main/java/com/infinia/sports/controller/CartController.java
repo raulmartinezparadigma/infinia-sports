@@ -45,9 +45,7 @@ public class CartController {
         logger.info("[linkCartToUser] Vinculando carrito {} con usuario {}", cartId, userId);
         
         // Llamar al servicio para vincular el carrito con el usuario
-        Cart updatedCart = checkoutService.linkCartToUser(cartId, userId, userEmail);
-        
-        CartDTO dto = CartMapper.toDTO(updatedCart);
+        CartDTO dto = checkoutService.linkCartToUser(cartId, userId, userEmail);
         return ResponseEntity.ok(dto);
     }
 }

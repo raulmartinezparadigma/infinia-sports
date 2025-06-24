@@ -4,11 +4,12 @@ import com.infinia.sports.model.dto.BizumPaymentRequestDTO;
 import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.model.dto.RedsysPaymentRequestDTO;
 import com.infinia.sports.model.dto.RedsysPaymentResponseDTO;
+import com.infinia.sports.model.dto.TransferPaymentRequestDTO;
+import com.infinia.sports.model.dto.TransferPaymentResponseDTO;
 import com.infinia.sports.service.impl.BizumPaymentServiceImpl;
 import com.infinia.sports.service.impl.RedsysPaymentServiceImpl;
 import com.infinia.sports.service.impl.TransferPaymentServiceImpl;
-import com.infinia.sports.model.dto.TransferPaymentRequestDTO;
-import com.infinia.sports.model.dto.TransferPaymentResponseDTO;
+
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
