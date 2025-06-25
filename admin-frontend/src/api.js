@@ -18,21 +18,15 @@ export async function fetchPaymentInfoByOrderId(orderId) {
   try {
     // Obtener el token JWT del localStorage
     const token = localStorage.getItem('admin_jwt');
-    console.log('[TRACE] fetchPaymentInfoByOrderId - Token JWT obtenido:', token ? 'Token presente' : 'Token ausente');
-    
-    // Configurar las cabeceras con el token JWT
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    console.log('[TRACE] fetchPaymentInfoByOrderId - Cabeceras configuradas:', headers);
-    
-    console.log(`[TRACE] fetchPaymentInfoByOrderId - Realizando petición a: ${API_BASE_URL}/api/orders/${orderId}/payment`);
-    const response = await axios.get(`${API_BASE_URL}/api/orders/${orderId}/payment`, { headers });
-    console.log('[TRACE] fetchPaymentInfoByOrderId - Respuesta recibida:', response.status);
+    const response = await axios.get(`${API_BASE_URL}/api/payments/order/${orderId}/payment`, { headers });
     return response.data;
   } catch (error) {
-    console.error('[TRACE] fetchPaymentInfoByOrderId - Error en la petición:', error.response ? error.response.status : error.message);
-    if (error.response && error.response.status === 404) {
+    // Si es 403 o 404, simplemente retorna null (no bloquea el UI)
+    if (error.response && (error.response.status === 404 || error.response.status === 403)) {
       return null;
     }
+    // Otros errores sí se lanzan
     throw error;
   }
 }
