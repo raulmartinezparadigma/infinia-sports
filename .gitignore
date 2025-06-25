@@ -4,6 +4,8 @@ node_modules/
 # Editor/IDE config
 .vscode/
 .windsurf/
+.idea/
+*.iml
 
 # Sistema operativo
 .DS_Store
@@ -21,7 +23,6 @@ backend/target/
 **/target/
 
 # Otros
-
 
 # Por defecto, mantenemos package-lock.json y los SVGs generados en public
 # Si quieres excluir más carpetas, añádelas aquí
