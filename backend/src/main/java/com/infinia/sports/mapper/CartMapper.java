@@ -8,17 +8,22 @@ import com.infinia.sports.model.dto.CartItemDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utilidad para mapear la entidad Cart a CartDTO para exponer datos seguros al frontend
  */
 public class CartMapper {
+
+    private static final Logger logger = LoggerFactory.getLogger(CartMapper.class);
 
     /**
      * Convierte un Cart a CartDTO
      */
     public static CartDTO toDTO(Cart cart) {
         if (cart == null) return null;
-        return CartDTO.builder()
+        CartDTO dto = CartDTO.builder()
                 .id(cart.getId())
                 .userId(cart.getUserId())
                 .sessionId(cart.getSessionId())
@@ -28,6 +33,9 @@ public class CartMapper {
                 .tax(cart.getTax())
                 .total(cart.getTotal())
                 .build();
+        logger.info("[CartMapper.toDTO] Cart recibido: {}", cart);
+        logger.info("[CartMapper.toDTO] CartDTO generado: {}", dto);
+        return dto;
     }
 
     /**

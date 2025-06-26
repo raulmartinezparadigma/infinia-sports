@@ -15,15 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.AddressDTO;
+import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
-import com.infinia.sports.repository.jpa.ProductRepository;
-import com.infinia.sports.repository.mongo.OrderRepository;
-
-import com.infinia.sports.repository.mongo.PaymentRepository;
 import com.infinia.sports.service.CheckoutService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,9 +42,6 @@ import lombok.RequiredArgsConstructor;
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
-    private final OrderRepository orderRepository;
-    private final PaymentRepository paymentRepository;
-    private final ProductRepository productRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CheckoutController.class);
 
@@ -58,8 +51,8 @@ public class CheckoutController {
     @PostMapping("/cart/items")
     @Operation(summary = "Añadir producto al carrito", description = "Añade un producto al carrito de compras")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Producto añadido correctamente",
-            content = @Content(schema = @Schema(implementation = Cart.class))), @ApiResponse(responseCode = "400", description = "Datos inválidos") })
-    public ResponseEntity<Cart> addItemToCart(@Valid @RequestBody CartItemDTO cartItemDTO, @RequestHeader(value = "User-ID", required = false) String userId,
+            content = @Content(schema = @Schema(implementation = CartDTO.class))), @ApiResponse(responseCode = "400", description = "Datos inválidos") })
+    public ResponseEntity<CartDTO> addItemToCart(@Valid @RequestBody CartItemDTO cartItemDTO, @RequestHeader(value = "User-ID", required = false) String userId,
             HttpServletRequest request) {
 
         // Log de parámetros de entrada
@@ -67,7 +60,8 @@ public class CheckoutController {
         // Obtener ID de sesión o generar uno nuevo
         String sessionId = getOrCreateSessionId(request);
 
-        Cart updatedCart = checkoutService.addItemToCart(sessionId, userId, cartItemDTO);
+        CartDTO updatedCart = checkoutService.addItemToCart(sessionId, userId, cartItemDTO);
+        logger.info("[addItemToCart] CartDTO devuelto: {}", updatedCart);
         logger.info("[addItemToCart] Respuesta: {}", updatedCart);
         return ResponseEntity.ok(updatedCart);
     }
@@ -78,15 +72,16 @@ public class CheckoutController {
     @PutMapping("/cart/items/{id}")
     @Operation(summary = "Actualizar cantidad de producto en el carrito", description = "Actualiza la cantidad de un producto en el carrito de compras")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Cantidad actualizada correctamente",
-            content = @Content(schema = @Schema(implementation = Cart.class))), @ApiResponse(responseCode = "404",
+            content = @Content(schema = @Schema(implementation = CartDTO.class))), @ApiResponse(responseCode = "404",
             description = "Producto no encontrado en el carrito") })
-    public ResponseEntity<Cart> updateCartItemQuantity(@PathVariable("id") String itemId, @Valid @RequestBody CartItemDTO cartItemDTO,
+    public ResponseEntity<CartDTO> updateCartItemQuantity(@PathVariable("id") String itemId, @Valid @RequestBody CartItemDTO cartItemDTO,
             @RequestHeader(value = "User-ID", required = false) String userId, HttpServletRequest request) {
         logger.info("[updateCartItemQuantity] Parámetros recibidos: itemId={}, quantity={}, userId={}, sessionId={}", itemId, cartItemDTO.getQuantity(), userId,
                 request.getSession().getId());
         String sessionId = getOrCreateSessionId(request);
         try {
-            Cart updatedCart = checkoutService.updateCartItemQuantity(sessionId, userId, itemId, cartItemDTO.getQuantity());
+            CartDTO updatedCart = checkoutService.updateCartItemQuantity(sessionId, userId, itemId, cartItemDTO.getQuantity());
+            logger.info("[updateCartItemQuantity] CartDTO devuelto: {}", updatedCart);
             logger.info("[updateCartItemQuantity] Respuesta del servicio: {}", updatedCart);
             return ResponseEntity.ok(updatedCart);
         } catch (com.infinia.sports.exception.ResourceNotFoundException e) {
@@ -104,16 +99,17 @@ public class CheckoutController {
     @DeleteMapping("/cart/items/{id}")
     @Operation(summary = "Eliminar producto del carrito", description = "Elimina un producto del carrito de compras")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Producto eliminado correctamente",
-            content = @Content(schema = @Schema(implementation = Cart.class))), @ApiResponse(responseCode = "404",
+            content = @Content(schema = @Schema(implementation = CartDTO.class))), @ApiResponse(responseCode = "404",
             description = "Producto no encontrado en el carrito") })
-    public ResponseEntity<Cart> removeItemFromCart(@PathVariable("id") String itemId, @RequestHeader(value = "User-ID", required = false) String userId,
+    public ResponseEntity<CartDTO> removeItemFromCart(@PathVariable("id") String itemId, @RequestHeader(value = "User-ID", required = false) String userId,
             HttpServletRequest request) {
 
         logger.info("[removeItemFromCart] Parámetros recibidos: itemId={}, userId={}, sessionId={}", itemId, userId, request.getSession().getId());
         String sessionId = getOrCreateSessionId(request);
         try {
             logger.info("[removeItemFromCart] Llamando a checkoutService.removeItemFromCart...");
-            Cart updatedCart = checkoutService.removeItemFromCart(sessionId, userId, itemId);
+            CartDTO updatedCart = checkoutService.removeItemFromCart(sessionId, userId, itemId);
+            logger.info("[removeItemFromCart] CartDTO devuelto: {}", updatedCart);
             logger.info("[removeItemFromCart] Respuesta del servicio: {}", updatedCart);
             return ResponseEntity.ok(updatedCart);
         } catch (com.infinia.sports.exception.ResourceNotFoundException e) {
@@ -150,18 +146,21 @@ public class CheckoutController {
     @GetMapping("/cart")
     @Operation(summary = "Obtener carrito", description = "Obtiene el contenido del carrito de compras")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Carrito obtenido correctamente",
-            content = @Content(schema = @Schema(implementation = Cart.class))), @ApiResponse(responseCode = "404", description = "Carrito no encontrado") })
-    public ResponseEntity<Cart> getCart(@RequestHeader(value = "User-ID", required = false) String userId, HttpServletRequest request) {
+            content = @Content(schema = @Schema(implementation = CartDTO.class))), @ApiResponse(responseCode = "404", description = "Carrito no encontrado") })
+    public ResponseEntity<CartDTO> getCart(@RequestHeader(value = "User-ID", required = false) String userId, HttpServletRequest request) {
 
         // Obtener ID de sesión
         String sessionId = getOrCreateSessionId(request);
 
         try {
-            Cart cart = checkoutService.getCart(sessionId, userId);
+            CartDTO cart = checkoutService.getCart(sessionId, userId);
+            logger.info("[getCart] CartDTO devuelto: {}", cart);
             return ResponseEntity.ok(cart);
         } catch (Exception e) {
             // Si no existe carrito, devolver uno vacío
-            return ResponseEntity.ok(Cart.builder().sessionId(sessionId).userId(userId).build());
+            CartDTO cart = CartDTO.builder().sessionId(sessionId).userId(userId).build();
+            logger.info("[getCart] CartDTO devuelto: {}", cart);
+            return ResponseEntity.ok(cart);
         }
     }
 
@@ -171,13 +170,14 @@ public class CheckoutController {
     @PostMapping("/checkout/direccion")
     @Operation(summary = "Guardar dirección", description = "Guarda la dirección de envío y facturación")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Dirección guardada correctamente",
-            content = @Content(schema = @Schema(implementation = Cart.class))), @ApiResponse(responseCode = "400",
+            content = @Content(schema = @Schema(implementation = CartDTO.class))), @ApiResponse(responseCode = "400",
             description = "Datos inválidos"), @ApiResponse(responseCode = "404", description = "Carrito no encontrado") })
-    public ResponseEntity<Cart> saveAddresses(@RequestParam("cartId") String cartId, @Valid @RequestBody AddressDTO shippingAddress,
+    public ResponseEntity<CartDTO> saveAddresses(@RequestParam("cartId") String cartId, @Valid @RequestBody AddressDTO shippingAddress,
             @RequestBody(required = false) AddressDTO billingAddress,
             @RequestParam(value = "sameAsBillingAddress", defaultValue = "false") boolean sameAsBillingAddress) {
 
-        Cart updatedCart = checkoutService.saveAddresses(cartId, shippingAddress, billingAddress, sameAsBillingAddress);
+        CartDTO updatedCart = checkoutService.saveAddresses(cartId, shippingAddress, billingAddress, sameAsBillingAddress);
+        logger.info("[saveAddresses] CartDTO devuelto: {}", updatedCart);
         return ResponseEntity.ok(updatedCart);
     }
 

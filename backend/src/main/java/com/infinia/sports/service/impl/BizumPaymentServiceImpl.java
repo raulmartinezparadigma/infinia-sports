@@ -13,6 +13,8 @@ import com.infinia.sports.model.PaymentStatus;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.OrderRepository;
+import com.infinia.sports.repository.mongo.CartRepository;
+import com.infinia.sports.service.OrderMailPaymentService;
 
 /**
  * Servicio mock para pagos Bizum
@@ -21,16 +23,15 @@ import com.infinia.sports.repository.mongo.OrderRepository;
 public class BizumPaymentServiceImpl {
     private static final Logger logger = LoggerFactory.getLogger(BizumPaymentServiceImpl.class);
     private final PaymentRepository paymentRepository;
-    private final com.infinia.sports.repository.mongo.CartRepository cartRepository;
+    private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    private final OrderMailPaymentService orderMailPaymentService;
 
-    private final com.infinia.sports.service.CheckoutService checkoutService;
-
-    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, com.infinia.sports.repository.mongo.CartRepository cartRepository, OrderRepository orderRepository, com.infinia.sports.service.CheckoutService checkoutService) {
+    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService) {
         this.paymentRepository = paymentRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
-        this.checkoutService = checkoutService;
+        this.orderMailPaymentService = orderMailPaymentService;
     }
 
     /**
@@ -82,7 +83,7 @@ public class BizumPaymentServiceImpl {
                         orderRepository.save(order);
                         logger.info("[BizumService] Estado de la orden actualizado a {} para orderId={}, status después='{}'", payment.getStatus().name(), payment.getOrderId(), order.getStatus());
                         // Enviar email de resumen de pedido tras pago exitoso (centralizado)
-                        checkoutService.sendOrderConfirmationEmail(order.getOrderId());
+                        orderMailPaymentService.sendOrderConfirmationEmail(order.getOrderId());
                     }
                 } else {
                     logger.warn("[BizumService] No se encontró la orden para orderId={} al intentar actualizar estado tras pago Bizum", payment.getOrderId());

@@ -1,14 +1,18 @@
 package com.infinia.sports.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
 import com.infinia.sports.model.Payment;
+import com.infinia.sports.model.PaymentMethod;
+import com.infinia.sports.model.PaymentStatus;
 import com.infinia.sports.model.dto.RedsysPaymentRequestDTO;
 import com.infinia.sports.model.dto.RedsysPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.mongo.PaymentRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import com.infinia.sports.service.OrderMailPaymentService;
 
 /**
  * Servicio simulado para pagos Redsys
@@ -19,13 +23,13 @@ public class RedsysPaymentServiceImpl {
     private final PaymentRepository paymentRepository;
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
-    private final com.infinia.sports.service.CheckoutService checkoutService;
+    private final OrderMailPaymentService orderMailPaymentService;
 
-    public RedsysPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, com.infinia.sports.service.CheckoutService checkoutService) {
+    public RedsysPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService) {
         this.paymentRepository = paymentRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
-        this.checkoutService = checkoutService;
+        this.orderMailPaymentService = orderMailPaymentService;
     }
 
     /**
@@ -46,21 +50,18 @@ public class RedsysPaymentServiceImpl {
         String providerResponse = "Pago Redsys simulado OK";
         Payment payment = Payment.builder()
                 .orderId(request.getOrderId())
-                .method(com.infinia.sports.model.PaymentMethod.REDSYS)
-                .status(com.infinia.sports.model.PaymentStatus.COMPLETED)
-                .transactionId(transactionId)
                 .amount(request.getAmount())
-                .currency("EUR")
-                .providerResponse(providerResponse)
+                .method(PaymentMethod.REDSYS)
+                .status(PaymentStatus.COMPLETED)
                 .build();
-        paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
         // Actualizar estado del pedido a COMPLETED si existe
         orderRepository.findByOrderId(request.getOrderId()).ifPresent(order -> {
             order.setStatus("COMPLETED");
             orderRepository.save(order);
             logger.info("[RedsysService] Order actualizado a COMPLETED: {}", order.getOrderId());
             // Enviar email de resumen de pedido tras pago exitoso (centralizado)
-            checkoutService.sendOrderConfirmationEmail(order.getOrderId());
+            orderMailPaymentService.sendOrderConfirmationEmail(order.getOrderId());
         });
         // Eliminar carrito tras pago exitoso
         try {
@@ -69,7 +70,7 @@ public class RedsysPaymentServiceImpl {
         } catch (Exception e) {
             logger.error("[RedsysService] Error al eliminar el carrito tras pago Redsys: {}", e.getMessage(), e);
         }
-        RedsysPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toRedsysPaymentResponseDTO(payment);
+        RedsysPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toRedsysPaymentResponseDTO(saved);
         logger.info("[RedsysService] DTO devuelto: {}", dto);
         return dto;
     }

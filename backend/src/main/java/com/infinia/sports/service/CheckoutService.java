@@ -5,12 +5,11 @@ import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.model.dto.CartDTO;
 
 /**
  * Interfaz para el servicio de checkout
  */
-import com.infinia.sports.model.dto.CartDTO;
-
 public interface CheckoutService {
     
     /**
@@ -20,9 +19,9 @@ public interface CheckoutService {
      * @param cartItemDTO Datos del producto a añadir
      * @return El carrito actualizado
      */
-    Cart addItemToCart(String sessionId, String userId, CartItemDTO cartItemDTO);
+    CartDTO addItemToCart(String sessionId, String userId, CartItemDTO cartItemDTO);
 
-    Cart updateCartItemQuantity(String sessionId, String userId, String itemId, Integer quantity);
+    CartDTO updateCartItemQuantity(String sessionId, String userId, String itemId, Integer quantity);
     
     /**
      * Elimina un producto del carrito
@@ -31,7 +30,7 @@ public interface CheckoutService {
      * @param itemId ID del producto en el carrito
      * @return El carrito actualizado
      */
-    Cart removeItemFromCart(String sessionId, String userId, String itemId);
+    CartDTO removeItemFromCart(String sessionId, String userId, String itemId);
     
     /**
      * Obtiene el contenido del carrito
@@ -39,7 +38,7 @@ public interface CheckoutService {
      * @param userId ID del usuario (opcional)
      * @return El carrito
      */
-    Cart getCart(String sessionId, String userId);
+    CartDTO getCart(String sessionId, String userId);
     
     /**
      * Guarda las direcciones de envío y facturación
@@ -49,7 +48,7 @@ public interface CheckoutService {
      * @param sameAsBillingAddress Indica si la dirección de facturación es la misma que la de envío
      * @return El carrito actualizado
      */
-    Cart saveAddresses(String cartId, AddressDTO shippingAddress, AddressDTO billingAddress, boolean sameAsBillingAddress);
+    CartDTO saveAddresses(String cartId, AddressDTO shippingAddress, AddressDTO billingAddress, boolean sameAsBillingAddress);
     
     /**
      * Confirma el pedido y lo prepara para el pago
@@ -65,19 +64,6 @@ public interface CheckoutService {
      */
     void clearCart(String sessionId, String userId);
 
-    /**
-     * Obtiene información de un pedido
-     * @param orderId ID del pedido
-     * @return La orden
-     */
-    Order getOrder(String orderId);
-
-    /**
-     * Envía el correo de resumen de pedido tras pago exitoso (centralizado)
-     * @param orderId ID del pedido
-     */
-    void sendOrderConfirmationEmail(String orderId);
-    
     /**
      * Vincula un carrito existente con un usuario autenticado
      * @param cartId ID del carrito
