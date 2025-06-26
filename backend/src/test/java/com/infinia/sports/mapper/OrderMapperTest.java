@@ -5,6 +5,7 @@ import com.infinia.sports.model.Order.LineItem;
 import com.infinia.sports.model.Order.ShippingGroup;
 import com.infinia.sports.model.Order.PriceInfo;
 import com.infinia.sports.model.Order.TaxInfo;
+import com.infinia.sports.model.Order.Address;
 import com.infinia.sports.model.dto.OrderDTO;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
@@ -32,13 +33,28 @@ class OrderMapperTest {
         TaxInfo taxInfo = TaxInfo.builder()
                 .taxRate(new BigDecimal("0.21")).taxRegion("ES")
                 .taxBreakdown(breakdown).build();
+        Address dummyAddress = Address.builder()
+            .firstName("Juan")
+            .lastName("Pérez")
+            .addressLine1("Calle Falsa 123")
+            .addressLine2("")
+            .city("Springfield")
+            .state("Madrid")
+            .postalCode("12345")
+            .country("España")
+            .phoneNumber("600123123")
+            .build();
         Order order = Order.builder()
                 .id("1").orderId("ORD123").userId("2").status("PAID").email("a@b.com")
                 .language("es").submitDate(LocalDateTime.of(2024, 1, 1, 0, 0))
                 .shippingGroups(Collections.singletonList(group))
-                .shippingAddress(null).billingAddress(null)
+                .shippingAddress(dummyAddress).billingAddress(dummyAddress)
                 .priceInfo(priceInfo).taxInfo(taxInfo).build();
         OrderDTO dto = OrderMapper.toDTO(order);
+        if (dto == null) {
+            System.out.println("OrderMapper.toDTO devolvió null. Order de entrada: " + order);
+        }
+        assertNotNull(dto, "OrderMapper.toDTO devolvió null");
         assertEquals(order.getId(), dto.getId());
         assertEquals(order.getOrderId(), dto.getOrderId());
         assertEquals(order.getUserId(), dto.getUserId());
