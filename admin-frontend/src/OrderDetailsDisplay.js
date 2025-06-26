@@ -16,21 +16,36 @@ function OrderDetailsDisplay({ order, notFound }) {
   const TASA_IVA_TOTAL = 0.21; // Tasa de IVA para el total de la cesta. Ajustar si es necesario.
   // Estado local para método y estado de pago (movido al inicio)
   const [paymentInfo, setPaymentInfo] = useState({ method: '', status: '' });
+  // Estado local para advertencia de error de pago
+  const [paymentWarning, setPaymentWarning] = useState(null);
 
   useEffect(() => {
     async function loadPaymentInfo() {
-      // Asegurarse de que 'order' y 'order.id' existen antes de usarlos
       if (order && order.id) {
-        const info = await fetchPaymentInfoByOrderId(order.id);
-        // Si no se encuentra info o es null, usar valores por defecto para evitar errores
-        setPaymentInfo(info || { method: '', status: '' });
+        try {
+          const info = await fetchPaymentInfoByOrderId(order.id);
+          if (info) {
+            setPaymentInfo(info);
+            setPaymentWarning(null);
+          } else {
+            setPaymentInfo({ method: '', status: '' });
+            setPaymentWarning('No se pudo obtener información de pago para este pedido.');
+          }
+        } catch (error) {
+          if (error.response && (error.response.status === 403 || error.response.status === 404)) {
+            setPaymentInfo({ method: '', status: '' });
+            setPaymentWarning('No se pudo obtener información de pago para este pedido.');
+          } else {
+            throw error;
+          }
+        }
       } else {
-        // Si no hay order o order.id, resetear paymentInfo a valores por defecto
         setPaymentInfo({ method: '', status: '' });
+        setPaymentWarning(null);
       }
     }
     loadPaymentInfo();
-  }, [order?.id]); // Depender de order?.id para re-ejecutar el efecto si order cambia
+  }, [order]);
 
   if (notFound) {
     return (
@@ -67,6 +82,11 @@ function OrderDetailsDisplay({ order, notFound }) {
   return (
     <div className="order-details-display">
       <h2>Detalles del Pedido</h2>
+      {paymentWarning && (
+        <div style={{ color: 'orange', marginBottom: 10 }}>
+          {paymentWarning}
+        </div>
+      )}
       <p><strong>ID:</strong> {id}</p>
       <p><strong>Estado:</strong> {status}</p>
       <p><strong>Importe:</strong> {priceInfo.total} €</p>

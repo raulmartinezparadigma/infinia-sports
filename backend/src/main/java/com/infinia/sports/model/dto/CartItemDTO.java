@@ -36,4 +36,9 @@ public class CartItemDTO {
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
     private Map<String, String> attributes;
+
+    /**
+     * URL de la imagen del producto
+     */
+    private String productImageUrl;
 }

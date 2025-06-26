@@ -2,6 +2,8 @@ package com.infinia.sports.service;
 
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
+import com.infinia.sports.model.dto.ProductDTO;
+import com.infinia.sports.mapper.ProductMapper;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -26,51 +28,53 @@ public class ProductService {
 
     /**
      * Obtiene todos los productos
-     * @return lista de todos los productos
+     * @return list of all products
      */
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDTO> getAllProducts() {
+        return ProductMapper.toDTOList(productRepository.findAll());
     }
 
     /**
      * Obtiene un producto por su ID
-     * @param id identificador único del producto
-     * @return el producto encontrado
-     * @throws EntityNotFoundException si no se encuentra el producto
+     * @param id unique product identifier
+     * @return found product
+     * @throws EntityNotFoundException if the product is not found
      */
-    public Product getProductById(UUID id) {
-        return productRepository.findById(id)
+    public ProductDTO getProductById(UUID id) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+        return ProductMapper.toDTO(product);
     }
 
     /**
      * Guarda un nuevo producto
-     * @param product producto a guardar
-     * @return el producto guardado
+     * @param product product to save
+     * @return saved product
      */
     @Transactional
-    public Product saveProduct(Product product) {
-        return productRepository.save(product);
+    public ProductDTO saveProduct(Product product) {
+        Product saved = productRepository.save(product);
+        return ProductMapper.toDTO(saved);
     }
 
     /**
      * Actualiza un producto existente
-     * @param id identificador único del producto
-     * @param productDetails detalles actualizados del producto
-     * @return el producto actualizado
+     * @param id unique product identifier
+     * @param productDetails updated product details
+     * @return updated product
      * @throws EntityNotFoundException si no se encuentra el producto
      */
     @Transactional
-    public Product updateProduct(UUID id, Product productDetails) {
-        Product product = getProductById(id);
-        
+    public ProductDTO updateProduct(UUID id, Product productDetails) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
         product.setType(productDetails.getType());
         product.setDescription(productDetails.getDescription());
         product.setPrice(productDetails.getPrice());
         product.setSize(productDetails.getSize());
         product.setImageUrl(productDetails.getImageUrl());
-        
-        return productRepository.save(product);
+        Product updated = productRepository.save(product);
+        return ProductMapper.toDTO(updated);
     }
 
     /**
@@ -88,38 +92,39 @@ public class ProductService {
 
     /**
      * Busca productos por tipo
-     * @param type tipo de producto
-     * @return lista de productos del tipo especificado
+     * @param type product type
+     * @return list of products of the specified type
      */
-    public List<Product> getProductsByType(ProductType type) {
-        return productRepository.findByType(type);
+    public List<ProductDTO> getProductsByType(ProductType type) {
+        return ProductMapper.toDTOList(productRepository.findByType(type));
     }
 
     /**
      * Busca productos por descripción
-     * @param description texto a buscar en la descripción
-     * @return lista de productos que coinciden con la descripción
+     * @param description text to search in the product description
+     * @return list of products matching the description
      */
-    public List<Product> getProductsByDescription(String description) {
-        return productRepository.findByDescriptionContainingIgnoreCase(description);
+    public List<ProductDTO> getProductsByDescription(String description) {
+        return ProductMapper.toDTOList(productRepository.findByDescriptionContainingIgnoreCase(description));
     }
 
     /**
      * Busca productos por talla
-     * @param size talla del producto
-     * @return lista de productos de la talla especificada
+     * @param size product size
+     * @return list of products of the specified size
      */
-    public List<Product> getProductsBySize(String size) {
-        return productRepository.findBySize(size);
+    public List<ProductDTO> getProductsBySize(String size) {
+        return ProductMapper.toDTOList(productRepository.findBySize(size));
     }
 
     /**
      * Importa una lista de productos
-     * @param products lista de productos a importar
-     * @return lista de productos importados
+     * @param products list of products to import
+     * @return list of imported products
      */
     @Transactional
-    public List<Product> importProducts(List<Product> products) {
-        return productRepository.saveAll(products);
+    public List<ProductDTO> importProducts(List<Product> products) {
+        List<Product> imported = productRepository.saveAll(products);
+        return ProductMapper.toDTOList(imported);
     }
 }

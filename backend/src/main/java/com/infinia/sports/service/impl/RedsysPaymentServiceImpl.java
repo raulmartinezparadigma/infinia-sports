@@ -69,13 +69,8 @@ public class RedsysPaymentServiceImpl {
         } catch (Exception e) {
             logger.error("[RedsysService] Error al eliminar el carrito tras pago Redsys: {}", e.getMessage(), e);
         }
-        RedsysPaymentResponseDTO response = RedsysPaymentResponseDTO.builder()
-                .paymentId(payment.getId())
-                .transactionId(transactionId)
-                .status(payment.getStatus().name())
-                .providerResponse(providerResponse)
-                .build();
-        logger.info("[RedsysService] DTO respuesta: {}", response);
-        return response;
+        RedsysPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toRedsysPaymentResponseDTO(payment);
+        logger.info("[RedsysService] DTO devuelto: {}", dto);
+        return dto;
     }
 }

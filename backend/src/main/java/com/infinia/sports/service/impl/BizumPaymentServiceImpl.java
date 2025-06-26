@@ -1,7 +1,6 @@
 package com.infinia.sports.service.impl;
 
 import com.infinia.sports.model.dto.BizumPaymentRequestDTO;
-import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.model.Payment;
 import com.infinia.sports.repository.mongo.PaymentRepository;
 import org.springframework.stereotype.Service;
@@ -12,8 +11,8 @@ import java.util.UUID;
 import com.infinia.sports.model.PaymentMethod;
 import com.infinia.sports.model.PaymentStatus;
 import com.infinia.sports.model.Order;
+import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.OrderRepository;
-
 
 /**
  * Servicio mock para pagos Bizum
@@ -107,14 +106,9 @@ public class BizumPaymentServiceImpl {
             logger.error("[BizumService] Error al eliminar el carrito tras pago Bizum: {}", e.getMessage(), e);
         }
 
-        BizumPaymentResponseDTO response = BizumPaymentResponseDTO.builder()
-                .paymentId(payment.getId())
-                .transactionId(transactionId)
-                .status(payment.getStatus().name())
-                .providerResponse(providerResponse)
-                .build();
         // Traza de salida
-        logger.info("[BizumService] DTO respuesta: {}", response);
-        return response;
+        BizumPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toBizumPaymentResponseDTO(payment);
+        logger.info("[BizumService] DTO devuelto: {}", dto);
+        return dto;
     }
 }

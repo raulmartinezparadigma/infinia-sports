@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 /**
  * Implementación del servicio de checkout
  */
+import com.infinia.sports.model.dto.CartDTO;
+import com.infinia.sports.mapper.CartMapper;
+
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
 
@@ -557,7 +560,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
     
     @Override
-    public Cart linkCartToUser(String cartId, String userId, String userEmail) {
+    public CartDTO linkCartToUser(String cartId, String userId, String userEmail) {
         logger.info("[linkCartToUser] Vinculando carrito {} con usuario {}", cartId, userId);
         
         // Buscar el carrito por su ID
@@ -573,6 +576,6 @@ public class CheckoutServiceImpl implements CheckoutService {
         Cart updatedCart = cartRepository.save(cart);
         logger.info("[linkCartToUser] Carrito vinculado correctamente con usuario {}", userId);
         
-        return updatedCart;
+        return CartMapper.toDTO(updatedCart);
     }
 }

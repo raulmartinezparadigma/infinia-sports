@@ -1,7 +1,7 @@
 package com.infinia.sports.controller;
 
-import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
+import com.infinia.sports.model.dto.ProductDTO;
 import com.infinia.sports.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,14 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
+import com.infinia.sports.model.Product;
 
 /**
  * Controlador REST para la gestión de productos
  * Expone los endpoints para realizar operaciones CRUD sobre productos
  */
 @RestController
-@RequestMapping("/productos")
-@Tag(name = "Productos", description = "API para la gestión de productos")
+@RequestMapping("/products")
+@Tag(name = "products", description = "API para la gestión de productos")
 public class ProductController {
 
     private final ProductService productService;
@@ -51,26 +52,24 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Productos encontrados",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))})
+                schema = @Schema(implementation = ProductDTO.class, description = "Incluye el campo 'imageUrl' para la imagen del producto"))})
     })
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts(
-            @Parameter(description = "Tipo de producto (SNEAKERS, CLOTHING, SUPPLEMENT)") @RequestParam(required = false) ProductType tipo,
-            @Parameter(description = "Texto a buscar en la descripción del producto") @RequestParam(required = false) String descripcion,
-            @Parameter(description = "Talla del producto") @RequestParam(required = false) String talla) {
+    public ResponseEntity<List<ProductDTO>> getAllProducts(
+            @Parameter(description = "Tipo de producto (SNEAKERS, CLOTHING, SUPPLEMENT)") @RequestParam(required = false) ProductType type,
+            @Parameter(description = "Texto a buscar en la descripción del producto") @RequestParam(required = false) String description,
+            @Parameter(description = "Talla del producto") @RequestParam(required = false) String size) {
         
-        List<Product> products;
-        
-        if (tipo != null) {
-            products = productService.getProductsByType(tipo);
-        } else if (descripcion != null) {
-            products = productService.getProductsByDescription(descripcion);
-        } else if (talla != null) {
-            products = productService.getProductsBySize(talla);
+        List<ProductDTO> products;
+        if (type != null) {
+            products = productService.getProductsByType(type);
+        } else if (description != null) {
+            products = productService.getProductsByDescription(description);
+        } else if (size != null) {
+            products = productService.getProductsBySize(size);
         } else {
             products = productService.getAllProducts();
         }
-        
         return ResponseEntity.ok(products);
     }
 
@@ -83,14 +82,14 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto encontrado",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
+                schema = @Schema(implementation = ProductDTO.class, description = "Incluye el campo 'imageUrl' para la imagen del producto"))}),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
                 content = @Content)
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@Parameter(description = "ID del producto") @PathVariable UUID id) {
+    public ResponseEntity<ProductDTO> getProductById(@Parameter(description = "ID del producto") @PathVariable UUID id) {
         try {
-            Product product = productService.getProductById(id);
+            ProductDTO product = productService.getProductById(id);
             return ResponseEntity.ok(product);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -106,13 +105,13 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Producto creado correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
+                schema = @Schema(implementation = ProductDTO.class, description = "Incluye el campo 'imageUrl' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de producto inválidos",
                 content = @Content)
     })
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Parameter(description = "Datos del producto a crear") @Valid @RequestBody Product product) {
-        Product savedProduct = productService.saveProduct(product);
+    public ResponseEntity<ProductDTO> createProduct(@Parameter(description = "Product data to create") @Valid @RequestBody Product product) {
+        ProductDTO savedProduct = productService.saveProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
@@ -126,18 +125,18 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
+                schema = @Schema(implementation = ProductDTO.class, description = "Incluye el campo 'imageUrl' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de producto inválidos",
                 content = @Content),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
                 content = @Content)
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
-            @Parameter(description = "ID del producto a actualizar") @PathVariable UUID id, 
-            @Parameter(description = "Datos actualizados del producto") @Valid @RequestBody Product product) {
+    public ResponseEntity<ProductDTO> updateProduct(
+            @Parameter(description = "ID of the product to update") @PathVariable UUID id, 
+            @Parameter(description = "Updated product data") @Valid @RequestBody Product product) {
         try {
-            Product updatedProduct = productService.updateProduct(id, product);
+            ProductDTO updatedProduct = productService.updateProduct(id, product);
             return ResponseEntity.ok(updatedProduct);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -157,7 +156,7 @@ public class ProductController {
                 content = @Content)
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@Parameter(description = "ID del producto a eliminar") @PathVariable UUID id) {
+    public ResponseEntity<Void> deleteProduct(@Parameter(description = "ID of the product to delete") @PathVariable UUID id) {
         try {
             productService.deleteProduct(id);
             return ResponseEntity.noContent().build();
@@ -175,13 +174,13 @@ public class ProductController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Productos importados correctamente",
                 content = {@Content(mediaType = "application/json",
-                schema = @Schema(implementation = Product.class, description = "Incluye el campo 'mage' para la imagen del producto"))}),
+                schema = @Schema(implementation = ProductDTO.class, description = "Incluye el campo 'imageUrl' para la imagen del producto"))}),
         @ApiResponse(responseCode = "400", description = "Datos de productos inválidos",
                 content = @Content)
     })
     @PostMapping("/importar")
-    public ResponseEntity<List<Product>> importProducts(@Parameter(description = "Lista de productos a importar") @Valid @RequestBody List<Product> products) {
-        List<Product> importedProducts = productService.importProducts(products);
+    public ResponseEntity<List<ProductDTO>> importProducts(@Parameter(description = "List of products to import") @Valid @RequestBody List<Product> products) {
+        List<ProductDTO> importedProducts = productService.importProducts(products);
         return ResponseEntity.status(HttpStatus.CREATED).body(importedProducts);
     }
 }
