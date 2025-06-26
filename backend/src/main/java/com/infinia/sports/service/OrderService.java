@@ -1,7 +1,7 @@
 package com.infinia.sports.service;
 
-import com.infinia.sports.model.Order;
+import com.infinia.sports.model.dto.OrderDTO;
 
 public interface OrderService {
-    Order getOrderById(String orderId);
+    OrderDTO getOrderById(String orderId);
 }

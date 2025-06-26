@@ -1,6 +1,8 @@
 package com.infinia.sports.service.impl;
 
 import com.infinia.sports.model.Order;
+import com.infinia.sports.model.dto.OrderDTO;
+import com.infinia.sports.mapper.OrderMapper;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.service.OrderService;
@@ -24,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getOrderById(String orderId) {
+    public OrderDTO getOrderById(String orderId) {
         try {
             logger.info("[OrderService] Buscando pedido con orderId: {}", orderId);
             Order order = orderRepository.findById(orderId)
@@ -47,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
                 });
             }
             logger.info("Pedido {} completamente hidratado.", orderId);
-            return order;
+            return OrderMapper.toDTO(order);
         } catch (Exception e) {
             logger.error("[OrderService] Error inesperado al obtener el pedido para orderId: {}. Error: {}", orderId, e.getMessage(), e);
             throw e;

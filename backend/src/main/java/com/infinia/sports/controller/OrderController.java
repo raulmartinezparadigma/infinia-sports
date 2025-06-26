@@ -1,21 +1,24 @@
 package com.infinia.sports.controller;
 
-import com.infinia.sports.model.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.infinia.sports.model.dto.OrderDTO;
-import com.infinia.sports.mapper.OrderMapper;
 import com.infinia.sports.service.OrderService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -40,8 +43,7 @@ public class OrderController {
     })
     public ResponseEntity<OrderDTO> getOrder(@PathVariable("id") String orderId) {
         try {
-            Order order = orderService.getOrderById(orderId);
-            OrderDTO dto = OrderMapper.toDTO(order);
+            OrderDTO dto = orderService.getOrderById(orderId);
             return ResponseEntity.ok(dto);
         } catch (ResponseStatusException e) {
             logger.warn("[getOrder] Pedido no encontrado para orderId: {}. Devolviendo 404.", orderId);
