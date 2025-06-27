@@ -55,15 +55,17 @@ public class CheckoutController {
     public ResponseEntity<CartDTO> addItemToCart(@Valid @RequestBody CartItemDTO cartItemDTO, @RequestHeader(value = "User-ID", required = false) String userId,
             HttpServletRequest request) {
 
-        // Log de parámetros de entrada
         logger.info("[addItemToCart] Parámetros recibidos: cartItemDTO={}, userId={}, sessionId={}", cartItemDTO, userId, request.getSession().getId());
-        // Obtener ID de sesión o generar uno nuevo
         String sessionId = getOrCreateSessionId(request);
-
-        CartDTO updatedCart = checkoutService.addItemToCart(sessionId, userId, cartItemDTO);
-        logger.info("[addItemToCart] CartDTO devuelto: {}", updatedCart);
-        logger.info("[addItemToCart] Respuesta: {}", updatedCart);
-        return ResponseEntity.ok(updatedCart);
+        try {
+            CartDTO updatedCart = checkoutService.addItemToCart(sessionId, userId, cartItemDTO);
+            logger.info("[addItemToCart] CartDTO devuelto: {}", updatedCart);
+            logger.info("[addItemToCart] Respuesta: {}", updatedCart);
+            return ResponseEntity.ok(updatedCart);
+        } catch (Exception e) {
+            logger.error("[addItemToCart] Error al añadir item al carrito", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -191,9 +193,13 @@ public class CheckoutController {
             description = "Datos inválidos"), @ApiResponse(responseCode = "404", description = "Carrito no encontrado") })
     public ResponseEntity<Order> confirmOrder(@Valid @RequestBody CheckoutDTO checkoutDTO) {
         logger.info("[confirmOrder] Llamamos al confirmOrder", checkoutDTO.getCartId());
-
-        Order order = checkoutService.confirmOrder(checkoutDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        try {
+            Order order = checkoutService.confirmOrder(checkoutDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        } catch (Exception e) {
+            logger.error("[confirmOrder] Error al confirmar el pedido", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // --- MÉTODO ELIMINADO: getOrder ---

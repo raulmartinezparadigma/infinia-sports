@@ -45,4 +45,13 @@ class OrderControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNull(response.getBody());
     }
+
+    @Test
+    void getOrder_ReturnsNotFound_OnResponseStatusException() {
+        String orderId = "ORD123";
+        when(orderService.getOrderById(orderId)).thenThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        ResponseEntity<OrderDTO> response = orderController.getOrder(orderId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
 }

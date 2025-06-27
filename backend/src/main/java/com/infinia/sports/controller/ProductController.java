@@ -91,7 +91,7 @@ public class ProductController {
         try {
             ProductDTO product = productService.getProductById(id);
             return ResponseEntity.ok(product);
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException | com.infinia.sports.exception.ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
@@ -111,8 +111,12 @@ public class ProductController {
     })
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@Parameter(description = "Product data to create") @Valid @RequestBody Product product) {
-        ProductDTO savedProduct = productService.saveProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+        try {
+            ProductDTO savedProduct = productService.saveProduct(product);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -138,8 +142,10 @@ public class ProductController {
         try {
             ProductDTO updatedProduct = productService.updateProduct(id, product);
             return ResponseEntity.ok(updatedProduct);
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException | com.infinia.sports.exception.ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -160,7 +166,7 @@ public class ProductController {
         try {
             productService.deleteProduct(id);
             return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException | com.infinia.sports.exception.ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
@@ -180,7 +186,11 @@ public class ProductController {
     })
     @PostMapping("/importar")
     public ResponseEntity<List<ProductDTO>> importProducts(@Parameter(description = "List of products to import") @Valid @RequestBody List<Product> products) {
-        List<ProductDTO> importedProducts = productService.importProducts(products);
-        return ResponseEntity.status(HttpStatus.CREATED).body(importedProducts);
+        try {
+            List<ProductDTO> importedProducts = productService.importProducts(products);
+            return ResponseEntity.status(HttpStatus.CREATED).body(importedProducts);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

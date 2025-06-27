@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -84,6 +85,32 @@ class CheckoutControllerTest {
     }
 
     @Test
+    void testAddItemToCart_Exception() {
+        CartItemDTO cartItemDTO = CartItemDTO.builder().productId("PROD-001").build();
+        when(checkoutService.addItemToCart(anyString(), anyString(), any(CartItemDTO.class))).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<CartDTO> response = checkoutController.addItemToCart(cartItemDTO, "test-user", httpServletRequest);
+        assertEquals(400, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testGetCart_ReturnsCart_WhenServiceWorks() {
+        CartDTO cartDTO = CartDTO.builder().sessionId("test-session-id").userId("test-user").build();
+        when(checkoutService.getCart(anyString(), anyString())).thenReturn(cartDTO);
+        ResponseEntity<CartDTO> response = checkoutController.getCart("test-user", httpServletRequest);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(cartDTO, response.getBody());
+    }
+
+    @Test
+    void testGetCart_ReturnsEmptyCart_OnException() {
+        when(checkoutService.getCart(anyString(), anyString())).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<CartDTO> response = checkoutController.getCart("test-user", httpServletRequest);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("test-session-id", response.getBody().getSessionId());
+        assertEquals("test-user", response.getBody().getUserId());
+    }
+
+    @Test
     void testUpdateCartItemQuantity() {
         String cartId = UUID.randomUUID().toString();
         String itemId = UUID.randomUUID().toString();
@@ -113,6 +140,20 @@ class CheckoutControllerTest {
     }
 
     @Test
+    void testUpdateCartItemQuantity_ResourceNotFound() {
+        when(checkoutService.updateCartItemQuantity(anyString(), anyString(), anyString(), any())).thenThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found"));
+        ResponseEntity<CartDTO> response = checkoutController.updateCartItemQuantity("itemId", CartItemDTO.builder().build(), "userId", httpServletRequest);
+        assertEquals(404, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testUpdateCartItemQuantity_OtherException() {
+        when(checkoutService.updateCartItemQuantity(anyString(), anyString(), anyString(), anyInt())).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<CartDTO> response = checkoutController.updateCartItemQuantity("itemId", CartItemDTO.builder().build(), "userId", httpServletRequest);
+        assertEquals(500, response.getStatusCodeValue());
+    }
+
+    @Test
     void testRemoveItemFromCart() {
         String cartId = UUID.randomUUID().toString();
         String itemId = UUID.randomUUID().toString();
@@ -139,6 +180,20 @@ class CheckoutControllerTest {
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(testCartDTO, response.getBody());
         verify(checkoutService).removeItemFromCart(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testRemoveItemFromCart_ResourceNotFound() {
+        when(checkoutService.removeItemFromCart(anyString(), anyString(), anyString())).thenThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found"));
+        ResponseEntity<CartDTO> response = checkoutController.removeItemFromCart("itemId", "userId", httpServletRequest);
+        assertEquals(404, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testRemoveItemFromCart_OtherException() {
+        when(checkoutService.removeItemFromCart(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<CartDTO> response = checkoutController.removeItemFromCart("itemId", "userId", httpServletRequest);
+        assertEquals(500, response.getStatusCodeValue());
     }
 
     @Test
@@ -173,6 +228,19 @@ class CheckoutControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(testCartDTO, response.getBody());
         verify(checkoutService).saveAddresses(anyString(), any(AddressDTO.class), any(AddressDTO.class), any(Boolean.class));
+    }
+
+    @Test
+    void testClearCart_Success() {
+        ResponseEntity<Void> response = checkoutController.clearCart("userId", httpServletRequest);
+        assertEquals(204, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testClearCart_Exception() {
+        doThrow(new RuntimeException("DB error")).when(checkoutService).clearCart(anyString(), anyString());
+        ResponseEntity<Void> response = checkoutController.clearCart("userId", httpServletRequest);
+        assertEquals(400, response.getStatusCodeValue());
     }
 
     @Test
@@ -212,5 +280,13 @@ class CheckoutControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(testOrder, response.getBody());
         verify(checkoutService).confirmOrder(any(CheckoutDTO.class));
+    }
+
+    @Test
+    void testConfirmOrder_Exception() {
+        CheckoutDTO checkoutDTO = CheckoutDTO.builder().cartId("cartId").build();
+        when(checkoutService.confirmOrder(any(CheckoutDTO.class))).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<Order> response = checkoutController.confirmOrder(checkoutDTO);
+        assertEquals(400, response.getStatusCodeValue());
     }
 }

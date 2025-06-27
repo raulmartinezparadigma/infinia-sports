@@ -82,12 +82,26 @@ public class ProductControllerTest {
     }
 
     @Test
+    void testGetProductById_NotFound() {
+        when(productService.getProductById(productId)).thenThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found"));
+        ResponseEntity<ProductDTO> response = productController.getProductById(productId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
     void testCreateProduct_ReturnsCreated() {
         when(productService.saveProduct(product)).thenReturn(productDTO);
         ResponseEntity<ProductDTO> response = productController.createProduct(product);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(productDTO, response.getBody());
         verify(productService, times(1)).saveProduct(product);
+    }
+
+    @Test
+    void testCreateProduct_Exception() {
+        when(productService.saveProduct(product)).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<ProductDTO> response = productController.createProduct(product);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -100,11 +114,25 @@ public class ProductControllerTest {
     }
 
     @Test
+    void testUpdateProduct_Exception() {
+        when(productService.updateProduct(productId, product)).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<ProductDTO> response = productController.updateProduct(productId, product);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
     void testDeleteProduct_ReturnsNoContent() {
         doNothing().when(productService).deleteProduct(productId);
         ResponseEntity<Void> response = productController.deleteProduct(productId);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(productService, times(1)).deleteProduct(productId);
+    }
+
+    @Test
+    void testDeleteProduct_Exception() {
+        doThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found")).when(productService).deleteProduct(productId);
+        ResponseEntity<Void> response = productController.deleteProduct(productId);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
@@ -117,5 +145,45 @@ public class ProductControllerTest {
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
         verify(productService, times(1)).importProducts(products);
+    }
+
+    @Test
+    void testImportProducts_Exception() {
+        List<Product> products = Arrays.asList(product);
+        when(productService.importProducts(products)).thenThrow(new RuntimeException("DB error"));
+        ResponseEntity<List<ProductDTO>> response = productController.importProducts(products);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testGetAllProducts_FilterByType() {
+        when(productService.getProductsByType(ProductType.SNEAKERS)).thenReturn(Collections.singletonList(productDTO));
+        ResponseEntity<List<ProductDTO>> response = productController.getAllProducts(ProductType.SNEAKERS, null, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(productService, times(1)).getProductsByType(ProductType.SNEAKERS);
+    }
+
+    @Test
+    void testGetAllProducts_FilterByDescription() {
+        String desc = "deportivas";
+        when(productService.getProductsByDescription(desc)).thenReturn(Collections.singletonList(productDTO));
+        ResponseEntity<List<ProductDTO>> response = productController.getAllProducts(null, desc, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(productService, times(1)).getProductsByDescription(desc);
+    }
+
+    @Test
+    void testGetAllProducts_FilterBySize() {
+        String size = "42";
+        when(productService.getProductsBySize(size)).thenReturn(Collections.singletonList(productDTO));
+        ResponseEntity<List<ProductDTO>> response = productController.getAllProducts(null, null, size);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(productService, times(1)).getProductsBySize(size);
     }
 }
