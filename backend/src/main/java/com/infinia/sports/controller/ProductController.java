@@ -164,7 +164,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@Parameter(description = "ID of the product to delete") @PathVariable UUID id) {
         try {
-            productService.deleteProduct(id);
+            productService.deleteProductById(id);
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException | com.infinia.sports.exception.ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -22,6 +23,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -119,5 +122,42 @@ public class AuthServiceTest {
                 new UsernamePasswordAuthenticationToken("testuser", "password"));
         verify(userService).findByUsername("testuser");
         verify(jwtService).generateToken(testUser);
+    }
+
+    @Test
+    void testAuthenticate_UserNotFound() {
+        when(userService.findByUsername("nouser")).thenReturn(Optional.empty());
+        AuthRequestDTO req = new AuthRequestDTO();
+        req.setUsername("nouser");
+        req.setPassword("pw");
+        assertThrows(Exception.class, () -> authService.authenticate(req));
+    }
+
+    @Test
+    void testAuthenticate_ThrowsAuthenticationException() {
+        // Arrange
+        when(authenticationManager.authenticate(any())).thenThrow(new AuthenticationException("Invalid credentials"){});
+        // Usa lenient para evitar UnnecessaryStubbingException
+        lenient().when(userService.registerUser(any())).thenReturn(new User());
+
+        // Act & Assert
+        assertThrows(com.infinia.sports.exception.AuthenticationException.class, () -> {
+            authService.authenticate(new AuthRequestDTO());
+        });
+    }
+
+    @Test
+    void testRegister_EmptyRoles() {
+        User userNoRoles = User.builder().id(2L).username("nobody").roles(new HashSet<>()).build();
+        when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(userNoRoles);
+        when(jwtService.generateToken(userNoRoles)).thenReturn("jwt");
+        RegisterRequestDTO req = new RegisterRequestDTO();
+        req.setUsername("nobody");
+        req.setPassword("pw");
+        req.setEmail("nobody@x.com");
+        AuthResponseDTO res = authService.register(req);
+        assertNotNull(res);
+        assertEquals("nobody", res.getUsername());
+        assertTrue(res.getRoles().isEmpty());
     }
 }

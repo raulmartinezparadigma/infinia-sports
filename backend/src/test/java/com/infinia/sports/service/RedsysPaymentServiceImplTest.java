@@ -62,4 +62,44 @@ class RedsysPaymentServiceImplTest {
         assertEquals("order456", request.getOrderId());
         assertEquals("paymentId", dto.getPaymentId()); 
     }
+
+    @Test
+    void testProcessRedsysPayment_paymentSaveThrows() {
+        RedsysPaymentRequestDTO request = new RedsysPaymentRequestDTO();
+        request.setOrderId("order1");
+        request.setAmount(java.math.BigDecimal.TEN);
+        when(paymentRepository.save(any(Payment.class))).thenThrow(new RuntimeException("DB error"));
+        assertThrows(RuntimeException.class, () -> redsysPaymentService.processRedsysPayment(request));
+    }
+
+    @Test
+    void testProcessRedsysPayment_mailThrows() {
+        RedsysPaymentRequestDTO request = new RedsysPaymentRequestDTO();
+        request.setOrderId("order2");
+        request.setAmount(java.math.BigDecimal.ONE);
+        Payment payment = Payment.builder().orderId("order2").amount(request.getAmount()).method(PaymentMethod.REDSYS).status(PaymentStatus.COMPLETED).build();
+        payment.setId("pid2");
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        doThrow(new RuntimeException("Mail error")).when(orderMailPaymentService).sendOrderConfirmationEmail(anyString());
+        Order order = new Order();
+        order.setOrderId("order2");
+        when(orderRepository.findByOrderId("order2")).thenReturn(java.util.Optional.of(order));
+        assertThrows(RuntimeException.class, () -> redsysPaymentService.processRedsysPayment(request));
+    }
+
+    @Test
+    void testProcessRedsysPayment_cartDeleteThrows() {
+        RedsysPaymentRequestDTO request = new RedsysPaymentRequestDTO();
+        request.setOrderId("order3");
+        request.setAmount(java.math.BigDecimal.TEN);
+        Payment payment = Payment.builder().orderId("order3").amount(request.getAmount()).method(PaymentMethod.REDSYS).status(PaymentStatus.COMPLETED).build();
+        payment.setId("pid3");
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        doNothing().when(orderMailPaymentService).sendOrderConfirmationEmail(anyString());
+        doThrow(new RuntimeException("Cart error")).when(cartRepository).deleteById(anyString());
+        Order order = new Order();
+        order.setOrderId("order3");
+        when(orderRepository.findByOrderId("order3")).thenReturn(java.util.Optional.of(order));
+        assertDoesNotThrow(() -> redsysPaymentService.processRedsysPayment(request));
+    }
 }

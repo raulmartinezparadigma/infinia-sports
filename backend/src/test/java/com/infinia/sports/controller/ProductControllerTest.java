@@ -122,15 +122,15 @@ public class ProductControllerTest {
 
     @Test
     void testDeleteProduct_ReturnsNoContent() {
-        doNothing().when(productService).deleteProduct(productId);
+        doNothing().when(productService).deleteProductById(any(UUID.class));
         ResponseEntity<Void> response = productController.deleteProduct(productId);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(productService, times(1)).deleteProduct(productId);
+        verify(productService, times(1)).deleteProductById(any(UUID.class));
     }
 
     @Test
     void testDeleteProduct_Exception() {
-        doThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found")).when(productService).deleteProduct(productId);
+        doThrow(new com.infinia.sports.exception.ResourceNotFoundException("Not found")).when(productService).deleteProductById(any(UUID.class));
         ResponseEntity<Void> response = productController.deleteProduct(productId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }

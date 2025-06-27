@@ -60,4 +60,46 @@ class BizumPaymentServiceImplTest {
         assertNotNull(dto);
         assertEquals("payment789", dto.getPaymentId());
     }
+
+    @Test
+    void testProcessBizumPayment_paymentSaveThrows() {
+        BizumPaymentRequestDTO request = new BizumPaymentRequestDTO();
+        request.setOrderId("order1");
+        request.setPaymentId("payment1");
+        when(paymentRepository.save(any(Payment.class))).thenThrow(new RuntimeException("DB error"));
+        assertThrows(RuntimeException.class, () -> bizumPaymentService.processBizumPayment(request));
+    }
+
+    @Test
+    void testProcessBizumPayment_mailThrows() {
+        BizumPaymentRequestDTO request = new BizumPaymentRequestDTO();
+        request.setOrderId("order2");
+        request.setPaymentId("payment2");
+        Payment payment = Payment.builder().orderId("order2").method(PaymentMethod.BIZUM).status(PaymentStatus.COMPLETED).build();
+        payment.setId("payment2");
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        doThrow(new RuntimeException("Mail error")).when(orderMailPaymentService).sendOrderConfirmationEmail(anyString());
+        Order order = new Order();
+        order.setOrderId("order2");
+        when(orderRepository.findByOrderId("order2")).thenReturn(java.util.Optional.of(order));
+        // No debe lanzar excepción porque el catch la absorbe
+        assertDoesNotThrow(() -> bizumPaymentService.processBizumPayment(request));
+    }
+
+    @Test
+    void testProcessBizumPayment_cartDeleteThrows() {
+        BizumPaymentRequestDTO request = new BizumPaymentRequestDTO();
+        request.setOrderId("order3");
+        request.setPaymentId("payment3");
+        Payment payment = Payment.builder().orderId("order3").method(PaymentMethod.BIZUM).status(PaymentStatus.COMPLETED).build();
+        payment.setId("payment3");
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        doNothing().when(orderMailPaymentService).sendOrderConfirmationEmail(anyString());
+        doThrow(new RuntimeException("Cart error")).when(cartRepository).deleteByUserId(anyString());
+        Order order = new Order();
+        order.setOrderId("order3");
+        when(orderRepository.findByOrderId("order3")).thenReturn(java.util.Optional.of(order));
+        // No debe lanzar excepción porque el catch la absorbe
+        assertDoesNotThrow(() -> bizumPaymentService.processBizumPayment(request));
+    }
 }

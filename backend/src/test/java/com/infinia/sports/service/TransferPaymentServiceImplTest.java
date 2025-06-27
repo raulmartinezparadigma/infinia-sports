@@ -52,4 +52,25 @@ class TransferPaymentServiceImplTest {
         assertEquals("order123", request.getOrderId());
         assertEquals("paymentId", dto.getPaymentId()); 
     }
+
+    @Test
+    void testProcessTransferPayment_paymentSaveThrows() {
+        TransferPaymentRequestDTO request = new TransferPaymentRequestDTO();
+        request.setOrderId("order1");
+        request.setAmount(java.math.BigDecimal.TEN);
+        when(paymentRepository.save(any(Payment.class))).thenThrow(new RuntimeException("DB error"));
+        assertThrows(RuntimeException.class, () -> transferPaymentService.processTransferPayment(request));
+    }
+
+    @Test
+    void testProcessTransferPayment_mailThrows() {
+        TransferPaymentRequestDTO request = new TransferPaymentRequestDTO();
+        request.setOrderId("order2");
+        request.setAmount(java.math.BigDecimal.ONE);
+        Payment payment = Payment.builder().orderId("order2").amount(request.getAmount()).method(PaymentMethod.TRANSFER).status(PaymentStatus.PENDING).build();
+        payment.setId("pid2");
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+        doThrow(new RuntimeException("Mail error")).when(orderMailPaymentService).sendOrderConfirmationEmail(anyString());
+        assertThrows(RuntimeException.class, () -> transferPaymentService.processTransferPayment(request));
+    }
 }

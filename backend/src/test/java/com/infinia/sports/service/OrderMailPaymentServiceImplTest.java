@@ -13,6 +13,7 @@ import com.infinia.sports.model.Order;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.impl.OrderMailPaymentServiceImpl;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.eq;
@@ -51,6 +52,28 @@ class OrderMailPaymentServiceImplTest {
     void testSendOrderConfirmationEmail_orderNotFound() throws Exception {
         when(orderRepository.findByOrderId("notfound")).thenReturn(Optional.empty());
         orderMailServiceImpl.sendOrderConfirmationEmail("notfound");
+        verify(mailSenderService, never()).sendOrderSummary(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void testSendOrderConfirmationEmail_mailThrows() throws Exception {
+        Order order = new Order();
+        order.setOrderId("errmail");
+        order.setEmail("err@infinia.com");
+        when(orderRepository.findByOrderId("errmail")).thenReturn(Optional.of(order));
+        // Simula excepción al enviar email
+        org.mockito.Mockito.doThrow(new RuntimeException("Mail fail")).when(mailSenderService).sendOrderSummary(anyString(), anyString(), anyString());
+        // No debe lanzar excepción
+        assertDoesNotThrow(() -> orderMailServiceImpl.sendOrderConfirmationEmail("errmail"));
+    }
+
+    @Test
+    void testSendOrderConfirmationEmail_nullEmail() throws Exception {
+        Order order = new Order();
+        order.setOrderId("nullmail");
+        order.setEmail(null);
+        when(orderRepository.findByOrderId("nullmail")).thenReturn(Optional.of(order));
+        orderMailServiceImpl.sendOrderConfirmationEmail("nullmail");
         verify(mailSenderService, never()).sendOrderSummary(anyString(), anyString(), anyString());
     }
 }
