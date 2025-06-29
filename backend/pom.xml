@@ -129,6 +129,33 @@
             <scope>test</scope>
         </dependency>
         
+        <!-- Testing Dependencies -->
+        <dependency>
+            <groupId>com.github.fakemongo</groupId>
+            <artifactId>fongo</artifactId>
+            <version>2.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>mongo-java-server</artifactId>
+            <version>1.44.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers support -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.18.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>1.18.3</version>
+            <scope>test</scope>
+        </dependency>
+        
         <!-- Springdoc OpenAPI UI -->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -147,14 +174,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -164,6 +183,7 @@
                     <excludes>
                         <exclude>com/infinia/sports/model/dto/*</exclude>
                         <exclude>com/infinia/sports/model/*</exclude>
+                        <exclude>com/infinia/sports/dto/**/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -174,7 +194,7 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -213,4 +233,34 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Perfil específico para pruebas de MongoDB -->
+        <profile>
+            <id>mongodb-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Solo ejecuta pruebas MongoDB -->
+                            <includes>
+                                <include>com/infinia/sports/repository/mongo/**/*Test.java</include>
+                            </includes>
+                            <!-- Propiedades específicas para pruebas MongoDB -->
+                            <systemPropertyVariables>
+                                <spring.autoconfigure.exclude>
+                                    org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
+                                    org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+                                </spring.autoconfigure.exclude>
+                                <spring.main.allow-bean-definition-overriding>true</spring.main.allow-bean-definition-overriding>
+                                <spring.data.mongodb.port>0</spring.data.mongodb.port>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

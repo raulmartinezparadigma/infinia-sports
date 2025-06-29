@@ -33,7 +33,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     @Qualifier("customUserDetailsService")
     private final UserDetailsService userDetailsService;
-    private final AdminUserDetailsService adminUserDetailsService;
 
     /**
      * Bean de AuthenticationManager para inyección en controladores.

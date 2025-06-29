@@ -103,6 +103,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja excepciones de recurso no encontrado
+     * @param ex excepción de recurso no encontrado
+     * @return respuesta con mensaje de error
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    /**
      * Maneja excepciones de acceso denegado
      * @param ex excepción de acceso denegado
      * @return respuesta con mensaje de error
@@ -110,7 +122,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("message", "No tiene permisos para acceder a este recurso");
+        error.put("message", "Acceso denegado: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
