@@ -15,6 +15,7 @@ import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.service.OrderMailPaymentService;
+import com.infinia.sports.mapper.PaymentMapper;
 
 /**
  * Servicio mock para pagos Bizum
@@ -108,7 +109,7 @@ public class BizumPaymentServiceImpl {
         }
 
         // Traza de salida
-        BizumPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toBizumPaymentResponseDTO(payment);
+        BizumPaymentResponseDTO dto = PaymentMapper.toBizumPaymentResponseDTO(payment);
         logger.info("[BizumService] DTO devuelto: {}", dto);
         return dto;
     }

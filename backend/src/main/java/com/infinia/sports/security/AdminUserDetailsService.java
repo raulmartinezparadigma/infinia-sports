@@ -3,7 +3,10 @@ package com.infinia.sports.security;
 import com.infinia.sports.model.AdminUser;
 import com.infinia.sports.repository.jpa.AdminUserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +26,7 @@ public class AdminUserDetailsService implements UserDetailsService {
         System.out.println("[TRACE] Admin encontrado: " + admin.getUsername());
         System.out.println("[TRACE] Password recuperado: " + admin.getPassword());
         System.out.println("[TRACE] Habilitado: " + admin.isEnabled());
-        return org.springframework.security.core.userdetails.User
+        return User
                 .withUsername(admin.getUsername())
                 .password(admin.getPassword())
                 .roles("ADMIN")

@@ -3,12 +3,7 @@ package com.infinia.sports.service;
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
 import com.infinia.sports.model.dto.ProductDTO;
-import com.infinia.sports.mapper.ProductMapper;
-import com.infinia.sports.repository.jpa.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;

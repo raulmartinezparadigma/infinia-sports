@@ -1,7 +1,5 @@
 package com.infinia.sports.controller;
 
-import com.infinia.sports.mapper.CartMapper;
-import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.service.CheckoutService;
 import io.swagger.v3.oas.annotations.Operation;

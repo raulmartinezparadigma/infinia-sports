@@ -7,6 +7,7 @@ import com.infinia.sports.model.dto.TransferPaymentResponseDTO;
 import com.infinia.sports.model.dto.TransferPaymentRequestDTO;
 import com.infinia.sports.repository.mongo.PaymentRepository;
 import com.infinia.sports.service.OrderMailPaymentService;
+import com.infinia.sports.mapper.PaymentMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class TransferPaymentServiceImpl {
         logger.info("[TransferService] Payment registrado para transferencia bancaria: {}", saved.getId());
         // Enviar email de resumen de pedido tras registrar transferencia (centralizado)
         orderMailPaymentService.sendOrderConfirmationEmail(saved.getOrderId());
-        TransferPaymentResponseDTO dto = com.infinia.sports.mapper.PaymentMapper.toTransferPaymentResponseDTO(saved);
+        TransferPaymentResponseDTO dto = PaymentMapper.toTransferPaymentResponseDTO(saved);
         logger.info("[TransferService] DTO devuelto: {}", dto);
         return dto;
     }

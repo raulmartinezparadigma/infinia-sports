@@ -1,5 +1,6 @@
 package com.infinia.sports.controller;
 
+import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
 import com.infinia.sports.model.dto.ProductDTO;
 import com.infinia.sports.service.ProductService;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
-import com.infinia.sports.model.Product;
 
 /**
  * Controlador REST para la gestión de productos

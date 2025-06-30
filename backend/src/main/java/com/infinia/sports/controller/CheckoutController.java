@@ -202,9 +202,6 @@ public class CheckoutController {
         }
     }
 
-    // --- MÉTODO ELIMINADO: getOrder ---
-    // --- MÉTODO ELIMINADO: getPaymentInfoByOrderId ---
-
     /**
      * Obtiene o crea un ID de sesión
      */

@@ -1,6 +1,7 @@
 package com.infinia.sports.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,7 +12,6 @@ import com.infinia.sports.repository.jpa.UserRepository;
 /**
  * Servicio personalizado para cargar detalles de usuario para Spring Security.
  */
-import org.springframework.context.annotation.Primary;
 
 @Service
 @Primary

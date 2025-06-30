@@ -1,6 +1,5 @@
 package com.infinia.sports.security;
 
-import com.infinia.sports.security.AdminUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
