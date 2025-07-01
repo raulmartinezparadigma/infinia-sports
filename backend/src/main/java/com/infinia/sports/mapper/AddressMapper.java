@@ -18,4 +18,25 @@ public class AddressMapper {
                 .phoneNumber(address.getPhoneNumber())
                 .build();
     }
+    
+    /**
+     * Convierte un AddressDTO a Order.Address
+     */
+    public static Order.Address fromDTO(AddressDTO addressDTO) {
+        if (addressDTO == null) {
+            return null;
+        }
+        
+        return Order.Address.builder()
+                .firstName(addressDTO.getFirstName())
+                .lastName(addressDTO.getLastName())
+                .addressLine1(addressDTO.getAddressLine1())
+                .addressLine2(addressDTO.getAddressLine2())
+                .city(addressDTO.getCity())
+                .state(addressDTO.getState())
+                .postalCode(addressDTO.getPostalCode())
+                .country(addressDTO.getCountry())
+                .phoneNumber(addressDTO.getPhoneNumber())
+                .build();
+    }
 }

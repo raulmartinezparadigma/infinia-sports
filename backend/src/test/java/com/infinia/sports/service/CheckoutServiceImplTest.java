@@ -7,15 +7,21 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.model.dto.OrderDTO;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.impl.CheckoutServiceImpl;
+import com.infinia.sports.mapper.OrderMapper;
+import com.infinia.sports.mapper.AddressMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.MockedStatic;
+import org.mockito.quality.Strictness;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -351,9 +357,13 @@ class CheckoutServiceImplTest {
         CheckoutDTO dto = new CheckoutDTO();
         dto.setCartId("cart1");
         Order order = new Order();
+        OrderDTO orderDTO = OrderDTO.builder().id("test-id").build();
         when(orderRepository.findByOrderId("cart1")).thenReturn(Optional.of(order));
-        Order result = checkoutService.confirmOrder(dto);
-        assertEquals(order, result);
+        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
+            mockedOrderMapper.when(() -> OrderMapper.toDTO(order)).thenReturn(orderDTO);
+            OrderDTO result = checkoutService.confirmOrder(dto);
+            assertEquals(orderDTO, result);
+        }
     }
 
     @Test
@@ -370,12 +380,20 @@ class CheckoutServiceImplTest {
         cart.setId("cart1");
         cart.setUserId("user1");
         cart.setItems(new ArrayList<>());
+        Order order = new Order();
+        Order savedOrder = new Order();
+        OrderDTO orderDTO = OrderDTO.builder().id("test-id").build();
         when(orderRepository.findByOrderId("cart1")).thenReturn(Optional.empty());
         when(cartRepository.findById("cart1")).thenReturn(Optional.of(cart));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-        Order result = checkoutService.confirmOrder(dto);
-        assertNotNull(result);
-        verify(cartRepository).deleteByUserId("user1");
+        when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
+        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
+            mockedOrderMapper.when(() -> OrderMapper.fromCartAndCheckout(cart, dto)).thenReturn(order);
+            mockedOrderMapper.when(() -> OrderMapper.toDTO(savedOrder)).thenReturn(orderDTO);
+            OrderDTO result = checkoutService.confirmOrder(dto);
+            assertNotNull(result);
+            assertEquals(orderDTO, result);
+            verify(cartRepository).deleteByUserId("user1");
+        }
     }
 
     @Test
@@ -392,12 +410,20 @@ class CheckoutServiceImplTest {
         cart.setId("cart2");
         cart.setSessionId("sess2");
         cart.setItems(new ArrayList<>());
+        Order order = new Order();
+        Order savedOrder = new Order();
+        OrderDTO orderDTO = OrderDTO.builder().id("test-id").build();
         when(orderRepository.findByOrderId("cart2")).thenReturn(Optional.empty());
         when(cartRepository.findById("cart2")).thenReturn(Optional.of(cart));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-        Order result = checkoutService.confirmOrder(dto);
-        assertNotNull(result);
-        verify(cartRepository).deleteBySessionId("sess2");
+        when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
+        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
+            mockedOrderMapper.when(() -> OrderMapper.fromCartAndCheckout(cart, dto)).thenReturn(order);
+            mockedOrderMapper.when(() -> OrderMapper.toDTO(savedOrder)).thenReturn(orderDTO);
+            OrderDTO result = checkoutService.confirmOrder(dto);
+            assertNotNull(result);
+            assertEquals(orderDTO, result);
+            verify(cartRepository).deleteBySessionId("sess2");
+        }
     }
 
     @Test
@@ -413,12 +439,20 @@ class CheckoutServiceImplTest {
         Cart cart = new Cart();
         cart.setId("cart3");
         cart.setItems(new ArrayList<>());
+        Order order = new Order();
+        Order savedOrder = new Order();
+        OrderDTO orderDTO = OrderDTO.builder().id("test-id").build();
         when(orderRepository.findByOrderId("cart3")).thenReturn(Optional.empty());
         when(cartRepository.findById("cart3")).thenReturn(Optional.of(cart));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-        Order result = checkoutService.confirmOrder(dto);
-        assertNotNull(result);
-        verify(cartRepository).delete(cart);
+        when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
+        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
+            mockedOrderMapper.when(() -> OrderMapper.fromCartAndCheckout(cart, dto)).thenReturn(order);
+            mockedOrderMapper.when(() -> OrderMapper.toDTO(savedOrder)).thenReturn(orderDTO);
+            OrderDTO result = checkoutService.confirmOrder(dto);
+            assertNotNull(result);
+            assertEquals(orderDTO, result);
+            verify(cartRepository).delete(cart);
+        }
     }
 
     @Test
@@ -511,25 +545,26 @@ class CheckoutServiceImplTest {
     }
 
     @Test
-    void testMapAddressDtoToOrderAddress_AllNullFields() throws Exception {
+    void testAddressMapper_fromDTO_AllNullFields() {
         AddressDTO dto = new AddressDTO();
-        var method = CheckoutServiceImpl.class.getDeclaredMethod("mapAddressDtoToOrderAddress", AddressDTO.class);
-        method.setAccessible(true);
-        Object result = method.invoke(checkoutService, dto);
+        Order.Address result = AddressMapper.fromDTO(dto);
         assertNotNull(result);
     }
 
     @Test
-    void testMapAddressDtoToOrderAddress_AllFieldsFilled() throws Exception {
+    void testAddressMapper_fromDTO_AllFieldsFilled() {
         AddressDTO dto = new AddressDTO();
         dto.setAddressLine1("line1");
         dto.setAddressLine2("line2");
         dto.setCity("city");
         dto.setPostalCode("12345");
         dto.setCountry("country");
-        var method = CheckoutServiceImpl.class.getDeclaredMethod("mapAddressDtoToOrderAddress", AddressDTO.class);
-        method.setAccessible(true);
-        Object result = method.invoke(checkoutService, dto);
+        Order.Address result = AddressMapper.fromDTO(dto);
         assertNotNull(result);
+        assertEquals(dto.getAddressLine1(), result.getAddressLine1());
+        assertEquals(dto.getAddressLine2(), result.getAddressLine2());
+        assertEquals(dto.getCity(), result.getCity());
+        assertEquals(dto.getPostalCode(), result.getPostalCode());
+        assertEquals(dto.getCountry(), result.getCountry());
     }
 }

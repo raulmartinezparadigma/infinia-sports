@@ -7,7 +7,15 @@ import com.infinia.sports.model.Order.PriceInfo;
 import com.infinia.sports.model.Order.TaxInfo;
 import com.infinia.sports.model.Order.Address;
 import com.infinia.sports.model.dto.OrderDTO;
+import com.infinia.sports.model.Cart;
+import com.infinia.sports.model.Cart.CartItem;
+import com.infinia.sports.model.dto.AddressDTO;
+import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.repository.jpa.ProductRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -16,6 +24,15 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderMapperTest {
+    @Mock
+    private ProductRepository productRepository;
+    
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        OrderMapper.setProductRepository(productRepository);
+    }
+    
     @Test
     void toDTO_mapsFieldsCorrectly() {
         Map<String, BigDecimal> breakdown = new HashMap<>();
@@ -71,5 +88,165 @@ class OrderMapperTest {
     @Test
     void toDTO_nullInput_returnsNull() {
         assertNull(OrderMapper.toDTO(null));
+    }
+    
+    @Test
+    void fromCart_mapsFieldsCorrectly() {
+        // Crear datos de prueba
+        Cart cart = new Cart();
+        cart.setId("cart123");
+        cart.setSubtotal(new BigDecimal("100.00"));
+        cart.setTax(new BigDecimal("21.00"));
+        cart.setTotal(new BigDecimal("121.00"));
+        
+        CartItem cartItem = new CartItem();
+        cartItem.setId("item1");
+        cartItem.setProductId("prod1");
+        cartItem.setProductName("Producto de prueba");
+        cartItem.setQuantity(2);
+        cartItem.setUnitPrice(new BigDecimal("50.00"));
+        cartItem.setTotalPrice(new BigDecimal("100.00"));
+        cartItem.setProductImageUrl("http://example.com/image.jpg");
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("color", "rojo");
+        attributes.put("talla", "M");
+        cartItem.setAttributes(attributes);
+        
+        cart.setItems(Collections.singletonList(cartItem));
+        
+        AddressDTO shippingAddress = AddressDTO.builder()
+                .firstName("Juan")
+                .lastName("Pérez")
+                .addressLine1("Calle Principal 123")
+                .city("Madrid")
+                .state("Madrid")
+                .postalCode("28001")
+                .country("España")
+                .phoneNumber("600111222")
+                .email("juan@example.com")
+                .build();
+        
+        AddressDTO billingAddress = AddressDTO.builder()
+                .firstName("Juan")
+                .lastName("Pérez")
+                .addressLine1("Calle Secundaria 456")
+                .city("Barcelona")
+                .state("Barcelona")
+                .postalCode("08001")
+                .country("España")
+                .phoneNumber("600333444")
+                .email("juan@example.com")
+                .build();
+        
+        // Ejecutar el método a probar
+        Order order = OrderMapper.fromCart(cart, shippingAddress, billingAddress);
+        
+        // Verificar resultados
+        assertNotNull(order);
+        assertEquals(cart.getId(), order.getId());
+        assertEquals(cart.getId(), order.getOrderId());
+        assertEquals("ES", order.getLanguage());
+        assertEquals("pending", order.getStatus());
+        assertEquals(shippingAddress.getEmail(), order.getEmail());
+        
+        // Verificar ShippingGroup
+        assertNotNull(order.getShippingGroups());
+        assertEquals(1, order.getShippingGroups().size());
+        ShippingGroup group = order.getShippingGroups().get(0);
+        assertEquals("1", group.getId());
+        assertEquals("Infinia Sports", group.getShippingMethod());
+        
+        // Verificar LineItems
+        assertNotNull(group.getLineItems());
+        assertEquals(1, group.getLineItems().size());
+        LineItem lineItem = group.getLineItems().get(0);
+        assertEquals(cartItem.getId(), lineItem.getId());
+        assertEquals(cartItem.getProductId(), lineItem.getProductId());
+        assertEquals(cartItem.getProductName(), lineItem.getProductName());
+        assertEquals(cartItem.getQuantity(), lineItem.getQuantity());
+        assertEquals(cartItem.getUnitPrice(), lineItem.getUnitPrice());
+        assertEquals(cartItem.getTotalPrice(), lineItem.getTotalPrice());
+        assertEquals(cartItem.getProductImageUrl(), lineItem.getProductImageUrl());
+        assertEquals(cartItem.getAttributes(), lineItem.getAttributes());
+        
+        // Verificar direcciones
+        assertNotNull(order.getShippingAddress());
+        assertEquals(shippingAddress.getFirstName(), order.getShippingAddress().getFirstName());
+        assertEquals(shippingAddress.getAddressLine1(), order.getShippingAddress().getAddressLine1());
+        
+        assertNotNull(order.getBillingAddress());
+        assertEquals(billingAddress.getFirstName(), order.getBillingAddress().getFirstName());
+        assertEquals(billingAddress.getAddressLine1(), order.getBillingAddress().getAddressLine1());
+        
+        // Verificar PriceInfo
+        assertNotNull(order.getPriceInfo());
+        assertEquals(cart.getSubtotal(), order.getPriceInfo().getSubtotal());
+        assertEquals(cart.getTax(), order.getPriceInfo().getTax());
+        assertEquals(cart.getTotal(), order.getPriceInfo().getTotal());
+        assertEquals(BigDecimal.ZERO, order.getPriceInfo().getDiscount());
+    }
+    
+    @Test
+    void fromCartAndCheckout_mapsFieldsCorrectly() {
+        // Crear datos de prueba
+        Cart cart = new Cart();
+        cart.setId("cart456");
+        cart.setSubtotal(new BigDecimal("200.00"));
+        cart.setTax(new BigDecimal("42.00"));
+        cart.setTotal(new BigDecimal("242.00"));
+        
+        CartItem cartItem = new CartItem();
+        cartItem.setId("item2");
+        cartItem.setProductId("prod2");
+        cartItem.setProductName("Otro producto");
+        cartItem.setQuantity(1);
+        cartItem.setUnitPrice(new BigDecimal("200.00"));
+        cartItem.setTotalPrice(new BigDecimal("200.00"));
+        cartItem.setProductImageUrl("http://example.com/image2.jpg");
+        
+        cart.setItems(Collections.singletonList(cartItem));
+        
+        AddressDTO shippingAddress = AddressDTO.builder()
+                .firstName("Ana")
+                .lastName("García")
+                .addressLine1("Avenida Principal 789")
+                .city("Valencia")
+                .state("Valencia")
+                .postalCode("46001")
+                .country("España")
+                .phoneNumber("600555666")
+                .email("ana@example.com")
+                .build();
+        
+        AddressDTO billingAddress = AddressDTO.builder()
+                .firstName("Ana")
+                .lastName("García")
+                .addressLine1("Avenida Principal 789")
+                .city("Valencia")
+                .state("Valencia")
+                .postalCode("46001")
+                .country("España")
+                .phoneNumber("600555666")
+                .email("ana@example.com")
+                .build();
+        
+        CheckoutDTO checkoutDTO = new CheckoutDTO();
+        checkoutDTO.setCartId(cart.getId());
+        checkoutDTO.setShippingAddress(shippingAddress);
+        checkoutDTO.setBillingAddress(billingAddress);
+        checkoutDTO.setShippingMethod("Express 24h");
+        
+        // Ejecutar el método a probar
+        Order order = OrderMapper.fromCartAndCheckout(cart, checkoutDTO);
+        
+        // Verificar resultados
+        assertNotNull(order);
+        assertEquals(cart.getId(), order.getId());
+        assertEquals(cart.getId(), order.getOrderId());
+        
+        // Verificar que se ha aplicado el método de envío del CheckoutDTO
+        assertNotNull(order.getShippingGroups());
+        assertEquals(1, order.getShippingGroups().size());
+        assertEquals("Express 24h", order.getShippingGroups().get(0).getShippingMethod());
     }
 }

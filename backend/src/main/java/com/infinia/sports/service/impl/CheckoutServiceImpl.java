@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.infinia.sports.exception.ResourceNotFoundException;
 import com.infinia.sports.mapper.CartMapper;
+import com.infinia.sports.mapper.OrderMapper;
 import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.Product;
@@ -22,10 +21,13 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.model.dto.OrderDTO;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.CheckoutService;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -211,111 +213,27 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Si las direcciones son iguales, usamos la misma para ambos casos
         
         // Crear y guardar la entidad Order
-        Order order = mapToOrder(cart, shippingAddress, billingAddress);
+        Order order = OrderMapper.fromCart(cart, shippingAddress, billingAddress);
         orderRepository.save(order);
         logger.info("Orden creada y guardada con ID: {}", order.getOrderId());
         
         return CartMapper.toDTO(cart);
     }
     
-    /**
-     * Mapea los datos del carrito y las direcciones a una entidad Order
-     * @param cart Carrito de compras
-     * @param shippingAddress Dirección de envío
-     * @param billingAddress Dirección de facturación
-     * @return Entidad Order mapeada
-     */
-    private Order mapToOrder(Cart cart, AddressDTO shippingAddress, AddressDTO billingAddress) {
-        // Crear la entidad Order con los campos requeridos
-        Order order = new Order();
-        // Vincular el ID del pedido y el orderId al id del carrito para trazabilidad
-        order.setId(cart.getId());
-        order.setOrderId(cart.getId());
-        order.setLanguage("ES");
-        order.setSubmitDate(LocalDateTime.now());
-        order.setStatus("pending");
-        order.setEmail(shippingAddress.getEmail());
-        
-        // Crear ShippingGroup con ID que empieza en 1
-        Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
-        shippingGroup.setId("1"); // Empezamos en 1 para el primer grupo
-        shippingGroup.setShippingMethod("Infinia Sports");
-        shippingGroup.setShippingCost(cart.getSubtotal());
-        // Crear la lista de LineItems a partir de los CartItems
-        List<Order.LineItem> lineItems = cart.getItems().stream()
-            .map(cartItem -> {
-                String imageUrl = cartItem.getProductImageUrl(); // Priorizar la URL del CartItem
-
-                if (imageUrl == null || imageUrl.trim().isEmpty()) {
-                    logger.warn("[mapToOrder] productImageUrl no encontrada en CartItem para Product ID: {}. Intentando obtenerla del repositorio.", cartItem.getProductId());
-                    try {
-                        Product product = productRepository.findById(UUID.fromString(cartItem.getProductId()))
-                                .orElse(null);
-                        if (product != null) {
-                            imageUrl = product.getImageUrl();
-                            logger.info("[mapToOrder] URL de imagen obtenida del repositorio para Product ID: {}: {}", cartItem.getProductId(), imageUrl);
-                        } else {
-                            logger.warn("[mapToOrder] Producto no encontrado en el repositorio con ID: {} durante el intento de fallback.", cartItem.getProductId());
-                        }
-                    } catch (IllegalArgumentException iae) {
-                        logger.error("[mapToOrder] ProductId inválido durante el fallback: {} no es un UUID válido.", cartItem.getProductId(), iae);
-                    } catch (Exception e) {
-                        logger.error("[mapToOrder] Error inesperado durante el fallback al obtener producto con ID: {}.", cartItem.getProductId(), e);
-                    }
-                } else {
-                    logger.info("[mapToOrder] Usando productImageUrl preexistente del CartItem para Product ID: {}: {}", cartItem.getProductId(), imageUrl);
-                }
-
-                return Order.LineItem.builder()
-                    .id(cartItem.getId())
-                    .productId(cartItem.getProductId())
-                    .productName(cartItem.getProductName())
-                    .quantity(cartItem.getQuantity())
-                    .unitPrice(cartItem.getUnitPrice())
-                    .totalPrice(cartItem.getTotalPrice())
-                    .attributes(cartItem.getAttributes())
-                    .productImageUrl(imageUrl) // Use the determined imageUrl
-                    .build();
-            })
-            .collect(Collectors.toList());
-        
-        // Asignar los LineItems al ShippingGroup
-        shippingGroup.setLineItems(lineItems);
-        
-        // Añadir el ShippingGroup a la lista
-        order.setShippingGroups(List.of(shippingGroup));
-        
-        // Mapear direcciones
-        order.setShippingAddress(mapAddressDtoToOrderAddress(shippingAddress));
-        order.setBillingAddress(mapAddressDtoToOrderAddress(billingAddress));
-        
-        // Configurar PriceInfo con todos los valores del Cart
-        Order.PriceInfo priceInfo = new Order.PriceInfo();
-        priceInfo.setSubtotal(cart.getSubtotal());
-        priceInfo.setTax(cart.getTax());
-        // Calcular el total como la suma del total del carrito
-        priceInfo.setTotal(cart.getTotal());
-        // Establecer discount en cero por defecto
-        priceInfo.setDiscount(BigDecimal.ZERO);
-        order.setPriceInfo(priceInfo);
-        
-        return order;
-    }
-
     @Override
-    public Order confirmOrder(CheckoutDTO checkoutDTO) {
+    public OrderDTO confirmOrder(CheckoutDTO checkoutDTO) {
         // Idempotencia: si ya existe una orden para este cartId/orderId, devuélvela
         java.util.Optional<Order> existing = orderRepository.findByOrderId(checkoutDTO.getCartId());
         if (existing.isPresent()) {
             logger.info("[confirmOrder] Ya existe una orden para orderId={}, devolviendo la existente", checkoutDTO.getCartId());
-            return existing.get();
+            return OrderMapper.toDTO(existing.get());
         }
         // Obtener el carrito
         Cart cart = cartRepository.findById(checkoutDTO.getCartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
         
-        // Crear la orden
-        Order order = createOrderFromCart(cart, checkoutDTO);
+        // Crear la orden usando el mapper
+        Order order = OrderMapper.fromCartAndCheckout(cart, checkoutDTO);
         
         // Guardar la orden
         Order savedOrder = orderRepository.save(order);
@@ -332,7 +250,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             cartRepository.delete(cart);
         }
         // Nota: el frontend debe recargar el carrito tras el pedido para máxima sincronización
-        return savedOrder;
+        return OrderMapper.toDTO(savedOrder);
     }
 
     /**
@@ -433,39 +351,10 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
 
     /**
-     * Crea una orden a partir del carrito y los datos de checkout, delegando en mapToOrder.
+     * Método para inicializar el repositorio de productos en el OrderMapper
      */
-    private Order createOrderFromCart(Cart cart, CheckoutDTO checkoutDTO) {
-        // Delegar la creación base de la orden a mapToOrder para centralizar la lógica
-        Order order = mapToOrder(cart, checkoutDTO.getShippingAddress(), checkoutDTO.getBillingAddress());
-
-        // Sobrescribir o añadir detalles específicos del CheckoutDTO que no están en mapToOrder
-        // Por ejemplo, el método de envío que en mapToOrder está hardcodeado
-        if (checkoutDTO.getShippingMethod() != null && !order.getShippingGroups().isEmpty()) {
-            order.getShippingGroups().get(0).setShippingMethod(checkoutDTO.getShippingMethod());
-        }
-
-        return order;
-    }
-    
-    /**
-     * Convierte un AddressDTO a Order.Address
-     */
-    private Order.Address mapAddressDtoToOrderAddress(AddressDTO addressDTO) {
-        if (addressDTO == null) {
-            return null;
-        }
-        
-        return Order.Address.builder()
-                .firstName(addressDTO.getFirstName())
-                .lastName(addressDTO.getLastName())
-                .addressLine1(addressDTO.getAddressLine1())
-                .addressLine2(addressDTO.getAddressLine2())
-                .city(addressDTO.getCity())
-                .state(addressDTO.getState())
-                .postalCode(addressDTO.getPostalCode())
-                .country(addressDTO.getCountry())
-                .phoneNumber(addressDTO.getPhoneNumber())
-                .build();
+    @PostConstruct
+    public void init() {
+        OrderMapper.setProductRepository(productRepository);
     }
 }

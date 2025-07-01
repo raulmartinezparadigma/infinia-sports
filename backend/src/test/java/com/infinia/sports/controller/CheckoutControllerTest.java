@@ -19,6 +19,7 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.model.dto.OrderDTO;
 import com.infinia.sports.service.CheckoutService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -245,40 +246,23 @@ class CheckoutControllerTest {
 
     @Test
     void testConfirmOrder() {
-        String cartId = UUID.randomUUID().toString();
-
-        AddressDTO testAddress = AddressDTO.builder()
-                .firstName("Juan")
-                .lastName("Pérez")
-                .addressLine1("Calle Principal 123")
-                .city("Madrid")
-                .postalCode("28001")
-                .country("España")
-                .phoneNumber("+34600000000")
-                .build();
-
         CheckoutDTO testCheckoutDTO = CheckoutDTO.builder()
-                .cartId(cartId)
-                .email("juan.perez@example.com")
-                .shippingAddress(testAddress)
-                .billingAddress(testAddress)
-                .sameAsBillingAddress(true)
+                .cartId("test-cart-id")
                 .build();
 
-        Order testOrder = Order.builder()
-                .id(UUID.randomUUID().toString())
+        OrderDTO testOrderDTO = OrderDTO.builder()
                 .orderId("ORD-" + System.currentTimeMillis())
                 .userId("test-user")
-                .status("PENDIENTE")
+                .status("PENDING")
                 .build();
 
         when(checkoutService.confirmOrder(any(CheckoutDTO.class)))
-                .thenReturn(testOrder);
+                .thenReturn(testOrderDTO);
 
-        ResponseEntity<Order> response = checkoutController.confirmOrder(testCheckoutDTO);
+        ResponseEntity<OrderDTO> response = checkoutController.confirmOrder(testCheckoutDTO);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(testOrder, response.getBody());
+        assertEquals(testOrderDTO, response.getBody());
         verify(checkoutService).confirmOrder(any(CheckoutDTO.class));
     }
 
@@ -286,7 +270,7 @@ class CheckoutControllerTest {
     void testConfirmOrder_Exception() {
         CheckoutDTO checkoutDTO = CheckoutDTO.builder().cartId("cartId").build();
         when(checkoutService.confirmOrder(any(CheckoutDTO.class))).thenThrow(new RuntimeException("DB error"));
-        ResponseEntity<Order> response = checkoutController.confirmOrder(checkoutDTO);
+        ResponseEntity<OrderDTO> response = checkoutController.confirmOrder(checkoutDTO);
         assertEquals(400, response.getStatusCodeValue());
     }
 }

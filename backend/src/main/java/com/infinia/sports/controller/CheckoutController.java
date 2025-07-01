@@ -20,6 +20,7 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
+import com.infinia.sports.model.dto.OrderDTO;
 import com.infinia.sports.service.CheckoutService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -186,18 +187,18 @@ public class CheckoutController {
     /**
      * Confirma el pedido y lo prepara para pago
      */
-    @PostMapping("/checkout/confirmar")
-    @Operation(summary = "Confirmar pedido", description = "Confirma el pedido y lo prepara para el pago")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Pedido creado correctamente",
-            content = @Content(schema = @Schema(implementation = Order.class))), @ApiResponse(responseCode = "400",
-            description = "Datos inválidos"), @ApiResponse(responseCode = "404", description = "Carrito no encontrado") })
-    public ResponseEntity<Order> confirmOrder(@Valid @RequestBody CheckoutDTO checkoutDTO) {
-        logger.info("[confirmOrder] Llamamos al confirmOrder", checkoutDTO.getCartId());
+    @PostMapping("/checkout/confirm")
+    @Operation(summary = "Confirm order", description = "Confirms the order and prepares it for payment")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Order created successfully",
+            content = @Content(schema = @Schema(implementation = OrderDTO.class))), @ApiResponse(responseCode = "400",
+            description = "Invalid data"), @ApiResponse(responseCode = "404", description = "Cart not found") })
+    public ResponseEntity<OrderDTO> confirmOrder(@Valid @RequestBody CheckoutDTO checkoutDTO) {
+        logger.info("[confirmOrder] Calling confirmOrder", checkoutDTO.getCartId());
         try {
-            Order order = checkoutService.confirmOrder(checkoutDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(order);
+            OrderDTO orderDTO = checkoutService.confirmOrder(checkoutDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
         } catch (Exception e) {
-            logger.error("[confirmOrder] Error al confirmar el pedido", e);
+            logger.error("[confirmOrder] Error confirming the order", e);
             return ResponseEntity.badRequest().build();
         }
     }

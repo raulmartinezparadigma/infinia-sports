@@ -154,6 +154,6 @@ export async function confirmOrder(checkoutData) {
   }
   
   console.log('[confirmOrder] Enviando datos de checkout:', checkoutData);
-  const response = await axios.post(`${API_BASE}/api/checkout/confirmar`, checkoutData);
+  const response = await axios.post(`${API_BASE}/api/checkout/confirm`, checkoutData);
   return response.data;
 }

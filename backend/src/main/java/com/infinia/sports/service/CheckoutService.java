@@ -6,6 +6,7 @@ import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.CartItemDTO;
 import com.infinia.sports.model.dto.CheckoutDTO;
 import com.infinia.sports.model.dto.CartDTO;
+import com.infinia.sports.model.dto.OrderDTO;
 
 /**
  * Interfaz para el servicio de checkout
@@ -55,7 +56,7 @@ public interface CheckoutService {
      * @param checkoutDTO Datos del checkout
      * @return La orden creada
      */
-    Order confirmOrder(CheckoutDTO checkoutDTO);
+    OrderDTO confirmOrder(CheckoutDTO checkoutDTO);
     
     /**
      * Elimina todo el carrito (todos los productos) para el usuario o sesión actual
