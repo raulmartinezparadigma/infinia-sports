@@ -1,6 +1,21 @@
 package com.infinia.sports.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
+
 import com.infinia.sports.exception.ResourceNotFoundException;
+import com.infinia.sports.mapper.AddressMapper;
+import com.infinia.sports.mapper.OrderMapper;
 import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.AddressDTO;
@@ -12,25 +27,19 @@ import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.impl.CheckoutServiceImpl;
-import com.infinia.sports.mapper.OrderMapper;
-import com.infinia.sports.mapper.AddressMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.MockedStatic;
-import org.mockito.quality.Strictness;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CheckoutServiceImplTest {
     @Mock
