@@ -20,7 +20,7 @@ function ProductCard({ product }) {
     const cartItem = {
       id: product.id,
       productId: product.id,
-      productName: product.name || 'Producto',
+      productName: product.description || 'Producto',
       description: product.description || '',
       quantity: 1,
       unitPrice: price,
