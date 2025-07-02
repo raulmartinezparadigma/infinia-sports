@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -52,6 +54,42 @@ public class OrderServiceImpl implements OrderService {
             return OrderMapper.toDTO(order);
         } catch (Exception e) {
             logger.error("[OrderService] Error inesperado al obtener el pedido para orderId: {}. Error: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+    @Override
+    public List<OrderDTO> getOrdersByEmail(String email) {
+        try {
+            logger.info("[OrderService] Buscando pedidos para el email: {}", email);
+            List<Order> orders = orderRepository.findByEmail(email);
+            
+            // Hidratar los productos en cada pedido
+            orders.forEach(order -> {
+                if (order.getShippingGroups() != null) {
+                    order.getShippingGroups().forEach(shippingGroup -> {
+                        if (shippingGroup.getLineItems() != null) {
+                            shippingGroup.getLineItems().forEach(lineItem -> {
+                                if (lineItem.getProductId() != null) {
+                                    try {
+                                        UUID productId = UUID.fromString(lineItem.getProductId());
+                                        productRepository.findById(productId).ifPresent(lineItem::setProduct);
+                                    } catch (IllegalArgumentException e) {
+                                        logger.warn("El productId '{}' no es un UUID válido para el lineItem '{}'", lineItem.getProductId(), lineItem.getId());
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            logger.info("Se encontraron {} pedidos para el email: {}", orders.size(), email);
+            return orders.stream()
+                    .map(OrderMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("[OrderService] Error inesperado al obtener pedidos para el email: {}. Error: {}", email, e.getMessage(), e);
             throw e;
         }
     }

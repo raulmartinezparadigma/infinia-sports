@@ -1,12 +1,16 @@
 package com.infinia.sports.service.impl;
 
 import com.infinia.sports.exception.ResourceAlreadyExistsException;
+import com.infinia.sports.exception.ResourceNotFoundException;
 import com.infinia.sports.model.Role;
 import com.infinia.sports.model.User;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
+import com.infinia.sports.model.dto.UserDTO;
 import com.infinia.sports.repository.jpa.UserRepository;
 import com.infinia.sports.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,5 +94,40 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+    
+    /**
+     * Obtiene la información del usuario autenticado actual.
+     *
+     * @return DTO con la información del usuario actual
+     * @throws ResourceNotFoundException si no hay usuario autenticado
+     */
+    @Override
+    public UserDTO getCurrentUser() {
+        // Obtener la autenticación del contexto de seguridad
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated() || 
+                authentication.getName().equals("anonymousUser")) {
+            throw new ResourceNotFoundException("No hay un usuario autenticado");
+        }
+        
+        // Obtener el nombre de usuario del principal
+        String username = authentication.getName();
+        
+        // Buscar el usuario por nombre de usuario
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el usuario autenticado: " + username));
+        
+        // Convertir a DTO y devolver
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles())
+                .build();
     }
 }

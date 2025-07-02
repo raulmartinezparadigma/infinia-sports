@@ -8,6 +8,8 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import Confirmation from "./pages/Confirmation";
+import OrderHistory from "./pages/OrderHistory";
+import OrderDetail from "./pages/OrderDetail";
 
 // Componentes de autenticación
 import Login from "./components/Login";
@@ -65,9 +67,14 @@ function App() {
                 <Confirmation />
               </CheckoutRoute>
             } />
-            <Route path="/orders" element={
+            <Route path="/pedidos" element={
               <ProtectedRoute>
-                <div>Mis Pedidos</div>
+                <OrderHistory />
+              </ProtectedRoute>
+            } />
+            <Route path="/pedidos/:orderId" element={
+              <ProtectedRoute>
+                <OrderDetail />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={

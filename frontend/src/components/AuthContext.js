@@ -51,6 +51,7 @@ export function AuthProvider({ children }) {
       // Actualizar el estado del usuario
       setCurrentUser({
         username: response.username,
+        email: response.email,
         roles: response.roles
       });
       

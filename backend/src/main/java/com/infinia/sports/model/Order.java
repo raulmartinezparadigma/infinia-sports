@@ -106,9 +106,9 @@ public class Order {
     @AllArgsConstructor
     public static class PriceInfo {
         private BigDecimal subtotal;
-        private BigDecimal tax;
-        private BigDecimal discount;
         private BigDecimal total;
+        private BigDecimal discount;
+        private BigDecimal tax;
     }
     
     /**

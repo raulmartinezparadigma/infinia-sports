@@ -65,7 +65,7 @@ public class SecurityConfig {
                     "/api/admin/auth/**" // Login admin público
                 ).permitAll()
                 // Proteger endpoints de administración
-                .requestMatchers("/api/admin/**", "/api/orders/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Requerir autenticación para cualquier otro endpoint
                 .anyRequest().authenticated()
             )

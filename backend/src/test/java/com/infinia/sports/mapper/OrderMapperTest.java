@@ -249,4 +249,75 @@ class OrderMapperTest {
         assertEquals(1, order.getShippingGroups().size());
         assertEquals("Express 24h", order.getShippingGroups().get(0).getShippingMethod());
     }
+    
+    @Test
+    void fromCartAndCheckout_mapsFieldsAndCalculatesPricesCorrectly() {
+        // --- Arrange ---
+        // Crear datos de prueba para el carrito
+        Cart cart = new Cart();
+        cart.setId("cart-test-123");
+        cart.setUserId("user-test-456");
+        cart.setSubtotal(new BigDecimal("150.75"));
+        cart.setTax(new BigDecimal("31.66"));
+
+        CartItem cartItem = new CartItem();
+        cartItem.setId("item-1");
+        cartItem.setProductId("prod-1");
+        cartItem.setProductName("Zapatillas de Running");
+        cartItem.setQuantity(1);
+        cartItem.setUnitPrice(new BigDecimal("150.75"));
+        cartItem.setTotalPrice(new BigDecimal("150.75"));
+        cart.setItems(Collections.singletonList(cartItem));
+
+        // Crear datos de prueba para el DTO de checkout
+        AddressDTO shippingAddress = AddressDTO.builder()
+                .firstName("Ana").lastName("Gomez").email("ana.gomez@example.com").build();
+
+        CheckoutDTO checkoutDTO = new CheckoutDTO();
+        checkoutDTO.setCartId(cart.getId());
+        checkoutDTO.setEmail("ana.gomez@example.com");
+        checkoutDTO.setShippingAddress(shippingAddress);
+        checkoutDTO.setShippingMethod("Envío Estándar");
+
+        // --- Act ---
+        // Ejecutar el método a probar
+        Order order = OrderMapper.fromCartAndCheckout(cart, checkoutDTO);
+
+        // --- Assert ---
+        // Verificar los campos básicos del pedido
+        assertNotNull(order);
+        assertEquals(cart.getId(), order.getOrderId());
+        assertEquals(cart.getUserId(), order.getUserId());
+        assertEquals(checkoutDTO.getEmail(), order.getEmail());
+        assertEquals("PENDING_PAYMENT", order.getStatus());
+        assertNotNull(order.getSubmitDate());
+
+        // Verificar la dirección de envío
+        assertNotNull(order.getShippingAddress());
+        assertEquals(shippingAddress.getFirstName(), order.getShippingAddress().getFirstName());
+
+        // Verificar el grupo de envío y los items
+        assertNotNull(order.getShippingGroups());
+        assertEquals(1, order.getShippingGroups().size());
+        ShippingGroup shippingGroup = order.getShippingGroups().get(0);
+        assertEquals(checkoutDTO.getShippingMethod(), shippingGroup.getShippingMethod());
+        assertEquals(1, shippingGroup.getLineItems().size());
+        assertEquals(cartItem.getProductId(), shippingGroup.getLineItems().get(0).getProductId());
+
+        // Verificar los cálculos de precios (la parte más importante)
+        assertNotNull(order.getPriceInfo());
+        PriceInfo priceInfo = order.getPriceInfo();
+        
+        // Comprobar que el coste de envío es CERO
+        assertEquals(BigDecimal.ZERO, shippingGroup.getShippingCost());
+
+        // Comprobar que los valores se han escalado a 2 decimales
+        assertEquals(new BigDecimal("150.75"), priceInfo.getSubtotal());
+        assertEquals(new BigDecimal("31.66"), priceInfo.getTax());
+        assertEquals(BigDecimal.ZERO, priceInfo.getDiscount());
+
+        // Comprobar el cálculo del total
+        BigDecimal expectedTotal = new BigDecimal("150.75").add(new BigDecimal("31.66")).add(BigDecimal.ZERO);
+        assertEquals(expectedTotal.setScale(2, java.math.RoundingMode.HALF_UP), priceInfo.getTotal());
+    }
 }

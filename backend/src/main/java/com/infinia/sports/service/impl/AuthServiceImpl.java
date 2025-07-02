@@ -63,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
             return AuthResponseDTO.builder()
                     .token(token)
                     .username(user.getUsername())
+                    .email(user.getEmail())
                     .roles(roles)
                     .build();
         } catch (org.springframework.security.core.AuthenticationException e) {
@@ -94,6 +95,7 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponseDTO.builder()
                 .token(token)
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .roles(roles)
                 .build();
     }

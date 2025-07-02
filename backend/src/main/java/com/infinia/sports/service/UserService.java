@@ -2,6 +2,7 @@ package com.infinia.sports.service;
 
 import com.infinia.sports.model.User;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
+import com.infinia.sports.model.dto.UserDTO;
 
 import java.util.Optional;
 
@@ -41,4 +42,11 @@ public interface UserService {
      * @return true si existe, false en caso contrario
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * Obtiene la información del usuario autenticado actual.
+     * 
+     * @return DTO con la información del usuario actual
+     */
+    UserDTO getCurrentUser();
 }

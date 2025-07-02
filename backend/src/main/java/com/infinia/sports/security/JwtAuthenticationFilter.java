@@ -68,10 +68,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Si hay un nombre de usuario y no hay autenticación en el contexto de seguridad
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // Seleccionar el servicio adecuado según la ruta
-                // Si la ruta es de administración o de pedidos, usar AdminUserDetailsService; si no, CustomUserDetailsService
+                // Si la ruta es de administración, usar AdminUserDetailsService; si no, CustomUserDetailsService
                 UserDetails userDetails;
-                if (path.startsWith("/api/admin/") || path.startsWith("/api/orders/")) {
-                    // Ruta de administración o pedidos: buscar en adminUserDetailsService
+                if (isAdminPath(path)) {
+                    // Ruta de administración: buscar en adminUserDetailsService
                     System.out.println("[TRACE] JwtAuthenticationFilter - Usando AdminUserDetailsService para la ruta: " + path);
                     userDetails = this.adminUserDetailsService.loadUserByUsername(username);
                 } else {
@@ -140,5 +140,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Comprueba si una ruta es de administración.
+     * @param path La ruta de la petición.
+     * @return true si es una ruta de admin, false en caso contrario.
+     */
+    private boolean isAdminPath(String path) {
+        return path.startsWith("/api/admin/") || path.startsWith("/api/orders");
     }
 }

@@ -111,7 +111,7 @@ function Navbar() {
               <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
                 Mi Perfil
               </MenuItem>
-              <MenuItem onClick={() => { handleMenuClose(); navigate('/orders'); }}>
+              <MenuItem onClick={() => { handleMenuClose(); navigate('/pedidos'); }}>
                 Mis Pedidos
               </MenuItem>
               <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>

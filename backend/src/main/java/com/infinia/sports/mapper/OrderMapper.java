@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import java.math.RoundingMode;
 
 public class OrderMapper {
     private static final Logger logger = LoggerFactory.getLogger(OrderMapper.class);
@@ -43,11 +45,21 @@ public class OrderMapper {
                 .build();
     }
 
+    /**
+     * Convierte una lista de entidades ShippingGroup a una lista de DTOs.
+     * @param groups Lista de entidades ShippingGroup.
+     * @return Lista de ShippingGroupDTOs.
+     */
     private static List<ShippingGroupDTO> toShippingGroupDTOList(List<Order.ShippingGroup> groups) {
         if (groups == null) return null;
         return groups.stream().map(OrderMapper::toShippingGroupDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Convierte una entidad ShippingGroup a su DTO correspondiente.
+     * @param group Entidad ShippingGroup.
+     * @return ShippingGroupDTO.
+     */
     private static ShippingGroupDTO toShippingGroupDTO(Order.ShippingGroup group) {
         if (group == null) return null;
         return ShippingGroupDTO.builder()
@@ -58,11 +70,31 @@ public class OrderMapper {
                 .build();
     }
 
+    /**
+     * Convierte una lista de entidades LineItem a una lista de DTOs, enriqueciendo con la URL de la imagen del producto.
+     * @param items Lista de entidades LineItem.
+     * @return Lista de OrderLineItemDTOs.
+     */
     private static List<OrderLineItemDTO> toLineItemDTOList(List<Order.LineItem> items) {
         if (items == null) return null;
-        return items.stream().map(OrderMapper::toLineItemDTO).collect(Collectors.toList());
+        return items.stream().map(item -> {
+            try {
+                Product product = productRepository.findById(UUID.fromString(item.getProductId())).orElse(null);
+                if (product != null) {
+                    item.setProductImageUrl(product.getImageUrl());
+                }
+            } catch (IllegalArgumentException e) {
+                logger.error("[toLineItemDTOList] ID de producto no válido: {}. Error: {}", item.getProductId(), e.getMessage());
+            }
+            return toLineItemDTO(item);
+        }).collect(Collectors.toList());
     }
 
+    /**
+     * Convierte una entidad LineItem a su DTO correspondiente.
+     * @param item Entidad LineItem.
+     * @return OrderLineItemDTO.
+     */
     private static OrderLineItemDTO toLineItemDTO(Order.LineItem item) {
         if (item == null) return null;
         return OrderLineItemDTO.builder()
@@ -169,14 +201,83 @@ public class OrderMapper {
      * Crea una orden a partir del carrito y los datos de checkout
      */
     public static Order fromCartAndCheckout(Cart cart, CheckoutDTO checkoutDTO) {
-        // Delegar la creación base de la orden a fromCart para centralizar la lógica
-        Order order = fromCart(cart, checkoutDTO.getShippingAddress(), checkoutDTO.getBillingAddress());
+        Order order = new Order();
+        order.setId(cart.getId()); // Asignar el ID del carrito al ID de la orden para consistencia
+        order.setOrderId(cart.getId()); // Usamos el ID del carrito como ID de la orden para trazabilidad
+        order.setUserId(cart.getUserId());
+        order.setEmail(checkoutDTO.getEmail());
+        order.setSubmitDate(LocalDateTime.now());
+        order.setStatus("PENDING_PAYMENT");
 
-        // Sobrescribir o añadir detalles específicos del CheckoutDTO
-        if (checkoutDTO.getShippingMethod() != null && !order.getShippingGroups().isEmpty()) {
-            order.getShippingGroups().get(0).setShippingMethod(checkoutDTO.getShippingMethod());
-        }
+        // Mapear dirección de envío
+        order.setShippingAddress(toAddressEntity(checkoutDTO.getShippingAddress()));
+
+        // Mapear items del carrito a lineItems del pedido
+        Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
+        shippingGroup.setId(UUID.randomUUID().toString());
+        shippingGroup.setShippingMethod(checkoutDTO.getShippingMethod());
+
+        // TODO: El coste de envío no se está recibiendo en el DTO de checkout. Se asume 0 temporalmente para que compile.
+        BigDecimal shippingCost = BigDecimal.ZERO;
+        shippingGroup.setShippingCost(shippingCost);
+
+        List<Order.LineItem> lineItems = cart.getItems().stream()
+            .map(OrderMapper::fromCartItem)
+            .collect(Collectors.toList());
+        shippingGroup.setLineItems(lineItems);
+        order.setShippingGroups(Collections.singletonList(shippingGroup));
+
+        // Calcular y asignar PriceInfo
+        Order.PriceInfo priceInfo = new Order.PriceInfo();
+        BigDecimal subtotal = cart.getSubtotal() != null ? cart.getSubtotal() : BigDecimal.ZERO;
+        BigDecimal tax = cart.getTax() != null ? cart.getTax() : BigDecimal.ZERO;
+        
+        priceInfo.setSubtotal(subtotal.setScale(2, RoundingMode.HALF_UP));
+        priceInfo.setTax(tax.setScale(2, RoundingMode.HALF_UP));
+        priceInfo.setDiscount(BigDecimal.ZERO); // Lógica de descuento no implementada aún
+
+        BigDecimal total = subtotal.add(tax).add(shippingCost);
+        priceInfo.setTotal(total.setScale(2, RoundingMode.HALF_UP));
+        order.setPriceInfo(priceInfo);
 
         return order;
+    }
+
+    /**
+     * Convierte un objeto CartItem del carrito a un LineItem del pedido.
+     * @param cartItem El item del carrito.
+     * @return El LineItem correspondiente para el pedido.
+     */
+    private static Order.LineItem fromCartItem(Cart.CartItem cartItem) {
+        Order.LineItem lineItem = new Order.LineItem();
+        lineItem.setId(cartItem.getId());
+        lineItem.setProductId(cartItem.getProductId());
+        lineItem.setProductName(cartItem.getProductName());
+        lineItem.setQuantity(cartItem.getQuantity());
+        lineItem.setUnitPrice(cartItem.getUnitPrice());
+        lineItem.setTotalPrice(cartItem.getTotalPrice());
+        lineItem.setAttributes(cartItem.getAttributes());
+        lineItem.setProductImageUrl(cartItem.getProductImageUrl());
+        return lineItem;
+    }
+
+    /**
+     * Convierte un AddressDTO a una entidad de dirección para el pedido.
+     * @param addressDTO El DTO de la dirección.
+     * @return La entidad Address correspondiente.
+     */
+    private static Order.Address toAddressEntity(AddressDTO addressDTO) {
+        if (addressDTO == null) return null;
+        Order.Address address = new Order.Address();
+        address.setFirstName(addressDTO.getFirstName());
+        address.setLastName(addressDTO.getLastName());
+        address.setAddressLine1(addressDTO.getAddressLine1());
+        address.setAddressLine2(addressDTO.getAddressLine2());
+        address.setCity(addressDTO.getCity());
+        address.setState(addressDTO.getState());
+        address.setPostalCode(addressDTO.getPostalCode());
+        address.setCountry(addressDTO.getCountry());
+        address.setPhoneNumber(addressDTO.getPhoneNumber());
+        return address;
     }
 }

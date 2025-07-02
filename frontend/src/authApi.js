@@ -2,8 +2,8 @@
 // Todos los nombres en inglés, comentarios en español
 import axios from 'axios';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-const AUTH_ENDPOINT = `${API_BASE}/api/auth`;
+// Usar URLs relativas para aprovechar la configuración de proxy en package.json
+const AUTH_ENDPOINT = '/api/auth';
 
 // Configuración para incluir el token JWT en las peticiones
 axios.interceptors.request.use(
@@ -15,6 +15,15 @@ axios.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para el manejo de errores
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Error en respuesta HTTP:', error);
     return Promise.reject(error);
   }
 );
@@ -47,7 +56,7 @@ export async function register(userData) {
 // Obtener el usuario actual
 export async function getCurrentUser() {
   try {
-    const response = await axios.get(`${API_BASE}/api/users/me`);
+    const response = await axios.get(`/api/user/me`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener el usuario actual:', error);
@@ -59,7 +68,7 @@ export async function getCurrentUser() {
 export async function linkCartToUser(cartId) {
   try {
     // El endpoint no necesita body ya que toma el usuario del token JWT
-    const response = await axios.put(`${API_BASE}/cart/link/${cartId}`);
+    const response = await axios.put(`/cart/link/${cartId}`);
     return response.data;
   } catch (error) {
     console.error('Error al vincular el carrito con el usuario:', error);

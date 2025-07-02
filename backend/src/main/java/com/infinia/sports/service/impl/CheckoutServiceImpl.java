@@ -107,7 +107,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             Cart.CartItem item = existingItem.get();
             logger.info("Actualizando cantidad del producto existente en el carrito: {} (cantidad +{})", item.getProductId(), cartItemDTO.getQuantity());
             item.setQuantity(item.getQuantity() + cartItemDTO.getQuantity());
-            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())).setScale(2, RoundingMode.HALF_UP));
             if (cartItemDTO.getDescription() != null && !cartItemDTO.getDescription().isEmpty() && 
                 (item.getDescription() == null || item.getDescription().isEmpty())) {
                 item.setDescription(cartItemDTO.getDescription());
@@ -127,7 +127,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .description(cartItemDTO.getDescription())
                     .quantity(cartItemDTO.getQuantity())
                     .unitPrice(cartItemDTO.getUnitPrice())
-                    .totalPrice(cartItemDTO.getUnitPrice().multiply(BigDecimal.valueOf(cartItemDTO.getQuantity())))
+                    .totalPrice(cartItemDTO.getUnitPrice().multiply(BigDecimal.valueOf(cartItemDTO.getQuantity())).setScale(2, RoundingMode.HALF_UP))
                     .attributes(cartItemDTO.getAttributes())
                     .build();
             cart.getItems().add(newItem);
@@ -166,7 +166,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 logger.warn("[updateCartItemQuantity] UnitPrice es null para itemId={}, usando 0", itemId);
                 item.setUnitPrice(BigDecimal.ZERO);
             }
-            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
+            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.HALF_UP));
             if (item.getDescription() == null) {
                 logger.info("[updateCartItemQuantity] Descripción es null para itemId={}", itemId);
             }
@@ -232,7 +232,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Cart cart = cartRepository.findById(checkoutDTO.getCartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
         
-        // Crear la orden usando el mapper
+        // Crear la orden usando el mapper centralizado
         Order order = OrderMapper.fromCartAndCheckout(cart, checkoutDTO);
         
         // Guardar la orden

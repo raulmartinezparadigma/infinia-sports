@@ -126,4 +126,67 @@ class OrderServiceImplTest {
         assertNotNull(dto);
         assertEquals(orderId, dto.getOrderId());
     }
+
+    @Test
+    void getOrdersByEmail_success() {
+        // Arrange
+        String email = "test@example.com";
+        Order order = new Order();
+        order.setEmail(email);
+        when(orderRepository.findByEmail(email)).thenReturn(java.util.List.of(order));
+
+        try (var mockedMapper = mockStatic(OrderMapper.class)) {
+            mockedMapper.when(() -> OrderMapper.toDTO(any(Order.class))).thenReturn(new OrderDTO());
+
+            // Act
+            java.util.List<OrderDTO> result = orderService.getOrdersByEmail(email);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            assertEquals(1, result.size());
+            verify(orderRepository).findByEmail(email);
+        }
+    }
+
+    @Test
+    void getOrdersByEmail_returnsEmptyList_whenNoOrdersFound() {
+        // Arrange
+        String email = "no-orders@example.com";
+        when(orderRepository.findByEmail(email)).thenReturn(java.util.Collections.emptyList());
+
+        // Act
+        java.util.List<OrderDTO> result = orderService.getOrdersByEmail(email);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(orderRepository).findByEmail(email);
+        verify(productRepository, never()).findById(any());
+    }
+
+    @Test
+    void getOrdersByEmail_handlesInvalidProductIdGracefully() {
+        // Arrange
+        String email = "test@example.com";
+        Order order = new Order();
+        Order.ShippingGroup sg = new Order.ShippingGroup();
+        Order.LineItem li = new Order.LineItem();
+        li.setProductId("not-a-uuid");
+        sg.setLineItems(java.util.List.of(li));
+        order.setShippingGroups(java.util.List.of(sg));
+        when(orderRepository.findByEmail(email)).thenReturn(java.util.List.of(order));
+
+        try (var mockedMapper = mockStatic(OrderMapper.class)) {
+            mockedMapper.when(() -> OrderMapper.toDTO(any(Order.class))).thenReturn(new OrderDTO());
+
+            // Act
+            java.util.List<OrderDTO> result = orderService.getOrdersByEmail(email);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+            verify(productRepository, never()).findById(any()); // No debe intentar buscar un UUID inválido
+        }
+    }
 }

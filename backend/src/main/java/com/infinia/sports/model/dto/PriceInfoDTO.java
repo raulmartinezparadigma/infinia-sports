@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PriceInfoDTO {
     private BigDecimal subtotal;
-    private BigDecimal tax;
-    private BigDecimal discount;
     private BigDecimal total;
+    private BigDecimal discount;
+    private BigDecimal tax;
 }

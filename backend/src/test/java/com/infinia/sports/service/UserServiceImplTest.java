@@ -1,16 +1,25 @@
 package com.infinia.sports.service;
 
+import com.infinia.sports.exception.ResourceAlreadyExistsException;
+import com.infinia.sports.exception.ResourceNotFoundException;
 import com.infinia.sports.model.User;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
+import com.infinia.sports.model.dto.UserDTO;
 import com.infinia.sports.repository.jpa.UserRepository;
 import com.infinia.sports.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -116,5 +125,70 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("1234")).thenReturn("enc1234");
         when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("DB error"));
         assertThrows(RuntimeException.class, () -> userService.registerUser(dto));
+    }
+
+    @Test
+    void getCurrentUser_success() {
+        // Arrange
+        String username = "currentUser";
+        User user = User.builder().id(1L).username(username).email("current@test.com").build();
+        
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn(username);
+        
+        try (MockedStatic<SecurityContextHolder> mockedContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+            // Act
+            UserDTO result = userService.getCurrentUser();
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(username, result.getUsername());
+            assertEquals(user.getEmail(), result.getEmail());
+        }
+    }
+
+    @Test
+    void getCurrentUser_throwsException_whenNotAuthenticated() {
+        // Arrange
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.isAuthenticated()).thenReturn(false);
+        
+        try (MockedStatic<SecurityContextHolder> mockedContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+
+            // Act & Assert
+            assertThrows(ResourceNotFoundException.class, () -> userService.getCurrentUser());
+        }
+    }
+
+    @Test
+    void getCurrentUser_throwsException_whenUserNotFoundInDb() {
+        // Arrange
+        String username = "ghostUser";
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn(username);
+        
+        try (MockedStatic<SecurityContextHolder> mockedContextHolder = mockStatic(SecurityContextHolder.class)) {
+            mockedContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
+            when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> userService.getCurrentUser());
+            assertTrue(ex.getMessage().contains(username));
+        }
     }
 }
