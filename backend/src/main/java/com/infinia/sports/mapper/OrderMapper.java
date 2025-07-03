@@ -131,7 +131,7 @@ public class OrderMapper {
         Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
         shippingGroup.setId("1"); // Empezamos en 1 para el primer grupo
         shippingGroup.setShippingMethod("Infinia Sports");
-        shippingGroup.setShippingCost(cart.getSubtotal());
+        shippingGroup.setShippingCost(cart.getShippingCost());
         // Crear la lista de LineItems a partir de los CartItems
         List<Order.LineItem> lineItems = cart.getItems().stream()
             .map(cartItem -> {
@@ -217,8 +217,8 @@ public class OrderMapper {
         shippingGroup.setId(UUID.randomUUID().toString());
         shippingGroup.setShippingMethod(checkoutDTO.getShippingMethod());
 
-        // TODO: El coste de envío no se está recibiendo en el DTO de checkout. Se asume 0 temporalmente para que compile.
-        BigDecimal shippingCost = BigDecimal.ZERO;
+        // Usar el coste de envío calculado en el carrito
+        BigDecimal shippingCost = cart.getShippingCost() != null ? cart.getShippingCost() : BigDecimal.ZERO;
         shippingGroup.setShippingCost(shippingCost);
 
         List<Order.LineItem> lineItems = cart.getItems().stream()
@@ -236,7 +236,7 @@ public class OrderMapper {
         priceInfo.setTax(tax.setScale(2, RoundingMode.HALF_UP));
         priceInfo.setDiscount(BigDecimal.ZERO); // Lógica de descuento no implementada aún
 
-        BigDecimal total = subtotal.add(tax).add(shippingCost);
+        BigDecimal total = cart.getTotal() != null ? cart.getTotal() : subtotal.add(tax).add(shippingCost);
         priceInfo.setTotal(total.setScale(2, RoundingMode.HALF_UP));
         order.setPriceInfo(priceInfo);
 

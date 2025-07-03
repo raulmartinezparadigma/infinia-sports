@@ -23,5 +23,6 @@ public class CartDTO {
     private List<CartItemDTO> items;
     private BigDecimal subtotal;
     private BigDecimal tax;
+    private BigDecimal shippingCost;
     private BigDecimal total;
 }

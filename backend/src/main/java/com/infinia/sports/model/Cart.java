@@ -40,6 +40,7 @@ public class Cart {
     private BigDecimal subtotal;
     private BigDecimal tax;
     private BigDecimal total;
+    private BigDecimal shippingCost;
     
     /**
      * Clase interna que representa un ítem en el carrito
@@ -58,22 +59,5 @@ public class Cart {
         private BigDecimal totalPrice;
         private Map<String, String> attributes;
         private String productImageUrl;
-    }
-    
-    /**
-     * Método para calcular los totales del carrito
-     */
-    public void calculateTotals() {
-        BigDecimal newSubtotal = BigDecimal.ZERO;
-        
-        for (CartItem item : items) {
-            BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            item.setTotalPrice(itemTotal);
-            newSubtotal = newSubtotal.add(itemTotal);
-        }
-        
-        this.subtotal = newSubtotal;
-        // El impuesto se calculará en el servicio según las reglas fiscales aplicables
-        this.total = this.subtotal.add(this.tax != null ? this.tax : BigDecimal.ZERO);
     }
 }

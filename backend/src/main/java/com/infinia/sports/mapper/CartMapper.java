@@ -31,6 +31,7 @@ public class CartMapper {
                 .items(toItemDTOList(cart.getItems()))
                 .subtotal(cart.getSubtotal())
                 .tax(cart.getTax())
+                .shippingCost(cart.getShippingCost())
                 .total(cart.getTotal())
                 .build();
         logger.info("[CartMapper.toDTO] Cart recibido: {}", cart);

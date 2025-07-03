@@ -148,24 +148,6 @@ class CartRepositoryTest {
         assertThat(cartRepository.findBySessionId("other-session-456")).isEmpty();
     }
 
-    @Test
-    @DisplayName("Should calculate totals correctly")
-    void shouldCalculateTotalsCorrectly() {
-        // Given
-        Cart cart = createTestCart();
-        CartItem item = cart.getItems().get(0);
-        item.setQuantity(2);
-        item.setUnitPrice(new BigDecimal("9.99"));
-        
-        // When
-        cart.calculateTotals();
-        Cart savedCart = cartRepository.save(cart);
-        
-        // Then
-        assertThat(savedCart.getSubtotal()).isEqualTo(new BigDecimal("19.98"));
-        assertThat(savedCart.getTotal()).isEqualTo(savedCart.getSubtotal().add(savedCart.getTax() != null ? savedCart.getTax() : BigDecimal.ZERO));
-    }
-
     private Cart createTestCart() {
         CartItem item = new CartItem();
         item.setId("item1");

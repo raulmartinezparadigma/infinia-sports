@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.infinia.sports.exception.ResourceNotFoundException;
@@ -44,6 +45,9 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     
+    @Value("${infinia.sports.shipping-cost}")
+    private BigDecimal shippingCost;
+
     // Tasa de impuesto por defecto (21% IVA)
     private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("0.21");
 
@@ -268,7 +272,8 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Actualizar totales en el carrito
         cart.setSubtotal(subtotal);
         cart.setTax(tax);
-        cart.setTotal(subtotal.add(tax));
+        cart.setShippingCost(this.shippingCost);
+        cart.setTotal(subtotal.add(tax).add(this.shippingCost));
     }
 
     /**

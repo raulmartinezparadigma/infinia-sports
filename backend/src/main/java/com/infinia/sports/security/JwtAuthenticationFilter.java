@@ -15,11 +15,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import java.io.IOException;
 
 /**
  * Filtro para la autenticación basada en JWT.
@@ -32,6 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
     private final AdminUserDetailsService adminUserDetailsService;
+    
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Override
     protected void doFilterInternal(
@@ -63,20 +64,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // Extraer el nombre de usuario del token
             username = jwtService.extractUsername(jwt);
-            System.out.println("[TRACE] JwtAuthenticationFilter - Usuario extraído del token: " + username);
+            logger.info("JwtAuthenticationFilter - Usuario extraído del token: {}", username);
             
             // Si hay un nombre de usuario y no hay autenticación en el contexto de seguridad
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Seleccionar el servicio adecuado según la ruta
-                // Si la ruta es de administración, usar AdminUserDetailsService; si no, CustomUserDetailsService
                 UserDetails userDetails;
-                if (isAdminPath(path)) {
-                    // Ruta de administración: buscar en adminUserDetailsService
-                    System.out.println("[TRACE] JwtAuthenticationFilter - Usando AdminUserDetailsService para la ruta: " + path);
+
+                // Decidir qué UserDetailsService usar basándose en los roles del token
+                List<String> rolesInToken = jwtService.extractClaim(jwt, claims -> claims.get("roles", List.class));
+
+                if (rolesInToken != null && rolesInToken.contains("ROLE_ADMIN")) {
+                    // Rol de administrador detectado en el token
+                    logger.info("JwtAuthenticationFilter - Rol ADMIN detectado. Usando AdminUserDetailsService para el usuario: {}", username);
                     userDetails = this.adminUserDetailsService.loadUserByUsername(username);
                 } else {
-                    // Ruta normal: buscar en customUserDetailsService
-                    System.out.println("[TRACE] JwtAuthenticationFilter - Usando CustomUserDetailsService para la ruta: " + path);
+                    // Rol de usuario normal o sin roles
+                    logger.info("JwtAuthenticationFilter - Rol de usuario detectado. Usando CustomUserDetailsService para el usuario: {}", username);
                     userDetails = this.customUserDetailsService.loadUserByUsername(username);
                 }
                 
@@ -86,34 +89,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
                     
                     try {
-                        System.out.println("[TRACE] JwtAuthenticationFilter - Intentando extraer roles del token");
+                        logger.info("JwtAuthenticationFilter - Intentando extraer roles del token");
                         // Intentar extraer el claim 'roles' del token
                         List<String> roles = jwtService.extractClaim(jwt, claims -> {
                             Object rolesClaim = claims.get("roles");
-                            System.out.println("[TRACE] JwtAuthenticationFilter - Claim 'roles' del token: " + rolesClaim);
+                            logger.info("JwtAuthenticationFilter - Claim 'roles' del token: {}", rolesClaim);
                             
                             if (rolesClaim instanceof List) {
-                                System.out.println("[TRACE] JwtAuthenticationFilter - El claim 'roles' es una lista");
+                                logger.info("JwtAuthenticationFilter - El claim 'roles' es una lista");
                                 return (List<String>) rolesClaim;
                             }
-                            System.out.println("[TRACE] JwtAuthenticationFilter - El claim 'roles' NO es una lista o es null");
+                            logger.info("JwtAuthenticationFilter - El claim 'roles' NO es una lista o es null");
                             return null;
                         });
                         
                         // Si hay roles en el token, reconstruir las authorities
                         if (roles != null && !roles.isEmpty()) {
-                            System.out.println("[TRACE] JwtAuthenticationFilter - Roles encontrados en el token: " + roles);
+                            logger.info("JwtAuthenticationFilter - Roles encontrados en el token: {}", roles);
                             authorities = roles.stream()
                                     .map(role -> {
-                                        System.out.println("[TRACE] JwtAuthenticationFilter - Creando authority para rol: " + role);
+                                        logger.info("JwtAuthenticationFilter - Creando authority para rol: {}", role);
                                         return new SimpleGrantedAuthority(role);
                                     })
                                     .collect(Collectors.toList());
                         } else {
-                            System.out.println("[TRACE] JwtAuthenticationFilter - No se encontraron roles en el token o la lista está vacía");
+                            logger.info("JwtAuthenticationFilter - No se encontraron roles en el token o la lista está vacía");
                         }
                     } catch (Exception e) {
-                        System.out.println("[TRACE] JwtAuthenticationFilter - Error al extraer roles del token JWT: " + e.getMessage());
+                        logger.info("JwtAuthenticationFilter - Error al extraer roles del token JWT: {}", e.getMessage());
                         e.printStackTrace();
                     }
                     
@@ -142,12 +145,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Comprueba si una ruta es de administración.
-     * @param path La ruta de la petición.
-     * @return true si es una ruta de admin, false en caso contrario.
+    /*
+     * El método isAdminPath se elimina porque la decisión ahora se basa en los roles del token JWT,
+     * lo cual es un enfoque más robusto y seguro, especialmente para endpoints compartidos.
      */
-    private boolean isAdminPath(String path) {
-        return path.startsWith("/api/admin/") || path.startsWith("/api/orders");
-    }
+
 }
