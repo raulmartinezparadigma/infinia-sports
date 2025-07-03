@@ -51,7 +51,7 @@ function Navbar() {
     <nav style={{ padding: '42px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 0 #e0e0e0' }}>
       {/* Logo */}
       <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-        <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports" style={{ height: 180, objectFit: 'contain' }} />
+        <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports" style={{ height: 216, objectFit: 'contain' }} />
       </Link>
 
       {/* Buscador centrado o barra de progreso según ruta */}
