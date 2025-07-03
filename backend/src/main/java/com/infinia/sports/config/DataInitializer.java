@@ -2,7 +2,6 @@ package com.infinia.sports.config;
 
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
-import com.infinia.sports.kafka.ProductProducer;
 import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 
 import org.springframework.boot.CommandLineRunner;
@@ -19,11 +18,6 @@ import java.util.Arrays;
 @Configuration
 public class DataInitializer {
 
-    private final ProductProducer productProducer;
-
-    public DataInitializer(ProductProducer productProducer) {
-        this.productProducer = productProducer;
-    }
 
     /**
      * Carga datos de prueba al iniciar la aplicación
@@ -234,7 +228,6 @@ public class DataInitializer {
                         product.getSize(),
                         product.getImageUrl()
                     );
-                    productProducer.sendProduct(message);
                 }
                 System.out.println("Datos de prueba enviados a Kafka correctamente.");
         };
