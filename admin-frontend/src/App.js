@@ -49,7 +49,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Panel de Administración de Pedidos</h1>
-        <button onClick={handleLogout} style={{ float: 'right', marginTop: 8 }}>Cerrar sesión</button>
+        <button onClick={handleLogout} className="logout-button">Cerrar sesión</button>
       </header>
       <OrderSearchForm onSearch={handleSearch} />
       {loading && <p>Cargando...</p>}
