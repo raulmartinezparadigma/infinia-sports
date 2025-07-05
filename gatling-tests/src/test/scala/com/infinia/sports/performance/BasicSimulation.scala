@@ -7,14 +7,14 @@ import scala.concurrent.duration._
 class BasicSimulation extends Simulation {
 
   val httpProtocol = http
-    .baseUrl("http://localhost:8081") // Asegúrate de que este es el puerto correcto de tu aplicación Spring Boot
+    .baseUrl("http://localhost:8080") // Asegúrate de que este es el puerto correcto de tu aplicación Spring Boot
     .acceptHeader("application/json")
     .acceptEncodingHeader("gzip, deflate")
     .userAgentHeader("Gatling/3.9.5")
 
   val scn = scenario("Get All Products")
     .exec(http("request_products")
-      .get("/api/products"))
+      .get("/products"))
     .pause(1)
 
   setUp(
