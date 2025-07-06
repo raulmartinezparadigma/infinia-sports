@@ -15,6 +15,7 @@
     <modules>
         <module>backend</module>
         <module>gatling-tests</module>
+        <module>playwright-tests</module>
     </modules>
 
     <properties>
