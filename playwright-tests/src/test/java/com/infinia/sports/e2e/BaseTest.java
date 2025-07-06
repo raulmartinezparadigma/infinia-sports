@@ -1,6 +1,7 @@
 package com.infinia.sports.e2e;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.*;
 
 public class BaseTest {

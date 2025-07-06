@@ -30,4 +30,23 @@ public class ShoppingCartTest extends BaseTest {
         Locator cartIcon = page.locator("a[href='/carrito']");
         assertThat(cartIcon).containsText("1");
     }
+
+    @Test
+    @DisplayName("Should display the added product in the cart page")
+    void shouldDisplayProductInCart() {
+        // 1. Navigate to the homepage and click the first product
+        page.navigate("http://localhost:3000/");
+        page.locator(".product-card a").first().click();
+
+        // 2. Get the product name and add it to the cart
+        String productName = page.locator("h1").textContent();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Añadir al carrito")).click();
+
+        // 3. Navigate to the cart page
+        page.locator("a[href='/carrito']").click();
+
+        // 4. Assert that the product is visible in the cart
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Mi Carrito"))).isVisible();
+        assertThat(page.getByText(productName)).isVisible();
+    }
 }
