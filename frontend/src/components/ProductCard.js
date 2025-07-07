@@ -34,6 +34,7 @@ function ProductCard({ product }) {
 
   return (
     <Card
+      data-testid={`product-card-${product.id}`}
       sx={{
         minHeight: 420,
         height: '100%',
@@ -75,7 +76,7 @@ function ProductCard({ product }) {
         minHeight: 0,
         height: '100%'
       }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, minHeight: 48, fontSize: 19, mb: 1, color: '#212121', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', textTransform: 'uppercase' }}>
+        <Typography data-testid="product-name" variant="subtitle1" sx={{ fontWeight: 700, minHeight: 48, fontSize: 19, mb: 1, color: '#212121', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', textTransform: 'uppercase' }}>
           {product.name || product.description}
         </Typography>
         {product.oldPrice && (
@@ -97,6 +98,7 @@ function ProductCard({ product }) {
           </Typography>
         )}
         <Button
+          data-testid="add-to-cart-button"
           variant="contained"
           color="primary"
           sx={{ borderRadius: '16px', fontWeight: 700, fontSize: 15, px: 2, py: 0.5, mt: 'auto', mb: 0, minHeight: 32, minWidth: 120, alignSelf: 'center', boxShadow: 'none' }}

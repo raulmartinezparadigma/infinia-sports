@@ -31,7 +31,7 @@ function CartView() {
 
   return (
     <>
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
+      <TableContainer data-testid="cart-view" component={Paper} sx={{ mt: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -44,10 +44,10 @@ function CartView() {
           </TableHead>
           <TableBody>
             {cart.map((item) => (
-              <TableRow key={item.id}>
+              <TableRow data-testid={`cart-item-${item.productId}`} key={item.productId}>
                 <TableCell>
                   <div>
-                    <Typography variant="subtitle1">{item.name || 'Producto'}</Typography>
+                    <Typography data-testid="cart-item-name" variant="subtitle1">{item.name || 'Producto'}</Typography>
                     {item.description && (
                       <Typography variant="body2" color="text.secondary">{item.description}</Typography>
                     )}
@@ -55,13 +55,13 @@ function CartView() {
                 </TableCell>
                 <TableCell align="right">{(item.price !== undefined ? item.price : 0).toFixed(2)} €</TableCell>
                 <TableCell align="center">
-                  <Button size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
+                  <Button size="small" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>-</Button>
                   <span style={{ margin: '0 8px' }}>{item.quantity || 1}</span>
-                  <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
+                  <Button size="small" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>+</Button>
                 </TableCell>
                 <TableCell align="right">{(item.totalPrice !== undefined ? item.totalPrice : 0).toFixed(2)} €</TableCell>
                 <TableCell align="center">
-                  <IconButton color="error" onClick={() => removeFromCart(item.id)}>
+                  <IconButton color="error" onClick={() => removeFromCart(item.productId)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>

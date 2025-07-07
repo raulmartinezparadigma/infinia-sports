@@ -85,12 +85,13 @@ const OrderList = ({ orders }) => {
                                 boxShadow: 4
                             }
                         }}
+                        data-testid={`order-row-${order.id}`}
                     >
                         <Box mb={2}>
                             <Typography variant="subtitle1" fontWeight="bold">
                                 Entregado
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" data-testid="order-date">
                                 Pedido entregado el {formatDate(order.submitDate)}
                             </Typography>
                         </Box>
@@ -155,6 +156,7 @@ const OrderList = ({ orders }) => {
                                     color="primary" 
                                     onClick={() => handleViewOrder(order.id)}
                                     sx={{ minWidth: 120 }}
+                                    data-testid="view-order-link"
                                 >
                                     Ver detalle
                                 </Button>
