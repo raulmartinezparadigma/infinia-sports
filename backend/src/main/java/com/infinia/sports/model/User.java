@@ -1,5 +1,6 @@
 package com.infinia.sports.model;
 
+import com.infinia.sports.model.Address;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +10,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,13 +33,13 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column(name = "first_name")
@@ -44,6 +47,9 @@ public class User implements UserDetails {
 
     @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "nif")
+    private String nif;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
@@ -53,6 +59,16 @@ public class User implements UserDetails {
 
     @Builder.Default
     private boolean enabled = true;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
+
+    public List<Address> getAddresses() {
+        if (addresses == null) {
+            addresses = new ArrayList<>();
+        }
+        return addresses;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

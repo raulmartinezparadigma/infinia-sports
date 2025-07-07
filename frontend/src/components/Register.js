@@ -1,32 +1,41 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { 
-  Container, 
-  Box, 
-  TextField, 
-  Button, 
-  Typography, 
-  Alert, 
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
   Paper,
   CircularProgress
 } from "@mui/material";
 
-// Componente de registro de usuario
 function Register() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
+    phoneNumber: "",
+    nif: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -34,36 +43,59 @@ function Register() {
       [name]: value
     }));
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setFieldErrors({});
-    
-    // Validación básica
+
+    // Validación básica de contraseña
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       setLoading(false);
       return;
     }
-    
+
+    // Validación de campos obligatorios
+    const requiredFields = [
+      "username", "email", "password", "confirmPassword",
+      "firstName", "lastName", "addressLine1", "city", "state", "postalCode", "country", "phoneNumber", "nif"
+    ];
+    const newFieldErrors = {};
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        newFieldErrors[field] = "Obligatorio";
+      }
+    });
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setError("Por favor, completa todos los campos obligatorios.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Enviar solo los datos necesarios para el registro
       const userData = {
         username: formData.username,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        addressLine1: formData.addressLine1,
+        addressLine2: formData.addressLine2,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode,
+        country: formData.country,
+        phoneNumber: formData.phoneNumber,
+        nif: formData.nif
       };
-      
       await register(userData);
-      // Redireccionar a la página principal después del registro exitoso
       navigate("/");
     } catch (err) {
-      // Si la respuesta es un objeto con errores de campo
       if (err.response?.data) {
         if (typeof err.response.data === 'object' && !Array.isArray(err.response.data)) {
-          // Si tiene errores de campo
           setFieldErrors(err.response.data);
           setError(err.response.data.message || "Error al registrar usuario");
         } else {
@@ -76,107 +108,174 @@ function Register() {
       setLoading(false);
     }
   };
-  
+
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
+      <Box mt={6}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center">
-            Crear Cuenta
+          <Typography variant="h5" align="center" gutterBottom>
+            Crear cuenta
           </Typography>
-          
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {/* Mostrar errores de validación de campos */}
-          {Object.keys(fieldErrors).length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              {Object.entries(fieldErrors).map(([field, msg]) =>
-                field !== 'message' ? (
-                  <Alert key={field} severity="error" sx={{ mb: 1 }}>
-                    {field.charAt(0).toUpperCase() + field.slice(1)}: {msg}
-                  </Alert>
-                ) : null
-              )}
-            </Box>
-          )}
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate>
             <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="Nombre de usuario"
+              label="Usuario"
               name="username"
-              autoComplete="username"
-              autoFocus
               value={formData.username}
               onChange={handleChange}
-              disabled={loading}
-              error={Boolean(fieldErrors.username)}
+              error={!!fieldErrors.username}
               helperText={fieldErrors.username}
-            />
-            
-            <TextField
-              margin="normal"
-              required
               fullWidth
-              id="email"
-              label="Correo electrónico"
+              margin="dense"
+              autoFocus
+            />
+            <TextField
+              label="Email"
               name="email"
-              autoComplete="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
-              disabled={loading}
-              error={Boolean(fieldErrors.email)}
+              error={!!fieldErrors.email}
               helperText={fieldErrors.email}
-            />
-            
-            <TextField
-              margin="normal"
-              required
               fullWidth
-              name="password"
+              margin="dense"
+            />
+            <TextField
               label="Contraseña"
+              name="password"
               type="password"
-              id="password"
-              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
-              disabled={loading}
-              error={Boolean(fieldErrors.password)}
+              error={!!fieldErrors.password}
               helperText={fieldErrors.password}
-            />
-            
-            <TextField
-              margin="normal"
-              required
               fullWidth
-              name="confirmPassword"
+              margin="dense"
+            />
+            <TextField
               label="Confirmar contraseña"
+              name="confirmPassword"
               type="password"
-              id="confirmPassword"
-              autoComplete="new-password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              disabled={loading}
-              error={Boolean(fieldErrors.confirmPassword)}
+              error={!!fieldErrors.confirmPassword}
               helperText={fieldErrors.confirmPassword}
-            />
-            
-            <Button
-              type="submit"
               fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Registrarse"}
-            </Button>
-            
-            <Box sx={{ textAlign: "center", mt: 2 }}>
-              <Typography variant="body2">
-                ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-              </Typography>
+              margin="dense"
+            />
+            <TextField
+              label="Nombre"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              error={!!fieldErrors.firstName}
+              helperText={fieldErrors.firstName}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Apellidos"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              error={!!fieldErrors.lastName}
+              helperText={fieldErrors.lastName}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Dirección"
+              name="addressLine1"
+              value={formData.addressLine1}
+              onChange={handleChange}
+              error={!!fieldErrors.addressLine1}
+              helperText={fieldErrors.addressLine1}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Dirección adicional (opcional)"
+              name="addressLine2"
+              value={formData.addressLine2}
+              onChange={handleChange}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Ciudad"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              error={!!fieldErrors.city}
+              helperText={fieldErrors.city}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Provincia"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              error={!!fieldErrors.state}
+              helperText={fieldErrors.state}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Código postal"
+              name="postalCode"
+              value={formData.postalCode}
+              onChange={handleChange}
+              error={!!fieldErrors.postalCode}
+              helperText={fieldErrors.postalCode}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="País"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              error={!!fieldErrors.country}
+              helperText={fieldErrors.country}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="Teléfono"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              error={!!fieldErrors.phoneNumber}
+              helperText={fieldErrors.phoneNumber}
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              label="NIF"
+              name="nif"
+              value={formData.nif}
+              onChange={handleChange}
+              error={!!fieldErrors.nif}
+              helperText={fieldErrors.nif}
+              fullWidth
+              margin="dense"
+            />
+            <Box mt={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                disabled={loading}
+              >
+                {loading ? <CircularProgress size={24} /> : "Registrarse"}
+              </Button>
             </Box>
+          </form>
+          <Box mt={2} textAlign="center">
+            <Typography variant="body2">
+              ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+            </Typography>
           </Box>
         </Paper>
       </Box>

@@ -109,7 +109,7 @@ function Navbar() {
               onClose={handleMenuClose}
             >
               <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
-                Mi Perfil
+                <Link to="/profile">Mi Perfil</Link>
               </MenuItem>
               <MenuItem onClick={() => { handleMenuClose(); navigate('/pedidos'); }}>
                 Mis Pedidos

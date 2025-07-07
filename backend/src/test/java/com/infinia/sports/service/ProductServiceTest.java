@@ -27,6 +27,8 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+// No se requiere cambio para repositorios mongo en este archivo.
+
 class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;

@@ -10,6 +10,7 @@ import Payment from "./pages/Payment";
 import Confirmation from "./pages/Confirmation";
 import OrderHistory from "./pages/OrderHistory";
 import OrderDetail from "./pages/OrderDetail";
+import Profile from './pages/Profile';
 
 // Componentes de autenticación
 import Login from "./components/Login";
@@ -79,7 +80,7 @@ function App() {
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-                <div>Mi Perfil</div>
+                <Profile />
               </ProtectedRoute>
             } />
           </Routes>

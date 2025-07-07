@@ -1,6 +1,7 @@
 package com.infinia.sports.service;
 
 import com.infinia.sports.model.User;
+import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
 import com.infinia.sports.model.dto.UserDTO;
 
@@ -49,4 +50,12 @@ public interface UserService {
      * @return DTO con la información del usuario actual
      */
     UserDTO getCurrentUser();
+    
+    /**
+     * Añade una dirección al usuario identificado por username.
+     * @param username Nombre de usuario
+     * @param addressDTO Dirección a añadir
+     * @return Dirección guardada
+     */
+    AddressDTO addAddressToUser(String username, AddressDTO addressDTO);
 }

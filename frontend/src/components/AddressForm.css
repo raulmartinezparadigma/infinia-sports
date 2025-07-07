@@ -1,0 +1,5 @@
+.address-form { display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; padding: 16px; border-radius: 8px; max-width: 400px; }
+.address-form input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
+.address-form-actions { display: flex; gap: 10px; margin-top: 8px; }
+.address-form button { background: #1976d2; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
+.address-form button[type="button"] { background: #aaa; }

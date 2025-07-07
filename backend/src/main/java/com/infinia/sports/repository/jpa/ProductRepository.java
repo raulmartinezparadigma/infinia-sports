@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -15,17 +16,11 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     /**
-     * Busca un producto por su skuId único
-     * @param skuId identificador de negocio
-     * @return Optional con el producto si existe
+     * Busca un producto por su ID de SKU
+     * @param skuId ID de SKU del producto
+     * @return producto con el ID de SKU especificado, o vacío si no se encuentra
      */
-    java.util.Optional<Product> findBySkuId(String skuId);
-    /**
-     * Busca productos por tipo
-     * @param type tipo de producto
-     * @return lista de productos del tipo especificado
-     */
-    List<Product> findByType(ProductType type);
+    Optional<Product> findBySkuId(String skuId);
 
     /**
      * Busca productos que contengan la descripción especificada
@@ -40,4 +35,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
      * @return lista de productos de la talla especificada
      */
     List<Product> findBySize(String size);
+
+    /**
+     * Busca productos por tipo
+     * @param type tipo de producto
+     * @return lista de productos del tipo especificado
+     */
+    List<Product> findByType(ProductType type);
 }

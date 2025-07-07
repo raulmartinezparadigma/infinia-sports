@@ -2,6 +2,7 @@ package com.infinia.sports.repository.jpa;
 
 import com.infinia.sports.model.Role;
 import com.infinia.sports.model.User;
+import com.infinia.sports.repository.jpa.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

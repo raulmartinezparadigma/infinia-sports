@@ -17,6 +17,8 @@ import jakarta.validation.constraints.Pattern;
 @AllArgsConstructor
 public class AddressDTO {
     
+    private Long id;
+    
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
     
@@ -46,4 +48,6 @@ public class AddressDTO {
     
     @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$", message = "Formato de teléfono inválido")
     private String phoneNumber;
+    
+    private boolean mainAddress;
 }

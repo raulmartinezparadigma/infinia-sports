@@ -119,6 +119,7 @@ export function AuthProvider({ children }) {
   // Valor del contexto
   const value = {
     currentUser,
+    setCurrentUser,
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,

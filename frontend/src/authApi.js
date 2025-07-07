@@ -75,3 +75,14 @@ export async function linkCartToUser(cartId) {
     throw error;
   }
 }
+
+// Añadir dirección al usuario autenticado
+export async function addUserAddress(address) {
+  try {
+    const response = await axios.post('/api/user/address', address);
+    return response.data;
+  } catch (error) {
+    console.error('Error al añadir dirección:', error);
+    throw error;
+  }
+}

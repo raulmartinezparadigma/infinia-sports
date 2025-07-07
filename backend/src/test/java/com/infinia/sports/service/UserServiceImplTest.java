@@ -2,9 +2,11 @@ package com.infinia.sports.service;
 
 import com.infinia.sports.exception.ResourceAlreadyExistsException;
 import com.infinia.sports.exception.ResourceNotFoundException;
+import com.infinia.sports.model.Address;
 import com.infinia.sports.model.User;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
 import com.infinia.sports.model.dto.UserDTO;
+import com.infinia.sports.repository.jpa.AddressRepository;
 import com.infinia.sports.repository.jpa.UserRepository;
 import com.infinia.sports.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,8 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private AddressRepository addressRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
     @InjectMocks
     private UserServiceImpl userService;
@@ -34,7 +38,7 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        userService = new UserServiceImpl(userRepository, passwordEncoder);
+        userService = new UserServiceImpl(userRepository, passwordEncoder, addressRepository);
     }
 
     @Test
@@ -102,16 +106,34 @@ class UserServiceImplTest {
         dto.setUsername("nuevo");
         dto.setEmail("nuevo@mail.com");
         dto.setPassword("1234");
+        dto.setFirstName("Nombre");
+        dto.setLastName("Apellido");
+        dto.setAddressLine1("Calle 1");
+        dto.setAddressLine2("");
+        dto.setCity("Ciudad");
+        dto.setState("Provincia");
+        dto.setPostalCode("12345");
+        dto.setCountry("España");
+        dto.setPhoneNumber("600000000");
+        dto.setNif("12345678A");
         when(userRepository.existsByUsername("nuevo")).thenReturn(false);
         when(userRepository.existsByEmail("nuevo@mail.com")).thenReturn(false);
         User user = new User();
         user.setUsername("nuevo");
         user.setEmail("nuevo@mail.com");
         when(passwordEncoder.encode("1234")).thenReturn("enc1234");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(addressRepository.save(any(Address.class))).thenAnswer(invocation -> invocation.getArgument(0));
         User result = userService.registerUser(dto);
         assertEquals("nuevo", result.getUsername());
         assertEquals("nuevo@mail.com", result.getEmail());
+        assertNotNull(result.getAddresses());
+        assertEquals(1, result.getAddresses().size());
+        Address address = result.getAddresses().get(0);
+        assertEquals("Nombre", address.getFirstName());
+        assertEquals("Calle 1", address.getAddressLine1());
+        assertEquals("España", address.getCountry());
+        assertTrue(address.isMainAddress());
     }
 
     @Test
