@@ -109,14 +109,11 @@ const OrderDetail = () => {
                         sx={{ fontWeight: 'bold', fontSize: '1rem', px: 2 }}
                     />
                 </Box>
-                <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom data-testid="order-detail-heading">
+                <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                     Detalle del Pedido
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary" gutterBottom data-testid="order-detail-id">
+                <Typography variant="subtitle1" color="text.secondary" gutterBottom>
                     Nº de Pedido: {order.orderId}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom data-testid="order-detail-date">
-                    Fecha de compra: {formatDate(order.submitDate)}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Grid container spacing={3}>
