@@ -38,52 +38,71 @@ export async function getCart(sessionId, userId) {
 // Añade un producto al carrito
 export async function addItemToCart(item, sessionId, userId) {
   let url = `${API_BASE}/api/cart/items`;
+  const config = { headers: {} };
   const params = [];
+
   if (userId) {
-    params.push(`userId=${userId}`);
+    config.headers['User-ID'] = userId;
   } else if (sessionId) {
     params.push(`sessionId=${sessionId}`);
   }
+
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  const response = await axios.post(url, item);
+
+  const response = await axios.post(url, item, config);
   return response.data;
 }
 
 // Elimina un producto del carrito
 export async function removeItemFromCart(itemId, sessionId, userId) {
   let url = `${API_BASE}/api/cart/items/${itemId}`;
+  const config = { headers: {} };
   const params = [];
+
   if (userId) {
-    params.push(`userId=${userId}`);
+    config.headers['User-ID'] = userId;
   } else if (sessionId) {
     params.push(`sessionId=${sessionId}`);
   }
+
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  const response = await axios.delete(url);
+
+  const response = await axios.delete(url, config);
   return response.data;
 }
 
 // Actualiza la cantidad de un producto en el carrito
 export async function updateItemQuantity(itemId, quantity, productId, sessionId, userId, description, productName, unitPrice) {
   let url = `${API_BASE}/api/cart/items/${itemId}`;
+  const config = { headers: {} };
   const params = [];
+
+  // El backend espera userId en el header, no como query param
   if (userId) {
-    params.push(`userId=${userId}`);
+    config.headers['User-ID'] = userId;
   } else if (sessionId) {
+    // El backend obtiene el sessionId de la request, pero lo mantenemos por consistencia
     params.push(`sessionId=${sessionId}`);
   }
-  if (productId) params.push(`productId=${productId}`);
-  if (description) params.push(`description=${encodeURIComponent(description)}`);
-  if (productName) params.push(`productName=${encodeURIComponent(productName)}`);
-  if (unitPrice) params.push(`unitPrice=${unitPrice}`);
+
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  const response = await axios.put(url, { quantity });
+
+  // El backend espera un objeto CartItemDTO completo en el body
+  const cartItemDTO = {
+    productId: productId,
+    quantity: quantity,
+    productName: productName,
+    description: description,
+    unitPrice: unitPrice
+  };
+
+  const response = await axios.put(url, cartItemDTO, config);
   return response.data;
 }
 
