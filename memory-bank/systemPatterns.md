@@ -42,6 +42,9 @@ flowchart TD
 
 ## Decisiones Técnicas Clave
 
+### Premisa Arquitectónica Clave: Controllers deben usar Services
+**Regla**: Ningún controlador debe acceder directamente a los repositorios. Siempre debe existir una clase de servicio (Service) entre el controlador y el repositorio. Esta es una regla estricta que aplica a todos los controladores existentes y futuros para asegurar una correcta separación de responsabilidades y mantener la lógica de negocio aislada en la capa de servicio.
+
 ### Persistencia Dual
 - **PostgreSQL**: Utilizado para datos estructurados (Productos) que requieren consultas complejas y relaciones.
 - **MongoDB**: Utilizado para datos con estructura variable y compleja (Pedidos) que se benefician del formato JSON.
@@ -71,6 +74,11 @@ Utilizado para transferir datos entre capas y hacia/desde el cliente.
 
 ### Patrón Factory (potencial)
 Para la creación de objetos complejos como pedidos.
+
+## Patrones de Seguridad
+
+### Autenticación y Autorización Basada en Roles JWT
+Se ha refactorizado `JwtAuthenticationFilter` para que el tipo de `UserDetailsService` (para administradores o para usuarios normales) se seleccione en función de los roles (`ROLE_ADMIN`) presentes en el token JWT, en lugar de basarse en la ruta de la petición. Este enfoque es más seguro y robusto, especialmente para endpoints que pueden ser accedidos por diferentes tipos de usuario (ej. `/api/orders`).
 
 ## Relaciones entre Componentes
 
