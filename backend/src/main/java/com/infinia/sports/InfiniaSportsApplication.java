@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  * Configura el escaneo de repositorios JPA y MongoDB por subpaquete
  */
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = "com.infinia.sports.repository")
+@EnableJpaRepositories(basePackages = "com.infinia.sports.repository.jpa")
 @EnableMongoRepositories(basePackages = "com.infinia.sports.repository.mongo")
 public class InfiniaSportsApplication {
     public static void main(String[] args) {

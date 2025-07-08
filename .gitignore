@@ -16,6 +16,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Frontend build output
+/frontend/node_modules
+/frontend/node
+/frontend/build
+/admin-frontend/node_modules
+/admin-frontend/node
+/admin-frontend/build
+
 # Compilados Java (backend)
 backend/target/
 
@@ -26,3 +34,11 @@ backend/target/
 
 # Por defecto, mantenemos package-lock.json y los SVGs generados en public
 # Si quieres excluir más carpetas, añádelas aquí
+
+# Ignore frontend build artifacts copied to the backend
+backend/src/main/resources/static/*
+!backend/src/main/resources/static/*.jpg
+!backend/src/main/resources/static/.gitkeep
+
+# Archivos de entorno de frontend
+.env.local

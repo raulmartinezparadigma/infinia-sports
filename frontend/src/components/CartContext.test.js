@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { CartProvider, useCart } from './CartContext';
+import { AuthProvider } from './AuthContext';
 import * as cartApi from '../cartApi';
 
 // Mock de las funciones del API
@@ -38,9 +39,11 @@ describe('CartContext', () => {
     const testFunction = jest.fn();
     
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
 
     // Verificar que se llama a getCart al inicializar
@@ -64,9 +67,11 @@ describe('CartContext', () => {
     const testFunction = jest.fn();
     
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
 
     // Esperar a que se cargue el carrito
@@ -95,10 +100,17 @@ describe('CartContext', () => {
     });
     
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
+    
+    // Esperar a que se cargue el carrito inicial
+    await waitFor(() => {
+      expect(screen.getByTestId('cart-length').textContent).toBe('0');
+    });
     
     // Simular la acción de añadir al carrito
     await act(async () => {
@@ -134,9 +146,11 @@ describe('CartContext', () => {
     });
     
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
     
     // Esperar a que se cargue el carrito inicial
@@ -180,9 +194,11 @@ describe('CartContext', () => {
     });
     
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
     
     // Esperar a que se cargue el carrito inicial
@@ -216,9 +232,11 @@ describe('CartContext', () => {
     
     // Renderizar el componente
     render(
-      <CartProvider>
-        <TestComponent testFunction={testFunction} />
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TestComponent testFunction={testFunction} />
+        </CartProvider>
+      </AuthProvider>
     );
     
     // Simular el click para ejecutar la función de test

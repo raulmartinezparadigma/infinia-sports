@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import { useCart } from "./CartContext";
+import Box from "@mui/material/Box";
 
 function ProductCard({ product }) {
   const { addToCart } = useCart();
@@ -79,6 +80,17 @@ function ProductCard({ product }) {
         <Typography data-testid="product-name" variant="subtitle1" sx={{ fontWeight: 700, minHeight: 48, fontSize: 19, mb: 1, color: '#212121', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', textTransform: 'uppercase' }}>
           {product.name || product.description}
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ minHeight: 40, mb: 2 }}>
+          {product.description}
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Tipo: {product.type}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Talla/Peso: {product.size}
+          </Typography>
+        </Box>
         {product.oldPrice && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
             <Typography variant="h6" sx={{ color: 'red', fontWeight: 900, fontSize: 18, textDecoration: 'line-through', marginRight: 8 }}>

@@ -39,7 +39,7 @@ describe('ProductCard', () => {
   it('muestra imagen por defecto cuando no hay imagen del producto', () => {
     render(<ProductCard product={mockProduct} />);
     
-    const img = screen.getByAltText('Zapatillas para correr de alta calidad');
+    const img = screen.getByAltText('Zapatillas Running');
     expect(img).toBeInTheDocument();
     
     // Simular error de carga de imagen

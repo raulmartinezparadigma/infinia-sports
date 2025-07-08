@@ -1,7 +1,6 @@
 import React from "react";
 import RedsysPayment from "./RedsysPayment";
 import { useCart } from "./CartContext";
-import { useAuth } from "./AuthContext";
 import { payByTransfer } from "../transferApi";
 // Selector de método de pago
 import { useState } from "react";
@@ -36,7 +35,6 @@ const paymentMethods = [
 
 function PaymentSelector({ onNext, onBack, amount, isAnonymous = false }) {
   const { cartId, clearCartAndReload } = useCart();
-  const {  } = useAuth();
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
