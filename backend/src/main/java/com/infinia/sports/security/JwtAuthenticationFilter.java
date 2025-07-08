@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Permitir acceso anónimo a rutas públicas aunque no haya token
         String path = request.getRequestURI();
         // Permitir acceso anónimo a rutas públicas usando regex más robusto
-        if (path.matches("^/(api/)?(cart|checkout)(/.*)?$")) {
+        if (path.matches("^/(api/)?(cart|checkout|products)(/.*)?$")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -6,8 +6,6 @@ import Box from "@mui/material/Box";
 import ProductCard from "./ProductCard";
 import CategoryBar from "./CategoryBar";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
 import Pagination from "@mui/material/Pagination";
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
@@ -18,7 +16,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Slider from '@mui/material/Slider';
 import Divider from '@mui/material/Divider';
 
-
 // Lista de productos con filtros
 function ProductList({ searchTerm = "" }) {
   // Añade fondo blanco solo mientras está montado este componente (catálogo)
@@ -26,7 +23,7 @@ function ProductList({ searchTerm = "" }) {
     document.body.classList.add('catalog-page');
     return () => document.body.classList.remove('catalog-page');
   }, []);
-  // Estado para productos, loading y error
+  // Estado para productos
   const [products, setProducts] = useState([]);
 
   // Estado para Drawer de filtros y orden
@@ -37,30 +34,23 @@ function ProductList({ searchTerm = "" }) {
   const [category, setCategory] = useState('');
   const [priceRange, setPriceRange] = useState([0, 200]); // Rango ejemplo
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // Estado para aplicar filtros/orden solo al pulsar 'Aplicar'
+  const [appliedFilters, setAppliedFilters] = useState({ sortOrder: '', typeFilter: '', priceRange: [0, 200] });
 
   // Cargar productos del API al montar el componente
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch("/products") // Endpoint correcto según backend
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al cargar productos");
-        return res.json();
+    fetch("/api/products") // Endpoint correcto según backend
+      .then((response) => {
+        if (!response.ok) throw new Error("Error al cargar productos");
+        return response.json();
       })
       .then((data) => {
         setProducts(data);
-        setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
-        setLoading(false);
+        console.error("Error al cargar productos:", err);
       });
   }, []);
-
-  // Estado para aplicar filtros/orden solo al pulsar 'Aplicar'
-  const [appliedFilters, setAppliedFilters] = useState({ sortOrder: '', typeFilter: '', priceRange: [0, 200] });
 
   // Lógica de filtrado y ordenado
   const filtered = products
@@ -252,7 +242,5 @@ function ProductList({ searchTerm = "" }) {
     </>
   );
 }
-
-
 
 export default ProductList;

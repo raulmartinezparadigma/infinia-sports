@@ -1,8 +1,10 @@
 package com.infinia.sports.e2e;
 
 import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.AriaRole;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 public class BaseTest {
 

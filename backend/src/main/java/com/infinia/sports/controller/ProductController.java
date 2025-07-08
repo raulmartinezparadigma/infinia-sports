@@ -34,7 +34,7 @@ import java.util.UUID;
  * Expone los endpoints para realizar operaciones CRUD sobre productos
  */
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 @Tag(name = "products", description = "API para la gestión de productos")
 public class ProductController {
 

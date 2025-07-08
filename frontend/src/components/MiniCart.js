@@ -14,7 +14,7 @@ function MiniCart({ top = 120 }) {
     <Paper elevation={4} sx={{
       position: 'absolute',
       right: 24,
-      top: top,
+      top: 325,
       width: 320,
       zIndex: 1300,
       p: 2,

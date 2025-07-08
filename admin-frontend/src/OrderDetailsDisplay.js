@@ -66,7 +66,6 @@ function OrderDetailsDisplay({ order, notFound }) {
     email,
     shippingAddress = {},
     billingAddress = {},
-    payment = {},
     shippingGroups = []
   } = order;
 

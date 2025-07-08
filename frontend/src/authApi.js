@@ -35,6 +35,18 @@ export async function login(username, password) {
       username,
       password
     });
+    // Si hay un carrito anónimo, lo vinculamos al usuario recién logueado
+    const cartId = localStorage.getItem('cartId');
+    if (cartId) {
+      try {
+        console.log(`Vinculando carrito ${cartId} al usuario ${response.data.user.email}`);
+        await axios.put(`/api/cart/link/${cartId}`);
+        // No es necesario eliminar el cartId del localStorage aquí,
+        // se gestionará cuando el contexto del carrito se recargue.
+      } catch (error) {
+        console.error('Error al vincular el carrito con el usuario:', error);
+      }
+    }
     return response.data;
   } catch (error) {
     console.error('Error al iniciar sesión:', error);
@@ -68,7 +80,7 @@ export async function getCurrentUser() {
 export async function linkCartToUser(cartId) {
   try {
     // El endpoint no necesita body ya que toma el usuario del token JWT
-    const response = await axios.put(`/cart/link/${cartId}`);
+    const response = await axios.put(`/api/cart/link/${cartId}`);
     return response.data;
   } catch (error) {
     console.error('Error al vincular el carrito con el usuario:', error);

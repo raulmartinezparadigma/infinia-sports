@@ -7,7 +7,6 @@ import BackgroundCarousel from './BackgroundCarousel';
 
 import { saveShippingAddress } from '../cartApi';
 import { useCart } from './CartContext';
-import { useAuth } from './AuthContext';
 
 function ShippingForm({ onNext, onBack, isAnonymous = false }) {
   // Inicializa con datos previos si existen

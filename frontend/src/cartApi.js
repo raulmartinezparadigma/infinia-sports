@@ -38,7 +38,11 @@ export async function getCart(sessionId, userId) {
 // Añade un producto al carrito
 export async function addItemToCart(item, sessionId, userId) {
   let url = `${API_BASE}/api/cart/items`;
-  const config = { headers: {} };
+  const config = { 
+    headers: { 
+      'Content-Type': 'application/json' 
+    }
+  };
   const params = [];
 
   if (userId) {

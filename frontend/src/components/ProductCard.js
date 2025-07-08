@@ -10,7 +10,6 @@ import Box from "@mui/material/Box";
 function ProductCard({ product }) {
   const { addToCart } = useCart();
   const [open, setOpen] = useState(false);
-  const [hover, setHover] = useState(false);
 
   const handleAdd = () => {
     const price = typeof product.price === 'number' ? product.price :

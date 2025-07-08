@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { getCart, addItemToCart, removeItemFromCart, updateItemQuantity, clearCartBackend } from "../cartApi";
 import { linkCartToUser } from "../authApi";
 import { useAuth } from "./AuthContext";
@@ -12,11 +12,13 @@ export function useCart() {
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [cartId, setCartId] = useState(null);
+  const [isCartInitialized, setIsCartInitialized] = useState(false);
   const { currentUser } = useAuth();
 
-  // Funciones auxiliares para obtener IDs
-  const getUserId = () => (currentUser ? currentUser.username : null);
-  const getSessionId = () => {
+  // Funciones auxiliares para obtener IDs (memoizadas con useCallback)
+  const getUserId = useCallback(() => (currentUser ? currentUser.username : null), [currentUser]);
+
+  const getSessionId = useCallback(() => {
     if (currentUser) return null;
     let sessionId = localStorage.getItem("cartSessionId");
     if (!sessionId) {
@@ -24,7 +26,7 @@ export function CartProvider({ children }) {
       localStorage.setItem("cartSessionId", sessionId);
     }
     return sessionId;
-  };
+  }, [currentUser]);
 
   // Al montar, obtener el carrito desde el backend
   useEffect(() => {
@@ -48,11 +50,15 @@ export function CartProvider({ children }) {
         } catch {
           setCart([]);
         }
+      } finally {
+        setIsCartInitialized(true);
       }
     }
     
-    fetchCart();
-  }, [currentUser]); // Dependencia simplificada
+    if (!isCartInitialized) {
+      fetchCart();
+    }
+  }, [currentUser, cartId, getSessionId, getUserId, isCartInitialized]); // Dependencias corregidas
 
   // Sincronizar el carrito en localStorage para fallback/offline
   useEffect(() => {
@@ -62,12 +68,8 @@ export function CartProvider({ children }) {
   // Añadir producto al carrito y sincronizar con backend
   async function addToCart(item) {
     try {
-      const currentCartId = cartId || (await getCart(getSessionId(), getUserId())).id;
-      if (!currentCartId) {
-        console.error("No se pudo obtener o crear un ID de carrito.");
-        return;
-      }
-      const updatedCart = await addItemToCart(currentCartId, item.id, item.quantity, item.price);
+      console.log('Enviando al backend:', JSON.stringify(item, null, 2));
+      const updatedCart = await addItemToCart(item, getSessionId(), getUserId());
       setCart((updatedCart.items || []).map(adaptCartItem));
       setCartId(updatedCart.id);
     } catch (err) {
@@ -99,7 +101,7 @@ export function CartProvider({ children }) {
       price: item.unitPrice,
       quantity: item.quantity,
       totalPrice: item.unitPrice * item.quantity,
-      productImageUrl: '', // La imagen no viene del carrito
+      productImageUrl: item.productImageUrl, // La imagen SÍ viene del carrito
       size: item.size, // Mantener size y type
       type: item.type,
     };
@@ -117,20 +119,16 @@ export function CartProvider({ children }) {
 
   // Limpia el carrito tanto en backend como en frontend y fuerza recarga tras un pago exitoso
   async function clearCartAndReload() {
-    await clearCartBackend(getSessionId(), getUserId());
+    try {
+      await clearCartBackend(getSessionId(), getUserId());
+    } catch (error) {
+      console.error("Error al limpiar el carrito en el backend:", error);
+    }
     setCart([]);
     setCartId(null);
     localStorage.removeItem('cart');
     localStorage.removeItem('shippingAddress');
     localStorage.removeItem('billingAddress');
-    try {
-      const data = await getCart(getSessionId(), getUserId());
-      setCart((data.items || []).map(adaptCartItem));
-      setCartId(data.id);
-    } catch {
-      setCart([]);
-      setCartId(null);
-    }
   }
 
   function clearCart() {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, CircularProgress, Alert, Button } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import OrderList from '../components/OrderList';
