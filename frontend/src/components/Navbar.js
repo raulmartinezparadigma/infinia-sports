@@ -100,6 +100,7 @@ function Navbar() {
               startIcon={<PersonIcon />}
               onClick={handleMenuOpen}
               sx={{ color: '#1a237e', mr: 2 }}
+              data-testid="user-menu-button"
             >
               {currentUser.username}
             </Button>
@@ -111,10 +112,10 @@ function Navbar() {
               <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
                 <Link to="/profile">Mi Perfil</Link>
               </MenuItem>
-              <MenuItem onClick={() => { handleMenuClose(); navigate('/pedidos'); }}>
+              <MenuItem data-testid="my-orders-link" onClick={() => { handleMenuClose(); navigate('/pedidos'); }}>
                 Mis Pedidos
               </MenuItem>
-              <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+              <MenuItem data-testid="logout-button" onClick={handleLogout}>Cerrar Sesión</MenuItem>
             </Menu>
           </>
         ) : (
@@ -124,6 +125,7 @@ function Navbar() {
               startIcon={<LoginIcon />}
               onClick={handleLogin}
               sx={{ color: '#1a237e', mr: 1 }}
+              data-testid="login-button"
             >
               Iniciar Sesión
             </Button>

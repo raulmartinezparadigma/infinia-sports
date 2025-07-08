@@ -85,6 +85,7 @@ function Login() {
               disabled={loading}
               error={Boolean(fieldErrors.username)}
               helperText={fieldErrors.username}
+              inputProps={{ 'data-testid': 'username-input' }}
             />
             
             <TextField
@@ -101,6 +102,7 @@ function Login() {
               disabled={loading}
               error={Boolean(fieldErrors.password)}
               helperText={fieldErrors.password}
+              inputProps={{ 'data-testid': 'password-input' }}
             />
             
             <Button
@@ -109,6 +111,7 @@ function Login() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
+              data-testid="submit-login-button"
             >
               {loading ? <CircularProgress size={24} /> : "Iniciar Sesión"}
             </Button>

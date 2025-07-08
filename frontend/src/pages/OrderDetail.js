@@ -112,7 +112,7 @@ const OrderDetail = () => {
                 <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                     Detalle del Pedido
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                <Typography variant="subtitle1" color="text.secondary" gutterBottom data-testid="order-detail-id">
                     Nº de Pedido: {order.orderId}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
@@ -124,7 +124,7 @@ const OrderDetail = () => {
                                 {/* Información general del pedido */}
                                 <Paper elevation={1} sx={{ p: 2 }}>
                                     <Typography variant="subtitle2" color="text.secondary">Fecha de compra</Typography>
-                                    <Typography variant="body1" fontWeight="bold">{formatDate(order.submitDate)}</Typography>
+                                    <Typography variant="body1" fontWeight="bold" data-testid="order-detail-date">{formatDate(order.submitDate)}</Typography>
                                     <Divider sx={{ my: 1 }} />
                                     <Typography variant="subtitle2" color="text.secondary">Total</Typography>
                                     <Typography variant="body1" fontWeight="bold">

@@ -37,9 +37,10 @@ public class BaseTest {
 
     protected void login(String username, String password) {
         page.navigate("http://localhost:3000/");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Iniciar Sesión")).click();
-        page.getByPlaceholder("tu-email@correo.com").fill(username);
-        page.getByPlaceholder("tu-contraseña").fill(password);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Acceder")).click();
+        // Click login button, fill credentials and submit
+        page.getByTestId("login-button").click();
+        page.getByTestId("username-input").fill(username);
+        page.getByTestId("password-input").fill(password);
+        page.getByTestId("submit-login-button").click();
     }
 }

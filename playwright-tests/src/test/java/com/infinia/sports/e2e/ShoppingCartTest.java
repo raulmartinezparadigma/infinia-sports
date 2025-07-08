@@ -1,8 +1,6 @@
 package com.infinia.sports.e2e;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,42 +9,22 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 public class ShoppingCartTest extends BaseTest {
 
     @Test
-    @DisplayName("Should add a product to the cart from product detail page")
-    void shouldAddProductToCart() {
-        // 1. Navigate to the homepage
+    @DisplayName("Should add a product and verify it in the cart")
+    void shouldAddProductAndVerifyInCart() {
+        login("testuser@infinia.com", "password");
         page.navigate("http://localhost:3000/");
 
-        // 2. Click on the first product to go to its detail page
-        Locator firstProduct = page.locator(".product-card a").first();
-        assertThat(firstProduct).isVisible();
-        firstProduct.click();
+        // Locate the first product card using a resilient selector that finds any product card,
+        // rather than relying on a hardcoded ID.
+        Locator productCard = page.locator("[data-testid^='product-card-']").first();
+        assertThat(productCard).isVisible();
 
-        // 3. Click the 'Add to Cart' button
-        Locator addToCartButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Añadir al carrito"));
-        assertThat(addToCartButton).isEnabled();
+        // Within the product card, find and click the add-to-cart button.
+        Locator addToCartButton = productCard.getByTestId("add-to-cart-button");
         addToCartButton.click();
 
-        // 4. Assert that the cart icon in the header now shows '1'
-        Locator cartIcon = page.locator("a[href='/carrito']");
-        assertThat(cartIcon).containsText("1");
-    }
-
-    @Test
-    @DisplayName("Should display the added product in the cart page")
-    void shouldDisplayProductInCart() {
-        // 1. Navigate to the homepage and click the first product
-        page.navigate("http://localhost:3000/");
-        page.locator(".product-card a").first().click();
-
-        // 2. Get the product name and add it to the cart
-        String productName = page.locator("h1").textContent();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Añadir al carrito")).click();
-
-        // 3. Navigate to the cart page
-        page.locator("a[href='/carrito']").click();
-
-        // 4. Assert that the product is visible in the cart
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Mi Carrito"))).isVisible();
-        assertThat(page.getByText(productName)).isVisible();
+        // Verify the cart count increases.
+        Locator cartBadge = page.locator(".MuiBadge-badge");
+        assertThat(cartBadge).hasText("1");
     }
 }

@@ -70,13 +70,14 @@ const OrderList = ({ orders }) => {
 
     return (
         <Box mt={3}>
-            {orders.map((order) => {
+            {orders.map((order, index) => {
                 const totalProducts = calculateTotalProducts(order);
                 const productImages = getProductImages(order);
                 
                 return (
                     <Paper 
                         key={order.id} 
+                        data-testid={`order-card-${index + 1}`}
                         elevation={2} 
                         sx={{ 
                             mb: 3, 
@@ -90,8 +91,11 @@ const OrderList = ({ orders }) => {
                             <Typography variant="subtitle1" fontWeight="bold">
                                 Entregado
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" data-testid={`order-date-${index + 1}`}>
                                 Pedido entregado el {formatDate(order.submitDate)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" data-testid={`order-id-${index + 1}`}>
+                                ID: {order.id}
                             </Typography>
                         </Box>
 
@@ -155,6 +159,7 @@ const OrderList = ({ orders }) => {
                                     color="primary" 
                                     onClick={() => handleViewOrder(order.id)}
                                     sx={{ minWidth: 120 }}
+                                    data-testid={`view-order-button-${index + 1}`}
                                 >
                                     Ver detalle
                                 </Button>
