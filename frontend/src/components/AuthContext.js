@@ -52,7 +52,8 @@ export function AuthProvider({ children }) {
       setCurrentUser({
         username: response.username,
         email: response.email,
-        roles: response.roles
+        roles: response.roles,
+        addresses: response.addresses
       });
       
       // Si hay un carrito en localStorage, vincularlo con el usuario

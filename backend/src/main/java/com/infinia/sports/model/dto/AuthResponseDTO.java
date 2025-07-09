@@ -20,4 +20,5 @@ public class AuthResponseDTO {
     private String username;
     private String email;
     private List<String> roles;
+    private List<AddressDTO> addresses;
 }

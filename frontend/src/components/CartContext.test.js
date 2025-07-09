@@ -212,7 +212,16 @@ describe('CartContext', () => {
     });
     
     // Verificar que se llamó a la API
-    expect(cartApi.updateItemQuantity).toHaveBeenCalledWith('1', 3, '101');
+    expect(cartApi.updateItemQuantity).toHaveBeenCalledWith(
+      '1',              // itemId
+      3,                // quantity
+      '101',            // productId
+      expect.any(String), // sessionId
+      null,             // userId
+      '',               // description
+      'Producto 1',     // productName
+      19.99             // unitPrice
+    );
   });
 
   // Modificamos este test para simplificarlo y hacerlo más robusto

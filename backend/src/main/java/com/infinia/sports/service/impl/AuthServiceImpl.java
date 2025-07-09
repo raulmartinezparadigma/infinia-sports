@@ -3,6 +3,7 @@ package com.infinia.sports.service.impl;
 import com.infinia.sports.exception.AuthenticationException;
 import com.infinia.sports.model.Role;
 import com.infinia.sports.model.User;
+import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.AuthRequestDTO;
 import com.infinia.sports.model.dto.AuthResponseDTO;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
@@ -54,6 +55,23 @@ public class AuthServiceImpl implements AuthService {
             // Generar el token JWT
             String token = jwtService.generateToken(user);
 
+            // Convertir las entidades Address a AddressDTO
+            List<AddressDTO> addressDTOs = user.getAddresses().stream()
+                    .map(address -> AddressDTO.builder()
+                            .id(address.getId())
+                            .firstName(address.getFirstName())
+                            .lastName(address.getLastName())
+                            .addressLine1(address.getAddressLine1())
+                            .addressLine2(address.getAddressLine2())
+                            .city(address.getCity())
+                            .state(address.getState())
+                            .postalCode(address.getPostalCode())
+                            .country(address.getCountry())
+                            .phoneNumber(address.getPhoneNumber())
+                            .email(user.getEmail()) // Asignar el email del usuario
+                            .build())
+                    .collect(Collectors.toList());
+
             // Convertir los roles a una lista de strings
             List<String> roles = user.getRoles().stream()
                     .map(Role::name)
@@ -65,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
                     .username(user.getUsername())
                     .email(user.getEmail())
                     .roles(roles)
+                    .addresses(addressDTOs)
                     .build();
         } catch (org.springframework.security.core.AuthenticationException e) {
             throw new AuthenticationException("Credenciales inválidas");
