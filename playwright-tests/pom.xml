@@ -11,11 +11,11 @@
     </parent>
 
     <artifactId>playwright-tests</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Playwright Tests</name>
-    <description>Functional E2E tests using Playwright</description>
+    <url>http://maven.apache.org</url>
+    <description>Playwright end-to-end tests</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -37,6 +37,21 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Dependencia con el módulo backend para acceder a su classpath -->
+        <dependency>
+            <groupId>com.infinia.sports</groupId>
+            <artifactId>sports</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Dependencias de Spring Boot para la clase lanzadora -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Playwright -->
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
@@ -68,14 +83,118 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
+
+            <!-- Surefire (unit tests) se desactiva para este módulo -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.2</version>
                 <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!-- Failsafe (integration tests) se encarga de los tests de Playwright -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
                     <testFailureIgnore>true</testFailureIgnore>
                     <workingDirectory>${project.basedir}</workingDirectory>
                 </configuration>
+            </plugin>
+
+            <!-- Spring Boot plugin para controlar el ciclo de vida del backend -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>start-backend</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                        <configuration>
+                            <fork>true</fork>
+                            <useTestClasspath>true</useTestClasspath>
+                            <mainClass>com.infinia.sports.InfiniaSportsApplication</mainClass>
+                            <arguments>
+                                <argument>--spring.profiles.active=e2e-test</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-backend</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Exec plugin para iniciar el frontend -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>start-frontend</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>start</argument>
+                            </arguments>
+                            <async>true</async>
+                            <environmentVariables>
+                                <PORT>3002</PORT>
+                            </environmentVariables>
+                            <workingDirectory>../frontend</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Antrun para detener el servidor frontend -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>stop-frontend</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="cmd" osfamily="windows">
+                                    <arg line="/c for /f &quot;tokens=5&quot; %%a in ('netstat -aon ^| findstr :3002') do taskkill /F /PID %%a"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -53,6 +53,7 @@
                         <phase>test</phase>
                         <configuration>
                             <arguments>test -- --watchAll=false</arguments>
+                            <skip>${skip.frontend.tests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -89,4 +90,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>e2e-test</id>
+            <properties>
+                <skip.frontend.tests>true</skip.frontend.tests>
+            </properties>
+        </profile>
+    </profiles>
 </project>
