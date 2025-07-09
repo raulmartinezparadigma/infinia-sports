@@ -55,7 +55,14 @@ function CartView() {
                 </TableCell>
                 <TableCell align="right">{(item.price !== undefined ? item.price : 0).toFixed(2)} €</TableCell>
                 <TableCell align="center">
-                  <Button size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
+                  <Button size="small" onClick={() => {
+                    const newQuantity = item.quantity - 1;
+                    if (newQuantity <= 0) {
+                      removeFromCart(item.id);
+                    } else {
+                      updateQuantity(item.id, newQuantity);
+                    }
+                  }}>-</Button>
                   <span style={{ margin: '0 8px' }}>{item.quantity || 1}</span>
                   <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
                 </TableCell>

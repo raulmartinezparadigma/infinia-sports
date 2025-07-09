@@ -112,7 +112,17 @@ export function CartProvider({ children }) {
   async function updateQuantity(itemId, quantity) {
     const item = cart.find(i => i.id === itemId);
     if (item) {
-      const updatedCart = await updateItemQuantity(itemId, quantity, item.productId);
+      // Pasamos todos los datos del item que necesita el backend en el DTO
+      const updatedCart = await updateItemQuantity(
+        itemId, 
+        quantity, 
+        item.productId, 
+        getSessionId(), 
+        getUserId(),
+        item.description, // description
+        item.name, // productName
+        item.price // unitPrice
+      );
       setCart((updatedCart.items || []).map(adaptCartItem));
     }
   }

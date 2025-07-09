@@ -137,16 +137,22 @@ export async function processBizumPayment({ paymentId, orderId, phoneNumber, use
 // Vacía todo el carrito en el backend (DELETE /cart)
 export async function clearCartBackend(sessionId, userId) {
   let url = `${API_BASE}/api/cart`;
+  const config = { headers: {} };
   const params = [];
+
+  // El backend espera el userId en el header, no como query param
   if (userId) {
-    params.push(`userId=${userId}`);
+    config.headers['User-ID'] = userId;
   } else if (sessionId) {
+    // El sessionId sí puede ir como param si no hay usuario
     params.push(`sessionId=${sessionId}`);
   }
+
   if (params.length > 0) {
     url += `?${params.join('&')}`;
   }
-  const response = await axios.delete(url);
+
+  const response = await axios.delete(url, config);
   return response.data;
 }
 
