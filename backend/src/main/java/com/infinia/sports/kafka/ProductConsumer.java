@@ -6,6 +6,7 @@ import com.infinia.sports.model.ProductType;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
  * Consumidor Kafka para productos. Persiste los productos recibidos en la base de datos PostgreSQL.
  */
 @Service
+@Profile("!e2e-test")
 public class ProductConsumer {
     private static final Logger logger = LoggerFactory.getLogger(ProductConsumer.class);
     private final ProductRepository productRepository;

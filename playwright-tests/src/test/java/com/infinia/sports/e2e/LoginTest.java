@@ -11,7 +11,7 @@ public class LoginTest extends BaseTest {
     @Test
     @DisplayName("Should allow a user to log in successfully")
     void shouldLoginSuccessfully() {
-        login("Vin", "123456");
+        login("testinfinia", "123456");
 
         // First, verify the user menu button is visible, which indicates a successful login.
         Locator userMenuButton = page.getByTestId("user-menu-button");

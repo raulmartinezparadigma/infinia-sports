@@ -11,7 +11,7 @@ public class OrderHistoryTest extends BaseTest {
     @Test
     @DisplayName("Should navigate to order history and see orders")
     void shouldNavigateToOrderHistory() {
-        login("Vin", "123456");
+        login("testinfinia", "123456");
 
         page.getByTestId("user-menu-button").click();
         page.getByTestId("my-orders-link").click();
@@ -25,7 +25,7 @@ public class OrderHistoryTest extends BaseTest {
     @Test
     @DisplayName("Should navigate to order detail and verify data consistency")
     void shouldNavigateToOrderDetailAndVerifyData() {
-        login("Vin", "123456");
+        login("testinfinia", "123456");
         page.getByTestId("user-menu-button").click();
         page.getByTestId("my-orders-link").click();
 
