@@ -15,6 +15,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Slider from '@mui/material/Slider';
 import Divider from '@mui/material/Divider';
+import SalesBanner from './SalesBanner'; // Cambiado de ImageCarouselBanner a SalesBanner
 
 // Lista de productos con filtros
 function ProductList({ searchTerm = "" }) {
@@ -103,7 +104,31 @@ function ProductList({ searchTerm = "" }) {
   }, [searchTerm, products, appliedFilters]);
 
   return (
-    <>
+    <Box sx={{ mt: 4 }}>
+      {/* Contenedor para el nuevo carrusel */}
+      <Box sx={{ mb: 4 }}>
+        <SalesBanner /> {/* Cambiado de ImageCarouselBanner a SalesBanner */}
+      </Box>
+
+      {/* 2. Barra de categorías y botón de filtros principal */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2, background: '#fff', borderRadius: 2, boxShadow: '0 2px 8px #b3c6ff22', px: 2, py: 1 }}>
+        <CategoryBar selected={category} onSelect={setCategory} />
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{ mr: 2, minWidth: 140, height: 40 }}
+            onClick={() => setDrawerOpen(true)}
+          >
+            Filtrar y ordenar
+          </Button>
+          {/* Contador de artículos */}
+          <span style={{ fontWeight: 500, color: '#555', marginLeft: 8, fontSize: 16 }}>
+            {filtered.length} artículos
+          </span>
+        </Box>
+      </Box>
+
       {/* Drawer lateral */}
       <Drawer
         anchor="right"
@@ -170,23 +195,7 @@ function ProductList({ searchTerm = "" }) {
         </Box>
       </Drawer>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2, background: '#fff', borderRadius: 2, boxShadow: '0 2px 8px #b3c6ff22', px: 2, py: 1 }}>
-        <CategoryBar selected={category} onSelect={setCategory} />
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ mr: 2, minWidth: 140, height: 40 }}
-            onClick={() => setDrawerOpen(true)}
-          >
-            Filtrar y ordenar
-          </Button>
-          {/* Contador de artículos */}
-          <span style={{ fontWeight: 500, color: '#555', marginLeft: 8, fontSize: 16 }}>
-            {filtered.length} artículos
-          </span>
-        </Box>
-      </Box>
+      {/* 3. Cuadrícula de productos */}
       <Box
         sx={{
           display: 'grid',
@@ -239,7 +248,7 @@ function ProductList({ searchTerm = "" }) {
           />
         </Box>
       )}
-    </>
+    </Box>
   );
 }
 
