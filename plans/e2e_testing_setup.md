@@ -29,7 +29,7 @@
         *   Iniciar el backend ejecutando la nueva clase `InfiniaSportsE2ETestApplication`.
         *   Iniciar el frontend con el script `start:e2e` en el puerto `3002`.
     *   **`integration-test`:** El plugin `maven-failsafe-plugin` ejecutará los tests de Playwright (`*Test.java`).
-    *   **`post-integration-test`:** Detener los servidores del backend y el frontend usando `taskkill` sobre los puertos `8085` y `3002`.
+    *   **`post-integration-test`:** Detener los servidores del backend y el frontend usando `taskkill` sobre los puertos `8080` y `3000`.
 
 ### Fase 4: Ejecución
 

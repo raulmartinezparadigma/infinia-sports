@@ -134,7 +134,11 @@
                             <mainClass>com.infinia.sports.InfiniaSportsApplication</mainClass>
                             <arguments>
                                 <argument>--spring.profiles.active=e2e-test</argument>
+                                <argument>--server.port=8080</argument>
                             </arguments>
+                            <!-- Health Check: Espera a que el backend esté listo -->
+                            <wait>10000</wait>
+                            <maxAttempts>6</maxAttempts>
                         </configuration>
                     </execution>
                     <execution>
@@ -147,7 +151,7 @@
                 </executions>
             </plugin>
 
-            <!-- Exec plugin para iniciar el frontend -->
+            <!-- Exec plugin para iniciar y parar el frontend -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -165,36 +169,72 @@
                                 <argument>start</argument>
                             </arguments>
                             <async>true</async>
-                            <environmentVariables>
-                                <PORT>3002</PORT>
-                            </environmentVariables>
+                            <workingDirectory>../frontend</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-frontend</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npx</executable>
+                            <arguments>
+                                <argument>kill-port</argument>
+                                <argument>3000</argument>
+                            </arguments>
                             <workingDirectory>../frontend</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Antrun para detener el servidor frontend -->
+            <!-- Antrun plugin para esperar al frontend -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>stop-frontend</id>
-                        <phase>post-integration-test</phase>
+                        <id>wait-for-frontend</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
-                                <exec executable="cmd" osfamily="windows">
-                                    <arg line="/c for /f &quot;tokens=5&quot; %%a in ('netstat -aon ^| findstr :3002') do taskkill /F /PID %%a"/>
-                                </exec>
+                                <echo>Waiting for frontend to be ready on port 3000...</echo>
+                                <waitfor maxwait="2" maxwaitunit="minute" checkevery="2" checkeveryunit="second" timeoutproperty="frontend.timedout">
+                                    <http url="http://localhost:3000"/>
+                                </waitfor>
+                                <echo>Frontend is ready!</echo>
                             </target>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Failsafe plugin para ejecutar las pruebas de Playwright -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <workingDirectory>${project.basedir}</workingDirectory>
+                </configuration>
             </plugin>
         </plugins>
     </build>

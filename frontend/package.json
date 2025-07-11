@@ -20,20 +20,20 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start:e2e": "cross-env PORT=3002 react-scripts start",
+    "start:e2e": "cross-env PORT=3000 react-scripts start",
     "build": "react-scripts build",
-    "test": "jest",
+    "test": "react-scripts test",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:8080",
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
   },
-  "proxy": "http://localhost:8080",
   "browserslist": {
     "production": [
       ">0.2%",

@@ -11,7 +11,7 @@ public class ShoppingCartTest extends BaseTest {
     @Test
     @DisplayName("Should add a product and verify it in the cart")
     void shouldAddProductAndVerifyInCart() {
-        login("testuser@infinia.com", "password");
+        login("testinfinia", "123456");
         page.navigate("http://localhost:3000/");
 
         // Locate the first product card using a resilient selector that finds any product card,

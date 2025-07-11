@@ -18,6 +18,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
@@ -48,7 +54,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(withDefaults())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aplicar la configuración CORS personalizada
             .authorizeHttpRequests(auth -> auth
                 // Permitir acceso público a estos endpoints
                 .requestMatchers(
@@ -109,5 +115,24 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    /**
+     * Configura la política de CORS reutilizando la configuración existente para permitir peticiones desde los frontends.
+     *
+     * @return Origen de la configuración CORS
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Aplicamos la misma configuración que existía en CorsConfig.java
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:3001"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*")); // Se usa "*" como en la configuración original
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // Se aplica a todos los paths como en la original
+        return source;
     }
 }
