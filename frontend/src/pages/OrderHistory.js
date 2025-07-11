@@ -59,9 +59,7 @@ const OrderHistory = () => {
             ) : error ? (
                 <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>
             ) : orders.length === 0 ? (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                    No tienes pedidos realizados todavía.
-                </Alert>
+                <Alert severity="info" sx={{ mt: 2 }} data-testid="no-orders-message">No tienes pedidos realizados todavía.</Alert>
             ) : (
                 <OrderList orders={orders} />
             )}

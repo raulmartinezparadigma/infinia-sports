@@ -12,7 +12,7 @@
     *   En el `pom.xml` del frontend, configurar el perfil `e2e-test` para que se salten los tests de Jest.
 
 3.  **Configuración de Spring (`application-e2e-test.properties`):**
-    *   Asegurar que el puerto del servidor está en `8085`.
+    *   Asegurar que el puerto del servidor está en `8080`.
     *   Desactivar explícitamente la autoconfiguración de servicios no necesarios, como Kafka (`spring.kafka.consumer.enabled=false`, `spring.kafka.producer.enabled=false`).
     *   Asegurar la configuración de la base de datos H2 en memoria y la inicialización con `data-e2e-test.sql`.
 
@@ -20,7 +20,7 @@
 
 1.  **Crear Clase Lanzadora (`InfiniaSportsE2ETestApplication.java`):**
     *   En el módulo `playwright-tests`, crear una clase con un método `main`.
-    *   Esta clase usará `SpringApplicationBuilder` para iniciar la aplicación del backend de forma programática, forzando el perfil `e2e-test` y el puerto `8085`.
+    *   Esta clase usará `SpringApplicationBuilder` para iniciar la aplicación del backend de forma programática, forzando el perfil `e2e-test` y el puerto `8080`.
 
 ### Fase 3: Orquestación del Ciclo de Vida con Maven
 

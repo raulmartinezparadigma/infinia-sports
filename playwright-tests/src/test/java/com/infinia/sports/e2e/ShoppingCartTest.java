@@ -1,6 +1,7 @@
 package com.infinia.sports.e2e;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.APIResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,5 +27,11 @@ public class ShoppingCartTest extends BaseTest {
         // Verify the cart count increases.
         Locator cartBadge = page.locator(".MuiBadge-badge");
         assertThat(cartBadge).hasText("1");
+        
+        // Limpiar el carrito después de la prueba utilizando el endpoint DELETE de la API
+        String apiUrl = "http://localhost:8080/api/cart";
+        System.out.println("[ShoppingCartTest] Intentando limpiar el carrito con URL: " + apiUrl);
+        APIResponse response = context.request().delete(apiUrl);
+        System.out.println("[ShoppingCartTest] Carrito limpiado. Código de respuesta: " + response.status() + ", URL utilizada: " + apiUrl);
     }
 }
