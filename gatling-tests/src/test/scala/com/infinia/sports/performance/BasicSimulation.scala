@@ -14,7 +14,7 @@ class BasicSimulation extends Simulation {
 
   val scn = scenario("Get All Products")
     .exec(http("request_products")
-      .get("/products"))
+      .get("/api/products"))
     .pause(1)
 
   setUp(

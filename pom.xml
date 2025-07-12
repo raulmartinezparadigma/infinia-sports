@@ -13,7 +13,7 @@
         <module>backend</module>
         <module>frontend</module>
         <module>admin-frontend</module>
-        <!--module>gatling-tests</module-->
+        <module>gatling-tests</module>
         <module>playwright-tests</module>
     </modules>
 
