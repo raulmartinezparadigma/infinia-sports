@@ -5,6 +5,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LoginIcon from '@mui/icons-material/Login';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 
 import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
@@ -48,7 +50,7 @@ function Navbar() {
   };
 
   return (
-    <nav style={{ padding: '42px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 0 #e0e0e0' }}>
+    <nav style={{ padding: '42px 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 0 #e0e0e0', height: 135 }}>
       {/* Logo */}
       <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
         <img src={process.env.PUBLIC_URL + '/infinia_sports.jpg'} alt="Infinia Sports" style={{ height: 216, objectFit: 'contain' }} />
@@ -76,7 +78,6 @@ function Navbar() {
             <TextField
               placeholder="Buscar productos"
               variant="outlined"
-              size="small"
               value={search}
               onChange={e => {
                 const val = e.target.value;
@@ -84,7 +85,21 @@ function Navbar() {
                 const path = location.pathname === '/' ? '/catalog' : location.pathname;
                 navigate(`${path}?query=${encodeURIComponent(val)}`, { replace: true });
               }}
-              sx={{ width: '100%', maxWidth: 600, background: '#fff' }}
+              sx={{
+                width: '100%', 
+                maxWidth: 600, 
+                background: '#fff',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '24px', // Bordes redondeados
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
             />
           </div>
         );
