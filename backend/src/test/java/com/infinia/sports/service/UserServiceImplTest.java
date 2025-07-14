@@ -1,9 +1,9 @@
 package com.infinia.sports.service;
 
-import com.infinia.sports.exception.ResourceAlreadyExistsException;
 import com.infinia.sports.exception.ResourceNotFoundException;
 import com.infinia.sports.model.Address;
 import com.infinia.sports.model.User;
+import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
 import com.infinia.sports.model.dto.UserDTO;
 import com.infinia.sports.repository.jpa.AddressRepository;
@@ -212,5 +212,62 @@ class UserServiceImplTest {
             ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> userService.getCurrentUser());
             assertTrue(ex.getMessage().contains(username));
         }
+    }
+
+    @Test
+    void addAddressToUser_success() {
+        String username = "user@example.com";
+        AddressDTO addressDTO = AddressDTO.builder()
+                .firstName("Nombre")
+                .lastName("Apellido")
+                .addressLine1("Calle Falsa 123")
+                .addressLine2("")
+                .city("Ciudad")
+                .state("Provincia")
+                .postalCode("12345")
+                .country("España")
+                .phoneNumber("600000000")
+                .build();
+        User user = new User();
+        user.setUsername(username);
+        user.setAddresses(new java.util.ArrayList<>());
+        when(userRepository.findByUsername(username)).thenReturn(java.util.Optional.of(user));
+        when(addressRepository.save(any(Address.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AddressDTO result = userService.addAddressToUser(username, addressDTO);
+
+        assertEquals(1, user.getAddresses().size());
+        Address added = user.getAddresses().get(0);
+        assertEquals("Calle Falsa 123", added.getAddressLine1());
+        assertEquals("Nombre", added.getFirstName());
+        assertEquals("Apellido", added.getLastName());
+        assertEquals("España", added.getCountry());
+        assertEquals("600000000", added.getPhoneNumber());
+        assertEquals("Calle Falsa 123", result.getAddressLine1());
+        verify(userRepository).save(user);
+        verify(addressRepository).save(any(Address.class));
+    }
+
+    @Test
+    void addAddressToUser_userNotFound() {
+        String email = "noexiste@example.com";
+        AddressDTO addressDTO = new AddressDTO();
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.empty());
+        assertThrows(RuntimeException.class, () -> userService.addAddressToUser(email, addressDTO));
+        verify(userRepository, never()).save(any());
+    }
+
+
+
+    @Test
+    void addAddressToUser_nullAddressDTO() {
+        String email = "user3@example.com";
+        User user = new User();
+        user.setEmail(email);
+        user.setAddresses(new java.util.ArrayList<>());
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.of(user));
+        assertThrows(ResourceNotFoundException.class, () -> userService.addAddressToUser(email, null));
+        verify(userRepository, never()).save(any());
     }
 }
