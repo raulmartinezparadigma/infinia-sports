@@ -26,7 +26,25 @@
         <tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
         {{orderLines}}
     </table>
-    <p class="total">Total: {{orderTotal}}</p>
+    <table style="width: 50%; float: right; margin-top: 16px; border: none;">
+        <tr>
+            <td style="border: none;">Subtotal:</td>
+            <td style="text-align: right; border: none;">{{orderSubtotal}}</td>
+        </tr>
+        <tr>
+            <td style="border: none;">Gastos de envío:</td>
+            <td style="text-align: right; border: none;">{{orderShipping}}</td>
+        </tr>
+        <tr>
+            <td style="border: none;">IVA (21%):</td>
+            <td style="text-align: right; border: none;">{{orderTax}}</td>
+        </tr>
+        <tr class="total">
+            <td style="border: none;">Total:</td>
+            <td style="text-align: right; border: none;">{{orderTotal}}</td>
+        </tr>
+    </table>
+    <div style="clear: both;"></div>
     <p>Dirección de envío: {{shippingAddress}}</p>
     <p>¡Gracias por confiar en Infinia Sports!</p>
 </div>

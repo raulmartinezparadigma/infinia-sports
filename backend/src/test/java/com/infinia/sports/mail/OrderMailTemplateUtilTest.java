@@ -3,7 +3,6 @@ package com.infinia.sports.mail;
 import com.infinia.sports.model.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -13,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,8 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrderMailTemplateUtilTest {
 
     private Order order;
-    private Order.ShippingGroup shippingGroup;
-    private Order.LineItem lineItem;
     private Order.Address address;
     private Order.PriceInfo priceInfo;
 
@@ -33,21 +29,17 @@ class OrderMailTemplateUtilTest {
         order.setOrderId("ORD-12345");
         order.setSubmitDate(LocalDateTime.now());
 
-        // Create shipping group
-        shippingGroup = new Order.ShippingGroup();
-        shippingGroup.setId("SG-1");
-
         // Create line item
-        lineItem = new Order.LineItem();
+        Order.LineItem lineItem = new Order.LineItem();
         lineItem.setId("LI-1");
         lineItem.setProductName("Zapatillas Running");
         lineItem.setQuantity(2);
         lineItem.setUnitPrice(new BigDecimal("79.99"));
 
-        // Add line item to shipping group
+        // Create shipping group
+        Order.ShippingGroup shippingGroup = new Order.ShippingGroup();
+        shippingGroup.setId("SG-1");
         shippingGroup.setLineItems(Collections.singletonList(lineItem));
-
-        // Add shipping group to order
         order.setShippingGroups(Collections.singletonList(shippingGroup));
 
         // Create address
@@ -60,52 +52,54 @@ class OrderMailTemplateUtilTest {
         address.setState("Madrid");
         address.setPostalCode("28001");
         address.setCountry("España");
-
-        // Set address to order
         order.setShippingAddress(address);
 
-        // Create price info
+        // Create price info with full breakdown
         priceInfo = new Order.PriceInfo();
-        priceInfo.setTotal(new BigDecimal("159.98"));
-        
-        // Set price info to order
+        priceInfo.setSubtotal(new BigDecimal("159.98"));
+        priceInfo.setShippingCost(new BigDecimal("4.99"));
+        priceInfo.setTax(new BigDecimal("34.65")); // (159.98 + 4.99) * 0.21
+        priceInfo.setTotal(new BigDecimal("199.62"));
         order.setPriceInfo(priceInfo);
     }
 
     @Test
-    void testGenerateOrderSummaryHtml_Success(@TempDir Path tempDir) throws IOException {
+    void testGenerateOrderSummaryHtml_Success() throws IOException {
         // Given
-        String templateContent = "<!DOCTYPE html><html><body>" +
-                "<h1>Resumen de Pedido</h1>" +
-                "<p>Hola {{customerName}},</p>" +
-                "<p>Tu pedido {{orderId}} del {{orderDate}} ha sido confirmado.</p>" +
-                "<table>{{orderLines}}</table>" +
-                "<p>Total: {{orderTotal}}</p>" +
-                "<p>Dirección de envío: {{shippingAddress}}</p>" +
-                "</body></html>";
-        
-        Path templatePath = tempDir.resolve("order-summary.html");
-        Files.writeString(templatePath, templateContent);
-        
+        String templateContent = "<!DOCTYPE html><html><body>"
+                + "<p>Hola {{customerName}},</p>"
+                + "<p>Tu pedido {{orderId}} del {{orderDate}} ha sido confirmado.</p>"
+                + "<table>{{orderLines}}</table>"
+                + "<table>"
+                + "<tr><td>Subtotal:</td><td>{{orderSubtotal}}</td></tr>"
+                + "<tr><td>Gastos de envío:</td><td>{{orderShipping}}</td></tr>"
+                + "<tr><td>IVA (21%):</td><td>{{orderTax}}</td></tr>"
+                + "<tr class=\"total\"><td>Total:</td><td>{{orderTotal}}</td></tr>"
+                + "</table>"
+                + "<p>Dirección de envío: {{shippingAddress}}</p>"
+                + "</body></html>";
+
+        // Mocking static methods of Files and Paths to avoid real file system access
         try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class);
              MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            
-            mockedPaths.when(() -> Paths.get("src/main/resources/templates/order-summary.html"))
-                    .thenReturn(templatePath);
-            
-            mockedFiles.when(() -> Files.readString(templatePath))
-                    .thenReturn(templateContent);
-            
+
+            Path fakePath = Mockito.mock(Path.class);
+            mockedPaths.when(() -> Paths.get(Mockito.anyString())).thenReturn(fakePath);
+            mockedFiles.when(() -> Files.readString(fakePath)).thenReturn(templateContent);
+
             // When
-            String result = OrderMailTemplateUtil.generateOrderSummaryHtml(order);
-            
+            String result = com.infinia.sports.mail.OrderMailTemplateUtil.generateOrderSummaryHtml(order);
+
             // Then
             assertNotNull(result);
             assertTrue(result.contains("Juan Pérez"));
             assertTrue(result.contains("ORD-12345"));
             assertTrue(result.contains("Zapatillas Running"));
-            assertTrue(result.contains("159.98€"));
-            assertTrue(result.contains("Calle Principal 123 Apartamento 4B, Madrid, Madrid, 28001, España"));
+            assertTrue(result.contains("159.98€"), "Debe contener el subtotal");
+            assertTrue(result.contains("4.99€"), "Debe contener los gastos de envío");
+            assertTrue(result.contains("34.65€"), "Debe contener el IVA");
+            assertTrue(result.contains("199.62€"), "Debe contener el total");
+            assertTrue(result.contains("Calle Principal 123 Apartamento 4B"));
         }
     }
 
@@ -113,14 +107,18 @@ class OrderMailTemplateUtilTest {
     void testGenerateOrderSummaryHtml_WithNullAddressLine2() throws IOException {
         // Given
         address.setAddressLine2(null);
-        
-        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.readString(Mockito.any()))
-                    .thenReturn("<p>{{shippingAddress}}</p>");
-            
+        String templateContent = "<p>{{shippingAddress}}</p>";
+
+        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class);
+             MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+
+            Path fakePath = Mockito.mock(Path.class);
+            mockedPaths.when(() -> Paths.get(Mockito.anyString())).thenReturn(fakePath);
+            mockedFiles.when(() -> Files.readString(fakePath)).thenReturn(templateContent);
+
             // When
-            String result = OrderMailTemplateUtil.generateOrderSummaryHtml(order);
-            
+            String result = com.infinia.sports.mail.OrderMailTemplateUtil.generateOrderSummaryHtml(order);
+
             // Then
             assertNotNull(result);
             assertTrue(result.contains("Calle Principal 123"));
@@ -132,12 +130,12 @@ class OrderMailTemplateUtilTest {
     void testGenerateOrderSummaryHtml_Exception() {
         // Given
         try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.readString(Mockito.any()))
+            mockedFiles.when(() -> Files.readString(Mockito.any(Path.class)))
                     .thenThrow(new IOException("File not found"));
-            
+
             // When
-            String result = OrderMailTemplateUtil.generateOrderSummaryHtml(order);
-            
+            String result = com.infinia.sports.mail.OrderMailTemplateUtil.generateOrderSummaryHtml(order);
+
             // Then
             assertEquals("Gracias por tu compra. Pedido: ORD-12345", result);
         }

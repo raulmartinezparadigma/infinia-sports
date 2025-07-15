@@ -1,34 +1,28 @@
 package com.infinia.sports.service.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.infinia.sports.exception.ResourceNotFoundException;
 import com.infinia.sports.mapper.CartMapper;
 import com.infinia.sports.mapper.OrderMapper;
 import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.Product;
-import com.infinia.sports.model.dto.AddressDTO;
-import com.infinia.sports.model.dto.CartDTO;
-import com.infinia.sports.model.dto.CartItemDTO;
-import com.infinia.sports.model.dto.CheckoutDTO;
-import com.infinia.sports.model.dto.OrderDTO;
+import com.infinia.sports.model.dto.*;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.CheckoutService;
-
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -266,14 +260,17 @@ public class CheckoutServiceImpl implements CheckoutService {
                 .map(Cart.CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        // Calcular impuestos
-        BigDecimal tax = subtotal.multiply(DEFAULT_TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+        // La base imponible es el subtotal de productos más los gastos de envío
+        BigDecimal taxableAmount = subtotal.add(this.shippingCost);
+
+        // Calcular impuestos sobre la base imponible
+        BigDecimal tax = taxableAmount.multiply(DEFAULT_TAX_RATE).setScale(2, RoundingMode.HALF_UP);
         
         // Actualizar totales en el carrito
         cart.setSubtotal(subtotal);
         cart.setTax(tax);
         cart.setShippingCost(this.shippingCost);
-        cart.setTotal(subtotal.add(tax).add(this.shippingCost));
+        cart.setTotal(taxableAmount.add(tax));
     }
 
     /**

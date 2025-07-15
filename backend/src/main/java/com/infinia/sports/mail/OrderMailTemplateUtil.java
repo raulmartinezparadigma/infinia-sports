@@ -54,7 +54,10 @@ public class OrderMailTemplateUtil {
                                      address.getPostalCode() + ", " +
                                      address.getCountry();
 
-            // Total del pedido
+            // Obtener desglose de precios
+            BigDecimal subtotal = order.getPriceInfo().getSubtotal();
+            BigDecimal shipping = order.getPriceInfo().getShippingCost();
+            BigDecimal tax = order.getPriceInfo().getTax();
             BigDecimal total = order.getPriceInfo().getTotal();
 
             // Reemplazar los placeholders
@@ -63,6 +66,9 @@ public class OrderMailTemplateUtil {
                 .replace("{{orderId}}", order.getOrderId())
                 .replace("{{orderDate}}", order.getSubmitDate().toString())
                 .replace("{{orderLines}}", orderLines)
+                .replace("{{orderSubtotal}}", subtotal.setScale(2, RoundingMode.HALF_UP) + "€")
+                .replace("{{orderShipping}}", shipping.setScale(2, RoundingMode.HALF_UP) + "€")
+                .replace("{{orderTax}}", tax.setScale(2, RoundingMode.HALF_UP) + "€")
                 .replace("{{orderTotal}}", total.setScale(2, RoundingMode.HALF_UP) + "€")
                 .replace("{{shippingAddress}}", shippingAddress);
         } catch (Exception e) {

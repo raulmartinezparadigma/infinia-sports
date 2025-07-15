@@ -25,7 +25,7 @@ function Navbar() {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   
-  const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
   
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -155,13 +155,11 @@ function Navbar() {
           </>
         )}
         
-        <Link to="/cart">
-          <IconButton sx={{ color: '#1a237e' }}>
-            <Badge badgeContent={totalCount} color="error">
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
-        </Link>
+        <IconButton component={Link} to="/cart" aria-label="cart" sx={{ color: '#1a237e' }}>
+          <Badge badgeContent={totalCount} color="error" data-testid="cart-badge">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
       </div>
     </nav>
   );

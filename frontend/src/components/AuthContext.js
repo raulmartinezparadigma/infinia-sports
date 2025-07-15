@@ -14,7 +14,8 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Al montar el componente, verificar si hay un usuario autenticado
   useEffect(() => {
     async function fetchCurrentUser() {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("authToken");
       } finally {
         setLoading(false);
+        setIsInitialized(true); // Marcar como inicializado
       }
     }
     
@@ -125,7 +127,8 @@ export function AuthProvider({ children }) {
     register: handleRegister,
     logout: handleLogout,
     error,
-    loading
+    loading,
+    isInitialized
   };
   
   return (

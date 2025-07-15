@@ -12,7 +12,7 @@ function CartView() {
   const { cart, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
 
-  if (cart.length === 0) {
+  if (!cart.items || cart.items.length === 0) {
     // Mostrar logo grande de Infinia Sports si el carrito está vacío
     // Mostrar logo grande de Infinia Sports a la izquierda si el carrito está vacío
     // Mostrar logo grande de Infinia Sports centrado en el rectángulo si el carrito está vacío
@@ -43,7 +43,7 @@ function CartView() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {cart.map((item) => (
+            {cart.items.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
                   <div>

@@ -9,7 +9,11 @@ function OrderSummary({ onNext, onBack }) {
   const { cart } = useCart();
   const shipping = JSON.parse(localStorage.getItem("shippingAddress") || "{}");
   const billing = JSON.parse(localStorage.getItem("billingAddress") || "{}" );
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  // Añadir guarda para proteger contra renderizado inicial sin datos
+  if (!cart || !cart.items) {
+    return null; // O un componente de carga
+  }
 
   return (
     <Box sx={{ position: 'relative', mt: 4, mb: 4, minHeight: 500 }}>
@@ -35,7 +39,7 @@ function OrderSummary({ onNext, onBack }) {
         </Typography>
         <Divider sx={{ my: 2 }} />
         <Typography variant="subtitle1" sx={{ mb: 1 }}>Productos</Typography>
-        {cart.length === 0 ? (
+        {cart.items.length === 0 ? (
           <Typography variant="body2" sx={{ mb: 2 }}>No hay productos en el carrito.</Typography>
         ) : (
           <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ mb: 2 }}>
@@ -50,7 +54,7 @@ function OrderSummary({ onNext, onBack }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {cart.map(item => (
+                {cart.items.map(item => (
                   <TableRow key={item?.id || Math.random()}>
                     <TableCell sx={{ padding: '8px', width: '66px' }}>
                       <img 
@@ -62,8 +66,8 @@ function OrderSummary({ onNext, onBack }) {
                     </TableCell>
                     <TableCell>{item?.name || item?.description || 'Producto'}</TableCell>
                     <TableCell align="right">{item?.quantity || 0}</TableCell>
-                    <TableCell align="right">{item?.price ? item.price.toFixed(2) : '0.00'} €</TableCell>
-                    <TableCell align="right">{item?.price && item?.quantity ? (item.price * item.quantity).toFixed(2) : '0.00'} €</TableCell>
+                    <TableCell align="right">{item?.unitPrice ? item.unitPrice.toFixed(2) : '0.00'} €</TableCell>
+                    <TableCell align="right">{item?.totalPrice ? item.totalPrice.toFixed(2) : '0.00'} €</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -71,9 +75,22 @@ function OrderSummary({ onNext, onBack }) {
           </TableContainer>
         )}
         <Divider sx={{ my: 2 }} />
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+            <Typography variant="body2">Subtotal:</Typography>
+            <Typography variant="body2">{cart.subtotal.toFixed(2)} €</Typography>
+        </Box>
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+            <Typography variant="body2">Gastos de envío:</Typography>
+            <Typography variant="body2">{cart.shippingCost.toFixed(2)} €</Typography>
+        </Box>
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+            <Typography variant="body2">IVA (21%):</Typography>
+            <Typography variant="body2">{cart.tax.toFixed(2)} €</Typography>
+        </Box>
+        <Divider sx={{ my: 1 }} />
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Total:</Typography>
-          <Typography variant="h6">{total.toFixed(2)} €</Typography>
+          <Typography variant="h6">{cart.total.toFixed(2)} €</Typography>
         </Box>
         <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
           {typeof onBack === 'function' && (

@@ -28,7 +28,7 @@ function Checkout() {
 
   // Si el carrito está vacío, borra direcciones guardadas y fuerza remount
   React.useEffect(() => {
-    if (!cart || cart.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
       localStorage.removeItem('shippingAddress');
       localStorage.removeItem('billingAddress');
       setFormKey(Date.now());
@@ -50,7 +50,7 @@ function Checkout() {
   const orderId = React.useMemo(() => {
     return 'ORDER-' + Math.random().toString(36).substring(2, 12).toUpperCase();
   }, []);
-  const amount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const amount = cart.total || 0;
   
   // Si el usuario ya está autenticado, saltamos la pantalla de opciones
   useEffect(() => {

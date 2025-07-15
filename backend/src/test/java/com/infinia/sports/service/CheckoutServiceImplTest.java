@@ -372,12 +372,9 @@ class CheckoutServiceImplTest {
     }
 
     @Test
-    void shouldCalculateTotalsCorrectly() {
+    void shouldCalculateTotalsCorrectlyWithTaxOnSubtotalAndShipping() {
         // Arrange
-        String userId = "user-totals";
-        String sessionId = "session-totals";
         Cart cart = new Cart();
-        cart.setUserId(userId);
         cart.setItems(new ArrayList<>());
 
         Cart.CartItem item1 = Cart.CartItem.builder()
@@ -398,22 +395,25 @@ class CheckoutServiceImplTest {
             .build();
         cart.getItems().add(item2);
 
-        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(cart));
-        when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        // Act: Añadir un item para forzar el recálculo de totales
-        CartItemDTO newItemDTO = CartItemDTO.builder().productId("prod-new").quantity(1).unitPrice(BigDecimal.ZERO).build();
-        CartDTO result = checkoutService.addItemToCart(sessionId, userId, newItemDTO); // La lógica de cálculo está en addItemToCart
+        // Act
+        // Directly invoke the private method to test the calculation logic in isolation
+        ReflectionTestUtils.invokeMethod(checkoutService, "updateCartTotals", cart);
 
         // Assert
-        BigDecimal expectedSubtotal = new BigDecimal("25.50"); // 20.00 + 5.50
-        BigDecimal expectedTax = expectedSubtotal.multiply(DEFAULT_TAX_RATE).setScale(2, RoundingMode.HALF_UP); // 25.50 * 0.21 = 5.36
-        BigDecimal expectedShippingCost = new BigDecimal("4.99");
-        BigDecimal expectedTotal = expectedSubtotal.add(expectedTax).add(expectedShippingCost); // 25.50 + 5.36 + 4.99 = 35.85
+        // Subtotal = 20.00 + 5.50 = 25.50
+        BigDecimal expectedSubtotal = new BigDecimal("25.50");
+        // Shipping cost is set to 4.99 in setUp()
+        BigDecimal shippingCost = new BigDecimal("4.99");
+        // Taxable amount = subtotal + shipping = 25.50 + 4.99 = 30.49
+        BigDecimal taxableAmount = expectedSubtotal.add(shippingCost);
+        // Tax = taxable amount * 0.21 = 30.49 * 0.21 = 6.4029 -> rounded to 6.40
+        BigDecimal expectedTax = taxableAmount.multiply(new BigDecimal("0.21")).setScale(2, RoundingMode.HALF_UP);
+        // Total = taxable amount + tax = 30.49 + 6.40 = 36.89
+        BigDecimal expectedTotal = taxableAmount.add(expectedTax);
 
-        assertEquals(expectedSubtotal, result.getSubtotal());
-        assertEquals(expectedTax, result.getTax());
-        assertEquals(expectedShippingCost, result.getShippingCost());
-        assertEquals(expectedTotal, result.getTotal());
+        assertEquals(0, expectedSubtotal.compareTo(cart.getSubtotal()), "Subtotal should be the sum of item prices");
+        assertEquals(0, shippingCost.compareTo(cart.getShippingCost()), "Shipping cost should be set");
+        assertEquals(0, expectedTax.compareTo(cart.getTax()), "Tax should be calculated on subtotal + shipping");
+        assertEquals(0, expectedTotal.compareTo(cart.getTotal()), "Total should be subtotal + shipping + tax");
     }
 }

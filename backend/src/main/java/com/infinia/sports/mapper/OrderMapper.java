@@ -187,6 +187,7 @@ public class OrderMapper {
         // Configurar PriceInfo con todos los valores del Cart
         Order.PriceInfo priceInfo = new Order.PriceInfo();
         priceInfo.setSubtotal(cart.getSubtotal());
+        priceInfo.setShippingCost(cart.getShippingCost());
         priceInfo.setTax(cart.getTax());
         // Calcular el total como la suma del total del carrito
         priceInfo.setTotal(cart.getTotal());
