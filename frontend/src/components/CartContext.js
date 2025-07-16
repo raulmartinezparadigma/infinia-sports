@@ -139,12 +139,20 @@ export function CartProvider({ children }) {
     localStorage.removeItem('billingAddress');
   }
 
-  function clearCart() {
+  async function clearCart() {
+    try {
+      // Llamar al backend para que limpie el carrito, pero no usaremos su respuesta directamente.
+      await clearCartBackend(getSessionId(), getUserId());
+    } catch (error) {
+      console.error("Error al vaciar el carrito:", error);
+    }
+    // Siempre restablecer al estado inicial para garantizar una estructura válida.
     setCart(initialCartState);
+    setCartId(null);
+
     // Limpia direcciones guardadas al vaciar el carrito
     localStorage.removeItem('shippingAddress');
     localStorage.removeItem('billingAddress');
-    // Aquí podrías llamar a un endpoint para limpiar el carrito en el backend si existe
   }
 
   return (

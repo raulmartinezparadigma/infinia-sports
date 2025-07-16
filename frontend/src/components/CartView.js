@@ -43,37 +43,42 @@ function CartView() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {cart.items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <div>
-                    <Typography variant="subtitle1">{item.name || 'Producto'}</Typography>
-                    {item.description && (
-                      <Typography variant="body2" color="text.secondary">{item.description}</Typography>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell align="right">{(item.price !== undefined ? item.price : 0).toFixed(2)} €</TableCell>
-                <TableCell align="center">
-                  <Button size="small" onClick={() => {
-                    const newQuantity = item.quantity - 1;
-                    if (newQuantity <= 0) {
-                      removeFromCart(item.id);
-                    } else {
-                      updateQuantity(item.id, newQuantity);
-                    }
-                  }}>-</Button>
-                  <span style={{ margin: '0 8px' }}>{item.quantity || 1}</span>
-                  <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
-                </TableCell>
-                <TableCell align="right">{(item.totalPrice !== undefined ? item.totalPrice : 0).toFixed(2)} €</TableCell>
-                <TableCell align="center">
-                  <IconButton color="error" onClick={() => removeFromCart(item.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {cart.items.map((item) => {
+              const unitPrice = item.quantity > 0 ? item.totalPrice / item.quantity : 0;
+              const product = item.product || item; // Fallback for safety
+
+              return (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div>
+                      <Typography variant="subtitle1">{product.name || 'Producto'}</Typography>
+                      {product.description && (
+                        <Typography variant="body2" color="text.secondary">{product.description}</Typography>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell align="right">{unitPrice.toFixed(2)} €</TableCell>
+                  <TableCell align="center">
+                    <Button size="small" onClick={() => {
+                      const newQuantity = item.quantity - 1;
+                      if (newQuantity <= 0) {
+                        removeFromCart(item.id);
+                      } else {
+                        updateQuantity(item.id, newQuantity);
+                      }
+                    }}>-</Button>
+                    <span style={{ margin: '0 8px' }}>{item.quantity || 1}</span>
+                    <Button size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
+                  </TableCell>
+                  <TableCell align="right">{(item.totalPrice !== undefined ? item.totalPrice : 0).toFixed(2)} €</TableCell>
+                  <TableCell align="center">
+                    <IconButton color="error" onClick={() => removeFromCart(item.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </TableContainer>

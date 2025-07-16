@@ -25,7 +25,7 @@ function Navbar() {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   
-  const totalCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);

@@ -25,8 +25,8 @@ function RedsysPayment({ onSuccess }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // Calcula el importe total del carrito
-  const amount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Calcula el importe total del carrito de forma segura usando el total del contexto
+  const amount = cart?.total || 0;
 
   // Maneja cambios en los campos del formulario
   const handleChange = (e) => {
