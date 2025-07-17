@@ -25,10 +25,9 @@ axios.interceptors.response.use(
   (error) => {
     // Comprobar si el error es por token expirado/inválido
     if (error.response && error.response.status === 401) {
-      // Limpiar cualquier dato de sesión
+      // Limpiar solo los datos de autenticación, manteniendo el carrito
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      localStorage.removeItem('cartId'); // Limpiar también el carrito para un logout completo
 
       // Redirigir a la página de login, evitando bucles si ya estamos en ella.
       if (window.location.pathname !== '/login') {
