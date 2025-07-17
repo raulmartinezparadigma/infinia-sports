@@ -2,8 +2,10 @@ package com.infinia.sports.service;
 
 import com.infinia.sports.model.Role;
 import com.infinia.sports.model.User;
+import com.infinia.sports.model.Address;
 import com.infinia.sports.model.dto.AuthRequestDTO;
 import com.infinia.sports.model.dto.AuthResponseDTO;
+import com.infinia.sports.model.dto.AddressDTO;
 import com.infinia.sports.model.dto.RegisterRequestDTO;
 import com.infinia.sports.security.JwtService;
 import com.infinia.sports.service.impl.AuthServiceImpl;
@@ -18,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -122,6 +125,40 @@ public class AuthServiceTest {
                 new UsernamePasswordAuthenticationToken("testuser", "password"));
         verify(userService).findByUsername("testuser");
         verify(jwtService).generateToken(testUser);
+
+        // --- Bloque adicional para probar el mapeo Address -> AddressDTO ---
+        // Añadir una dirección al usuario de prueba antes de la autenticación
+        Address address = new Address();
+        address.setId(1L);
+        address.setFirstName("Juan");
+        address.setLastName("Pérez");
+        address.setAddressLine1("Calle Falsa 123");
+        address.setAddressLine2("Piso 4");
+        address.setCity("Madrid");
+        address.setState("Madrid");
+        address.setPostalCode("28080");
+        address.setCountry("España");
+        address.setPhoneNumber("600123456");
+        testUser.setAddresses(List.of(address));
+
+        // Repetir la autenticación para obtener la respuesta con direcciones
+        when(userService.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        AuthResponseDTO responseWithAddress = authService.authenticate(authRequest);
+
+        assertNotNull(responseWithAddress.getAddresses());
+        assertEquals(1, responseWithAddress.getAddresses().size());
+        AddressDTO dto = responseWithAddress.getAddresses().get(0);
+        assertEquals(address.getId(), dto.getId());
+        assertEquals(address.getFirstName(), dto.getFirstName());
+        assertEquals(address.getLastName(), dto.getLastName());
+        assertEquals(address.getAddressLine1(), dto.getAddressLine1());
+        assertEquals(address.getAddressLine2(), dto.getAddressLine2());
+        assertEquals(address.getCity(), dto.getCity());
+        assertEquals(address.getState(), dto.getState());
+        assertEquals(address.getPostalCode(), dto.getPostalCode());
+        assertEquals(address.getCountry(), dto.getCountry());
+        assertEquals(address.getPhoneNumber(), dto.getPhoneNumber());
+        assertEquals(testUser.getEmail(), dto.getEmail());
     }
 
     @Test

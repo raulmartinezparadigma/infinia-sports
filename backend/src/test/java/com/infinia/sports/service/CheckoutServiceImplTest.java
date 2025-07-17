@@ -221,6 +221,44 @@ class CheckoutServiceImplTest {
     }
 
     @Test
+    void getCart_enrichesItemsWithImages() {
+        // Arrange
+        String sessionId = "sess-enrich";
+        String userId = "user-enrich";
+        String productId = java.util.UUID.randomUUID().toString();
+
+        Cart.CartItem item = Cart.CartItem.builder()
+                .id("item-enrich")
+                .productId(productId)
+                .build();
+
+        Cart cart = new Cart();
+        cart.setUserId(userId);
+        cart.setItems(new java.util.ArrayList<>(java.util.List.of(item)));
+
+        com.infinia.sports.model.Product product = new com.infinia.sports.model.Product();
+        product.setId(java.util.UUID.fromString(productId));
+        product.setImageUrl("http://test.com/image.jpg");
+        product.setDescription("Enriched Description");
+
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(cart));
+        when(productRepository.findById(java.util.UUID.fromString(productId))).thenReturn(Optional.of(product));
+
+        // Act
+        CartDTO result = checkoutService.getCart(sessionId, userId);
+
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.getItems().isEmpty());
+        CartItemDTO resultItem = result.getItems().get(0);
+        assertEquals("http://test.com/image.jpg", resultItem.getProductImageUrl());
+        assertEquals("Enriched Description", resultItem.getDescription());
+
+        verify(cartRepository).findByUserId(userId);
+        verify(productRepository).findById(java.util.UUID.fromString(productId));
+    }
+
+    @Test
     void getCart_createsNewCart_whenNoCartExistsForUserOrSession() {
         String userId = "new-user";
         String sessionId = "new-session";
