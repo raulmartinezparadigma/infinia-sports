@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDTO> getOrdersByEmail(String email) {
         try {
             logger.info("[OrderService] Buscando pedidos para el email: {}", email);
-            List<Order> orders = orderRepository.findByEmail(email);
+            List<Order> orders = orderRepository.findByEmailOrderBySubmitDateDesc(email);
             
             // Hidratar los productos en cada pedido
             orders.forEach(order -> {

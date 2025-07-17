@@ -28,6 +28,13 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByEmail(String email);
 
     /**
+     * Busca órdenes por el email del cliente, ordenadas por fecha de envío descendente.
+     * @param email Email del cliente
+     * @return Lista de órdenes ordenadas
+     */
+    List<Order> findByEmailOrderBySubmitDateDesc(String email);
+
+    /**
      * Busca órdenes por estado
      * @param status Estado de la orden
      * @return Lista de órdenes
