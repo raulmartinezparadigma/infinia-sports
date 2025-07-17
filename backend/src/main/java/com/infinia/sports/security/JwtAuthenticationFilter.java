@@ -136,8 +136,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // Capturar específicamente la excepción de token expirado
+            logger.warn("El token JWT ha expirado: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Devolver 401
+            return; // Detener la cadena de filtros aquí
         } catch (Exception e) {
-            // En caso de error en la validación del token, no establecer la autenticación
+            // En caso de otros errores en la validación del token, no establecer la autenticación
             logger.error("Error validando el token JWT", e);
         }
         

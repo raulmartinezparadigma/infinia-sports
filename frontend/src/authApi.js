@@ -23,6 +23,23 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Comprobar si el error es por token expirado/inválido
+    if (error.response && error.response.status === 401) {
+      // Limpiar cualquier dato de sesión
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('cartId'); // Limpiar también el carrito para un logout completo
+
+      // Redirigir a la página de login, evitando bucles si ya estamos en ella.
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
+
+      // Devolver una promesa que nunca se resuelve para detener la cadena de ejecución
+      // y evitar que los .catch() de los componentes se activen.
+      return new Promise(() => {});
+    }
+
     console.error('Error en respuesta HTTP:', error);
     return Promise.reject(error);
   }
