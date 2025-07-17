@@ -13,25 +13,15 @@ const initialCartState = { items: [], subtotal: 0, shippingCost: 0, tax: 0, tota
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState(initialCartState);
-  // Inicializar cartId desde localStorage para persistencia
-  const [cartId, setCartId] = useState(() => localStorage.getItem('cartId'));
+  const [cartId, setCartId] = useState(null); // El cartId vendrá siempre del backend
   const [isCartInitialized, setIsCartInitialized] = useState(false);
   const { currentUser, isInitialized: isAuthInitialized } = useAuth();
-
-  // Guardar cartId en localStorage cada vez que cambie
-  useEffect(() => {
-    if (cartId) {
-      localStorage.setItem('cartId', cartId);
-    } else {
-      localStorage.removeItem('cartId');
-    }
-  }, [cartId]);
 
   // Funciones auxiliares para obtener IDs (memoizadas con useCallback)
   const getUserId = useCallback(() => (currentUser ? currentUser.username : null), [currentUser]);
 
   const getSessionId = useCallback(() => {
-    if (currentUser) return null;
+    if (currentUser) return null; // Los usuarios logueados no usan sessionId
     let sessionId = localStorage.getItem("cartSessionId");
     if (!sessionId) {
       sessionId = "anonymous-" + Math.random().toString(36).substring(2, 15);
@@ -40,69 +30,45 @@ export function CartProvider({ children }) {
     return sessionId;
   }, [currentUser]);
 
-  // Efecto para vincular el carrito al usuario cuando este inicie sesión
+  // Efecto principal para inicializar y sincronizar el carrito
   useEffect(() => {
-    const linkCartOnLogin = async () => {
-      if (currentUser && cartId) {
-        try {
-          console.log(`Vinculando carrito ${cartId} al usuario ${currentUser.username}`);
-          await linkCartToUser(cartId);
-          // Forzar la recarga del carrito para el usuario
-          const data = await getCart(null, getUserId());
-          if (data && data.id) {
-            setCart(data);
-            setCartId(data.id);
-          }
-        } catch (error) {
-          console.error("Error al vincular o recargar el carrito tras login:", error);
-        }
-      }
-    };
-
-    if (isAuthInitialized) {
-        linkCartOnLogin();
+    // No hacer nada hasta que el estado de autenticación esté resuelto
+    if (!isAuthInitialized) {
+      return;
     }
-  }, [currentUser, isAuthInitialized]); // Se dispara cuando el usuario cambia
 
-  // Al montar, obtener el carrito desde el backend, PERO solo si Auth ya está listo
-  useEffect(() => {
-    async function fetchCart() {
-      if (isCartInitialized) return; // Si ya está inicializado, no hacer nada
-
+    const initializeCart = async () => {
+      setIsCartInitialized(false);
       try {
-        // Si tenemos un usuario autenticado y un carrito existente, vincularlos
-        if (currentUser && cartId) {
-          await linkCartToUser(cartId);
-        }
+        const userId = getUserId();
+        const sessionId = getSessionId();
+        
+        console.log(`Inicializando carrito con userId: ${userId} y sessionId: ${sessionId}`);
 
-        const data = await getCart(getSessionId(), getUserId());
-        // Asegurarse de que data no es null antes de acceder a sus propiedades
+        // El backend se encarga de encontrar, crear o vincular el carrito correcto
+        const data = await getCart(sessionId, userId);
+
         if (data && data.id) {
-            setCart(data);
-            setCartId(data.id);
+          setCart(data);
+          setCartId(data.id);
         } else {
-            setCart(initialCartState);
-            setCartId(null);
+          // Si el backend devuelve algo inesperado, reseteamos a un estado seguro
+          setCart(initialCartState);
+          setCartId(null);
         }
       } catch (err) {
-        console.error("Error al cargar el carrito:", err);
-        // Si falla el backend, intentar recuperar del localStorage como fallback
-        try {
-          const stored = localStorage.getItem("cart");
-          setCart(stored ? JSON.parse(stored) : initialCartState);
-        } catch {
-          setCart(initialCartState);
-        }
+        console.error("Error al inicializar el carrito:", err);
+        setCart(initialCartState); // En caso de error, mostrar un carrito vacío
+        setCartId(null);
       } finally {
         setIsCartInitialized(true);
       }
-    }
+    };
+
+    initializeCart();
     
-    // Solo ejecutar si Auth ha terminado y el carrito aún no se ha cargado.
-    if (isAuthInitialized && !isCartInitialized) {
-      fetchCart();
-    }
-  }, [isAuthInitialized, isCartInitialized, currentUser, cartId, getSessionId, getUserId]);
+    // Este efecto se ejecutará cada vez que el usuario inicie o cierre sesión
+  }, [isAuthInitialized, currentUser, getSessionId, getUserId]);
 
   // Sincronizar el carrito en localStorage para fallback/offline
   useEffect(() => {
