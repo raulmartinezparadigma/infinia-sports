@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import { useCart } from "./CartContext";
 import Box from "@mui/material/Box";
+import { Link } from 'react-router-dom';
 
 function ProductCard({ product }) {
   const { addToCart } = useCart();
@@ -56,14 +57,16 @@ function ProductCard({ product }) {
       }}
     >
       {/* Imagen grande */}
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 220, marginTop: 16, marginBottom: 10 }}>
-        <img
-          src={product.imageUrl ? `${process.env.PUBLIC_URL}/${product.imageUrl}` : `${process.env.PUBLIC_URL}/logo512.png`}
-          alt={product.name || product.description}
-          style={{ height: 200, width: '90%', objectFit: "contain", borderRadius: 8, background: '#fafafa' }}
-          onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/logo512.png"; }}
-        />
-      </div>
+      <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit', width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 220, marginTop: 16, marginBottom: 10 }}>
+          <img
+            src={product.imageUrl ? `${process.env.PUBLIC_URL}/${product.imageUrl}` : `${process.env.PUBLIC_URL}/logo512.png`}
+            alt={product.name || product.description}
+            style={{ height: 200, width: '90%', objectFit: "contain", borderRadius: 8, background: '#fafafa' }}
+            onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + "/logo512.png"; }}
+          />
+        </div>
+      </Link>
       <CardContent sx={{
         width: "100%",
         textAlign: 'center',
