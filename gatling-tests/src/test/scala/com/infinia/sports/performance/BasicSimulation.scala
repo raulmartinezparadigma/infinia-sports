@@ -18,6 +18,6 @@ class BasicSimulation extends Simulation {
     .pause(1)
 
   setUp(
-    scn.inject(atOnceUsers(700)) // Simula 10 usuarios concurrentes
+    scn.inject(atOnceUsers(1)) // Simula 1 solo usuario para verificar la configuración
   ).protocols(httpProtocol)
 }
