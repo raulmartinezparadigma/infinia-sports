@@ -16,7 +16,8 @@ describe('ProductCard', () => {
     description: 'Zapatillas para correr de alta calidad',
     price: 89.99,
     size: '42',
-    type: 'Calzado'
+    type: 'SNEAKERS',
+    productTypeDisplayName: 'Zapatillas'
   };
 
   beforeEach(() => {
@@ -30,7 +31,7 @@ describe('ProductCard', () => {
     // Verificar que se muestra la información del producto
     expect(screen.getByText('Zapatillas Running')).toBeInTheDocument();
     expect(screen.getByText('Zapatillas para correr de alta calidad')).toBeInTheDocument();
-    expect(screen.getByText('Tipo: Calzado')).toBeInTheDocument();
+    expect(screen.getByText('Tipo: Zapatillas')).toBeInTheDocument();
     expect(screen.getByText('Talla/Peso: 42')).toBeInTheDocument();
     expect(screen.getByText('89.99 €')).toBeInTheDocument();
     expect(screen.getByText('Añadir al carrito')).toBeInTheDocument();

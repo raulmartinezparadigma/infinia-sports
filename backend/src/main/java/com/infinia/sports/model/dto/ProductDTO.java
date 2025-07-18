@@ -22,4 +22,5 @@ public class ProductDTO {
     private String imageUrl;
     private BigDecimal price;
     private String type; // Usamos String para simplificar serialización
+    private String productTypeDisplayName;
 }

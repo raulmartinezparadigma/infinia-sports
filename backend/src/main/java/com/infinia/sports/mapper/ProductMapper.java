@@ -18,7 +18,8 @@ public class ProductMapper {
             product.getSize(),
             product.getImageUrl(),
             product.getPrice(),
-            product.getType() != null ? product.getType().name() : null
+            product.getType() != null ? product.getType().name() : null,
+            product.getType() != null ? product.getType().getDisplayName() : null
         );
     }
 

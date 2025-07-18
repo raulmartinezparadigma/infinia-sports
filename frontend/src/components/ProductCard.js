@@ -84,7 +84,7 @@ function ProductCard({ product }) {
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Tipo: {product.type}
+            <span style={{ marginRight: '16px' }}>Tipo: {product.productTypeDisplayName}</span>
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Talla/Peso: {product.size}
