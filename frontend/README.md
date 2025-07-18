@@ -1,11 +1,63 @@
-# Infinia Sports Frontend
+# Frontend - Infinia Sports
 
-Este directorio contiene el frontend del e-commerce Infinia Sports, desarrollado en React.js siguiendo el plan definido en `plans/plan-frontend-react.md`.
+Este módulo contiene la Single Page Application (SPA) para el e-commerce Infinia Sports. Está desarrollada con React.js y consume la API RESTful proporcionada por el módulo `backend`.
 
-## Estructura Inicial
-- `src/` — Código fuente principal
-- `public/` — Archivos estáticos
-- `package.json` — Dependencias y scripts
+## Tecnologías Clave
+
+-   **React.js**: Librería principal para la construcción de la interfaz de usuario.
+-   **React Router**: Para la gestión de rutas y navegación dentro de la aplicación.
+-   **Axios**: Cliente HTTP para realizar peticiones a la API del backend.
+-   **Material-UI (MUI)**: Biblioteca de componentes de UI para un diseño moderno y consistente.
+-   **Jest** y **React Testing Library**: Para las pruebas unitarias y de integración de componentes.
+
+## Arquitectura y Características
+
+### Estructura de Directorios
+
+El código fuente se organiza de la siguiente manera dentro de `src/`:
+
+-   **`api`**: Contiene la configuración de Axios, incluyendo la instancia base y los interceptores.
+-   **`components`**: Componentes de React reutilizables (ej. `ProductCard`, `Navbar`).
+-   **`context`**: Contiene los React Contexts para la gestión de estado global (`AuthContext`, `CartContext`).
+-   **`hooks`**: Hooks personalizados para encapsular lógica reutilizable.
+-   **`pages`**: Componentes que representan las páginas completas de la aplicación (ej. `HomePage`, `ProductDetail`).
+
+### Gestión de Estado
+
+La aplicación utiliza React Context para gestionar el estado global de forma eficiente:
+
+-   **`AuthContext`**: Maneja el estado de autenticación del usuario, incluyendo el token JWT y los datos del usuario logueado.
+-   **`CartContext`**: Gestiona el estado del carrito de compras, asegurando que la información (items, subtotal, total) esté sincronizada y disponible en toda la aplicación.
+
+### Comunicación con la API
+
+Se utiliza una instancia de **Axios** centralizada para todas las comunicaciones con el backend. Esta instancia incluye un **interceptor de respuesta** que gestiona de forma automática la expiración de tokens JWT:
+
+1.  Detecta cuando una petición falla con un error `401 Unauthorized`.
+2.  Utiliza el refresh token para solicitar un nuevo token de acceso al backend.
+3.  Reintenta automáticamente la petición original que había fallado, proporcionando una experiencia de usuario fluida y sin interrupciones.
+
+## Pruebas
+
+Los componentes son probados utilizando **Jest** y **React Testing Library**. Para ejecutar las pruebas unitarias y de integración, utiliza el siguiente comando:
+
+```bash
+npm test
+```
+
+## Cómo Ejecutar el Frontend
+
+Para levantar el frontend en modo de desarrollo, ejecuta los siguientes comandos desde el directorio `frontend`:
+
+```bash
+# Instala todas las dependencias del proyecto
+npm install
+
+# Inicia el servidor de desarrollo
+npm start
+```
+
+La aplicación se iniciará y abrirá automáticamente en `http://localhost:3000` en tu navegador.
 
 ## Primeros pasos
 1. Instala las dependencias con `npm install` o `yarn install`.

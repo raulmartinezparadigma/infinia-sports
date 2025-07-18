@@ -2,142 +2,100 @@
 
 _E-commerce de productos deportivos_
 
-## Estado del proyecto
-- **Backend Java 17 (Spring Boot) en arquitectura de 3 capas**: Controller, Service, Persistence
-- **Frontend**: React.js
-- **Bases de datos**: PostgreSQL (productos) y MongoDB (pedidos)
-- **Documentación API**: OpenAPI 3.0.x (Swagger UI)
+## Descripción General
 
-## Módulos implementados
-### 1. Módulo de Productos
-- CRUD completo sobre entidad `Product` (id, type, description, price, size)
-- Importación masiva de productos
-- Validación de campos y tipos
-- Persistencia en PostgreSQL
-- Endpoints REST:
-  - `GET /productos`
-  - `GET /productos/{id}`
-  - `POST /productos`
-  - `PUT /productos/{id}`
-  - `DELETE /productos/{id}`
-  - `POST /productos/importar`
+Infinia Sports es una aplicación de comercio electrónico full-stack diseñada para la venta de productos deportivos. El proyecto está estructurado como un monorepo que contiene tres módulos principales:
 
-### 2. Módulo de Checkout
-- Gestión de carrito y pedidos (estructura JSON compleja)
-- Persistencia en MongoDB
-- Endpoints implementados: `/cart`, `/cart/items`, `/checkout`, `/orders`
-- Integración frontend-backend funcional (React + Spring Boot)
-- PUT `/cart/items/{id}` requiere en el body `{ id, productId, quantity }` (ver troubleshooting)
-- Error 400 resuelto: el backend valida que `productId` sea obligatorio en el body para actualizar cantidad
+-   **`backend`**: Una API RESTful construida con Java 17, Spring Boot y Maven. Sigue una arquitectura de 3 capas (Controlador, Servicio, Persistencia) y gestiona toda la lógica de negocio, autenticación, productos, pedidos y pagos.
+-   **`frontend`**: Una Single Page Application (SPA) desarrollada con React.js que consume la API del backend para ofrecer una experiencia de usuario interactiva y moderna.
+-   **`playwright-tests`**: Un módulo dedicado para las pruebas funcionales de extremo a extremo (E2E) utilizando Playwright con Java. Estas pruebas simulan interacciones reales de los usuarios en un entorno de navegador.
 
-### 3. Módulo de Pagos
-- Integración real con Bizum, Redsys (tarjeta) y Transferencia bancaria
-- Tras cualquier pago, el usuario es dirigido a una pantalla de confirmación única, con mensaje contextual según el método utilizado
-- El carrito se vacía y sincroniza tras cualquier pago para máxima coherencia frontend-backend
-- El frontend utiliza React Router y state para pasar el método de pago a la pantalla de confirmación
-- Envío de correo de confirmación tras pedido
+## Funcionalidades Clave
 
-## Configuración de SendGrid (Backend)
+-   **Gestión de Productos**: CRUD completo de productos con persistencia en PostgreSQL.
+-   **Autenticación y Seguridad**: Sistema de autenticación basado en JWT con roles de usuario (cliente y administrador) y refresco de token automático para mantener la sesión del usuario activa.
+-   **Carrito de Compras**: Gestión completa del carrito de compras, sincronizado entre frontend y backend.
+-   **Proceso de Checkout**: Flujo de pago integrado con cálculo de subtotales, gastos de envío e impuestos.
+-   **Historial de Pedidos**: Los usuarios pueden consultar el historial de sus pedidos y ver los detalles de cada uno.
+-   **Notificaciones por Email**: Envío de correos de confirmación de pedido utilizando SendGrid.
 
-Para el envío de correos de confirmación se utiliza SendGrid. **Por seguridad, la clave API nunca debe incluirse en archivos versionados ni en el historial de git.**
+## Tecnologías Principales
 
-Debes exportar la variable de entorno `SENDGRID_API_KEY` antes de arrancar el backend:
+-   **Backend**: Java 17, Spring Boot, Spring Security, Spring Data JPA, MapStruct.
+-   **Frontend**: React.js, Axios, Material-UI (MUI).
+-   **Bases de Datos**: PostgreSQL para datos relacionales (productos, usuarios) y H2 para el entorno de pruebas.
+-   **Pruebas**: JUnit 5, Mockito (unitarias), Testcontainers (integración) y Playwright (E2E).
+-   **Documentación API**: OpenAPI 3 (integrado con Swagger UI).
+-   **Build Tool**: Maven.
 
-### En desarrollo local (Git Bash):
+## Puesta en Marcha y Ejecución
+
+Sigue estas instrucciones para levantar el entorno de desarrollo y ejecutar las pruebas.
+
+### Requisitos Previos
+
+-   Java 17
+-   Maven 3.8+
+-   Node.js 18+
+-   npm 9+
+
+### 1. Ejecutar Backend y Frontend (Desarrollo)
+
+Para el desarrollo diario, levanta el backend y el frontend por separado.
+
+**Arrancar el Backend:**
+
 ```bash
-export SENDGRID_API_KEY='TU_NUEVA_CLAVE'
+# Navega al directorio del backend
+cd backend
+
+# Ejecuta la aplicación con el perfil 'dev'
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-### En PowerShell:
-```powershell
-$env:SENDGRID_API_KEY="TU_NUEVA_CLAVE"
-```
+El backend estará disponible en `http://localhost:8080` y la UI de Swagger en `http://localhost:8080/swagger-ui.html`.
 
-### En un servidor Linux:
-Agrega en tu archivo de entorno (`~/.bashrc`, `~/.profile`, etc.):
+**Arrancar el Frontend:**
+
 ```bash
-export SENDGRID_API_KEY='TU_NUEVA_CLAVE'
+# En una nueva terminal, navega al directorio del frontend
+cd frontend
+
+# Instala las dependencias y arranca el servidor de desarrollo
+npm install
+npm start
 ```
-Y recarga el entorno:
+
+El frontend estará disponible en `http://localhost:3000`.
+
+### 2. Ejecutar Pruebas End-to-End (E2E)
+
+Se ha configurado un perfil de Maven (`e2e-test`) que orquesta todo el ciclo de vida de las pruebas E2E: compila, inicia el backend (con una base de datos H2 en memoria), inicia el frontend, ejecuta las pruebas de Playwright y detiene los servidores.
+
+Para ejecutar la suite completa de pruebas E2E, ejecuta el siguiente comando desde la raíz del proyecto:
+
 ```bash
-source ~/.bashrc
+mvn verify -P e2e-test
 ```
 
-La configuración del backend toma automáticamente esta variable mediante:
-```properties
-spring.mail.password=${SENDGRID_API_KEY:}
+Este comando se encarga de todo el proceso de forma automática. Los informes de las pruebas se encontrarán en el directorio `playwright-tests/target/surefire-reports/`.
+
+## Configuración de SendGrid (Opcional)
+
+Para que el envío de correos de confirmación funcione, necesitas una clave de API de SendGrid.
+
+**Por seguridad, la clave API nunca debe incluirse en archivos versionados.** Debes exportarla como una variable de entorno antes de arrancar el backend:
+
+```bash
+# Ejemplo para Linux/macOS/Git Bash
+export SENDGRID_API_KEY='TU_CLAVE_DE_SENDGRID'
+
+# Ejemplo para PowerShell
+$env:SENDGRID_API_KEY="TU_CLAVE_DE_SENDGRID"
 ```
 
-**No incluyas la clave en archivos como `application.properties`, `application-dev.properties` ni en ningún commit.**
+## Convenciones y Arquitectura
 
-## Tecnologías principales
-- Java 17
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- MongoDB
-- React.js (frontend)
-- OpenAPI 3.0.x (Swagger)
-
-## Cómo arrancar el backend
-1. Asegúrate de tener **Java 17** y **Maven** instalados y configurados en tu PATH.
-2. Desde la carpeta `backend`, ejecuta:
-   ```bash
-   mvn clean install
-   java -jar target/sports-0.0.1-SNAPSHOT.jar
-   ```
-   El backend arrancará en [http://localhost:8080](http://localhost:8080)
-3. Accede a la documentación Swagger UI en:
-   [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-
-## Notas
-- No existen scripts auxiliares en `backend` (Windows/Linux): el arranque se realiza solo con Maven y Java.
-- Los nombres de clases, métodos y variables están en inglés; los comentarios en español.
-- Arquitectura y convenciones alineadas con la planificación del proyecto.
-
-## Guía rápida de arranque y pruebas
-
-### Backend
-1. Asegúrate de tener **Java 17** y **Maven** instalados y configurados en tu PATH.
-2. Se recomienda usar **Git Bash** en Windows para evitar problemas de parámetros con Maven:
-   ```bash
-   cd /c/infinia-sports/backend
-   mvn spring-boot:run -Dspring-boot.run.profiles=dev
-   ```
-   El backend arrancará en [http://localhost:8080](http://localhost:8080)
-3. Accede a la documentación Swagger UI en:
-   [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-
-### Frontend
-1. En una nueva terminal (Git Bash recomendado):
-   ```bash
-   cd /c/infinia-sports/frontend
-   npm install
-   npm start
-   ```
-   El frontend arrancará en [http://localhost:3000](http://localhost:3000)
-
-### Pruebas rápidas E2E
-- Crear producto (endpoint /productos)
-- Añadir al carrito, realizar checkout y pago (Bizum, Redsys o transferencia)
-- Confirmar recepción de email de resumen de pedido
-- Verificar sincronización de carrito tras pago
-
-## Troubleshooting
-- Si falla el envío de emails, revisa la configuración SMTP en `application.properties` o `mail-gmail-example.properties` y asegúrate de que las credenciales sean correctas.
-- Si usas Windows, ejecuta los comandos en Git Bash para evitar problemas de parámetros.
-- Para errores en el carrito, asegúrate de enviar `{id, productId, quantity}` en el body de PUT `/cart/items/{id}`.
-
-## Convenciones y arquitectura
-- Nombres de clases, métodos y variables en **inglés**.
-- Comentarios en **español**.
-- Arquitectura de 3 capas (Controller, Service, Persistence).
-- No usar imports con `*` en Java.
-- Homogeneidad en formato y estructura.
-
-## Estado del proyecto (junio 2025)
-- Todos los módulos implementados y probados: Productos, Checkout, Pagos, Emails.
-- Integración frontend-backend funcional.
-- Documentación y planes actualizados.
-
----
+-   **Idioma**: Nombres de clases, métodos y variables en **inglés**. Comentarios en **español**.
+-   **Arquitectura Backend**: 3 capas (Controller, Service, Persistence). Ningún controlador accede directamente a un repositorio.
+-   **Estilo de Código**: Se evitan los imports con `*` en Java y se mantiene la homogeneidad en el formato.

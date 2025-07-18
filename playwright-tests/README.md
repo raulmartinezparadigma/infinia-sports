@@ -1,94 +1,51 @@
-# Playwright Tests para Infinia Sports
+# Pruebas End-to-End (E2E) con Playwright
 
-Este módulo contiene las pruebas end-to-end (E2E) para la aplicación Infinia Sports, utilizando Microsoft Playwright con Java.
+Este módulo contiene la suite de pruebas funcionales de extremo a extremo (E2E) para la aplicación Infinia Sports. Utiliza Playwright con Java para simular interacciones de usuario reales en un entorno de navegador controlado.
 
-## Configuración
+## Objetivo
 
-### Estructura del Proyecto
+El propósito de estas pruebas es validar los flujos de usuario críticos de la aplicación de forma integrada, asegurando que el frontend y el backend funcionan correctamente juntos. Algunos de los flujos cubiertos son:
 
-- **Módulo Maven**: `playwright-tests`
-- **Dependencias principales**: 
-  - Microsoft Playwright
-  - JUnit 5
-  - Spring Boot (para integración con el backend)
+-   Autenticación de usuarios (Login/Logout).
+-   Navegación por el catálogo de productos.
+-   Gestión del carrito de compras (añadir, modificar y eliminar productos).
+-   Proceso de checkout completo.
+-   Consulta del historial de pedidos.
 
-### Arquitectura de Pruebas
+## Arquitectura y Entorno de Pruebas
 
-El módulo está configurado para ejecutar pruebas E2E completas que involucran:
+Para garantizar pruebas fiables y aisladas, se ha configurado un entorno de pruebas autocontenido que se levanta y se destruye automáticamente:
 
-1. **Backend Spring Boot**: Se inicia automáticamente en el puerto 8080 con un perfil específico para pruebas
-2. **Frontend React**: Se inicia automáticamente en el puerto 3000
-3. **Playwright**: Controla un navegador para simular interacciones de usuario
+-   **Backend**: Se inicia una instancia del servidor Spring Boot utilizando un perfil de Spring `test`.
+-   **Base de Datos**: El perfil `test` utiliza una base de datos **H2 en memoria**, que se inicializa con datos de prueba (ej. usuario `testinfinia`/`123456`) antes de cada ejecución.
+-   **Frontend**: El servidor de desarrollo de React se levanta en el puerto `3000`.
+-   **Orquestación**: Todo el ciclo de vida (iniciar servidores, ejecutar pruebas, detener servidores) es gestionado por Maven a través del perfil `e2e-test`.
 
-### Clases Principales
+## Estrategia de Selectores
 
-- **BaseTest.java**: Clase base que configura Playwright, inicia el navegador y proporciona métodos comunes
-- **LoginTest.java**: Pruebas de autenticación
-- **ShoppingCartTest.java**: Pruebas del carrito de compras
-- **OrderHistoryTest.java**: Pruebas de historial de pedidos
+Para crear pruebas robustas y resistentes a cambios en la UI, la estrategia de selección de elementos es una prioridad. La convención principal es:
 
-### Ciclo de Ejecución
-
-El ciclo de vida de las pruebas está orquestado mediante plugins de Maven:
-
-1. **Pre-integration-test**:
-   - `spring-boot-maven-plugin`: Inicia el backend en modo test
-   - `exec-maven-plugin`: Inicia el frontend React
-   - `maven-antrun-plugin`: Espera a que el frontend esté disponible
-
-2. **Integration-test**:
-   - `maven-failsafe-plugin`: Ejecuta las pruebas de Playwright
-
-3. **Post-integration-test**:
-   - Detiene el backend y el frontend
-
-## Configuración Técnica
-
-### Backend
-
-- **Puerto**: 8080
-- **Perfil activo**: `e2e-test`
-- **Base de datos**: H2 en memoria
-- **Datos de prueba**: Script SQL que crea usuarios de prueba
-
-### Frontend
-
-- **Puerto**: 3000
-- **Configuración**: Proxy configurado para redirigir peticiones API a backend
-
-### Datos de Prueba
-
-- **Usuario de prueba**: `testinfinia` / `123456`
-- **Configuración**: Los datos se reinician en cada ejecución
-
-### Selectores en Playwright
-
-Las pruebas utilizan selectores estables basados en atributos `data-testid`:
+-   **Utilizar `data-testid`**: Los elementos interactivos clave en los componentes de React están instrumentados con un atributo `data-testid`.
+-   **Usar `page.getByTestId()`**: Las pruebas de Playwright utilizan el método `getByTestId()` para localizar estos elementos de forma unívoca, desacoplando las pruebas de la estructura del DOM, los estilos CSS o el texto de la UI.
 
 ```java
-// Ejemplo de selector estable
-page.getByTestId("login-button").click();
+// Ejemplo de selector robusto en una prueba
+page.getByTestId("user-menu-button").click();
+expect(page.getByTestId("logout-button")).toBeVisible();
 ```
 
-## Ejecución de Pruebas
+## Cómo Ejecutar las Pruebas
 
-Para ejecutar las pruebas E2E:
+Para lanzar la suite completa de pruebas E2E, ejecuta el siguiente comando desde el **directorio raíz del proyecto**:
 
 ```bash
 mvn verify -P e2e-test
 ```
 
-Este comando:
+Este único comando se encarga de:
+1.  Compilar todos los módulos.
+2.  Iniciar el backend y el frontend en sus configuraciones de prueba.
+3.  Ejecutar todas las pruebas de Playwright.
+4.  Detener los servidores y limpiar los recursos.
 
-1. Compila todo el proyecto
-2. Inicia el backend y frontend
-3. Ejecuta las pruebas de Playwright
-4. Detiene todos los servicios
-
-## Mejores Prácticas
-
-1. **Selectores Estables**: Usar `data-testid` en lugar de selectores basados en texto
-2. **Limpieza Posterior**: Cada prueba debe limpiar sus datos (ej: vaciar el carrito)
-3. **Esperas Explícitas**: Usar métodos como `page.waitForSelector()` para sincronización
-4. **Pruebas Aisladas**: Cada prueba debe ser independiente y no depender de otras
-5. **Mensajes de Diagnóstico**: Incluir logs detallados para facilitar la depuración
+Los informes de las pruebas se pueden encontrar en el directorio `playwright-tests/target/failsafe-reports/`.
