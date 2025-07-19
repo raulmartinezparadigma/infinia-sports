@@ -1,5 +1,6 @@
 package com.infinia.sports.service;
 
+import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
 import com.infinia.sports.model.dto.ProductDTO;
@@ -34,6 +35,12 @@ public interface ProductService {
      * @return saved product
      */
     ProductDTO saveProduct(Product product);
+
+    /**
+     * Crea un nuevo producto a partir de un mensaje de Kafka, incluyendo el procesamiento de la imagen.
+     * @param message El DTO del producto recibido de Kafka.
+     */
+    void createProductFromKafka(ProductKafkaMessage message);
 
     /**
      * Elimina un producto por su ID
