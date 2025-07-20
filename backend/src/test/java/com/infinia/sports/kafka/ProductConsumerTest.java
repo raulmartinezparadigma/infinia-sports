@@ -2,22 +2,16 @@ package com.infinia.sports.kafka;
 
 import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 import com.infinia.sports.model.Product;
-import com.infinia.sports.model.ProductType;
 import com.infinia.sports.repository.jpa.ProductRepository;
+import com.infinia.sports.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -25,6 +19,9 @@ class ProductConsumerTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ProductService productService;
 
     @InjectMocks
     private ProductConsumer productConsumer;
@@ -60,16 +57,7 @@ class ProductConsumerTest {
         productConsumer.consumeProduct(validMessage);
 
         // Then
-        verify(productRepository).save(productCaptor.capture());
-        Product savedProduct = productCaptor.getValue();
-        
-        assertEquals(UUID.fromString(validUuid), savedProduct.getId());
-        assertEquals("SKU12345678", savedProduct.getSkuId());
-        assertEquals(ProductType.CLOTHING, savedProduct.getType());
-        assertEquals("Zapatillas de running Nike Air Max", savedProduct.getDescription());
-        assertEquals(new BigDecimal("99.99"), savedProduct.getPrice());
-        assertEquals("42", savedProduct.getSize());
-        assertEquals("https://example.com/image.jpg", savedProduct.getImageUrl());
+        verify(productService).createProductFromKafka(validMessage);
     }
 
     @Test
@@ -132,9 +120,8 @@ class ProductConsumerTest {
         productConsumer.consumeProduct(validMessage);
 
         // Then
-        verify(productRepository).save(productCaptor.capture());
-        Product savedProduct = productCaptor.getValue();
-        assertEquals(BigDecimal.ZERO, savedProduct.getPrice());
+        verify(productService).createProductFromKafka(validMessage);
+
     }
 
     @Test
