@@ -38,9 +38,6 @@ class SecurityConfigTest {
     private UserDetailsService userDetailsService;
 
     @Mock
-    private AdminUserDetailsService adminUserDetailsService;
-
-    @Mock
     private AuthenticationConfiguration authenticationConfiguration;
 
     @BeforeEach

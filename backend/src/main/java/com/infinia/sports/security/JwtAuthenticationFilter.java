@@ -30,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
-    private final AdminUserDetailsService adminUserDetailsService;
     
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
@@ -68,20 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             // Si hay un nombre de usuario y no hay autenticación en el contexto de seguridad
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails;
-
-                // Decidir qué UserDetailsService usar basándose en los roles del token
-                List<String> rolesInToken = jwtService.extractClaim(jwt, claims -> claims.get("roles", List.class));
-
-                if (rolesInToken != null && rolesInToken.contains("ROLE_ADMIN")) {
-                    // Rol de administrador detectado en el token
-                    logger.info("JwtAuthenticationFilter - Rol ADMIN detectado. Usando AdminUserDetailsService para el usuario: {}", username);
-                    userDetails = this.adminUserDetailsService.loadUserByUsername(username);
-                } else {
-                    // Rol de usuario normal o sin roles
-                    logger.info("JwtAuthenticationFilter - Rol de usuario detectado. Usando CustomUserDetailsService para el usuario: {}", username);
-                    userDetails = this.customUserDetailsService.loadUserByUsername(username);
-                }
+                logger.info("JwtAuthenticationFilter - Usando CustomUserDetailsService para el usuario: {}", username);
+                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
                 
                 // Validar el token
                 if (jwtService.isTokenValid(jwt, userDetails)) {

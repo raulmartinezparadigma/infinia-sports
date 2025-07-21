@@ -1,7 +1,7 @@
 package com.infinia.sports.controller;
 
 import com.infinia.sports.dto.AdminAuthRequestDTO;
-import com.infinia.sports.security.AdminUserDetailsService;
+import com.infinia.sports.security.CustomUserDetailsService;
 import com.infinia.sports.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,9 +19,9 @@ import static org.mockito.Mockito.*;
 
 class AdminAuthControllerTest {
     @Mock
-    private AuthenticationManager adminAuthenticationManager;
+    private AuthenticationManager authenticationManager;
     @Mock
-    private AdminUserDetailsService adminUserDetailsService;
+    private CustomUserDetailsService customUserDetailsService;
     @Mock
     private JwtService jwtService;
 
@@ -39,8 +39,8 @@ class AdminAuthControllerTest {
         request.setUsername("admin");
         request.setPassword("password");
         UserDetails userDetails = mock(UserDetails.class);
-        when(adminAuthenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
-        when(adminUserDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
+        when(customUserDetailsService.loadUserByUsername("admin")).thenReturn(userDetails);
         when(jwtService.generateToken(userDetails)).thenReturn("jwt-token");
         ResponseEntity<?> response = adminAuthController.login(request);
         assertEquals(200, response.getStatusCodeValue());
@@ -52,7 +52,7 @@ class AdminAuthControllerTest {
         AdminAuthRequestDTO request = new AdminAuthRequestDTO();
         request.setUsername("admin");
         request.setPassword("wrong");
-        when(adminAuthenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException("Invalid credentials"));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException("Invalid credentials"));
         ResponseEntity<?> response = adminAuthController.login(request);
         assertEquals(401, response.getStatusCodeValue());
         assertEquals("Credenciales inválidas", response.getBody());
@@ -63,7 +63,7 @@ class AdminAuthControllerTest {
         AdminAuthRequestDTO request = new AdminAuthRequestDTO();
         request.setUsername("admin");
         request.setPassword("irrelevant");
-        when(adminAuthenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new RuntimeException("Unexpected error"));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new RuntimeException("Unexpected error"));
         ResponseEntity<?> response = adminAuthController.login(request);
         assertEquals(401, response.getStatusCodeValue());
         assertEquals("Credenciales inválidas", response.getBody());

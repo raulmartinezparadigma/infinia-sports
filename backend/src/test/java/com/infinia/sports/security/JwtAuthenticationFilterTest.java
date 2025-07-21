@@ -17,8 +17,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,9 +34,6 @@ class JwtAuthenticationFilterTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @Mock
-    private AdminUserDetailsService adminUserDetailsService;
-
-    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -54,7 +49,6 @@ class JwtAuthenticationFilterTest {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private UserDetails userDetails;
-    private UserDetails adminUserDetails;
 
     @BeforeEach
     void setUp() {
@@ -63,15 +57,9 @@ class JwtAuthenticationFilterTest {
         // Setup SecurityContextHolder with mock
         SecurityContextHolder.setContext(securityContext);
         
-        // Create test users
+        // Create a generic test user
         userDetails = new User("user@example.com", "password", 
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-        
-        adminUserDetails = new User("admin@example.com", "password", 
-                Arrays.asList(
-                    new SimpleGrantedAuthority("ROLE_ADMIN"),
-                    new SimpleGrantedAuthority("ROLE_USER")
-                ));
     }
 
     @Test
@@ -129,20 +117,16 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void testDoFilterInternal_UserTokenForSharedEndpoint_UsesCustomUserDetailsService() throws ServletException, IOException {
-        // Given: A token with only ROLE_USER accessing a shared endpoint like /api/orders
+    void testDoFilterInternal_ValidToken_SetsAuthentication() throws ServletException, IOException {
+        // Given: A valid token for any user
         String jwt = "valid.user.token";
         String username = "user@example.com";
-        List<String> userRoles = Collections.singletonList("ROLE_USER");
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
-        when(request.getRequestURI()).thenReturn("/api/orders"); // Use a shared endpoint that was previously problematic
+        when(request.getRequestURI()).thenReturn("/api/any-protected-resource");
 
         when(jwtService.extractUsername(jwt)).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(null);
-
-        // Mock the extraction of roles from the token
-        when(jwtService.extractClaim(eq(jwt), any(java.util.function.Function.class))).thenReturn(userRoles);
 
         when(customUserDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(jwtService.isTokenValid(jwt, userDetails)).thenReturn(true);
@@ -150,44 +134,11 @@ class JwtAuthenticationFilterTest {
         // When
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: Verify the filter uses the CustomUserDetailsService because the token does not have ROLE_ADMIN
+        // Then: Verify the filter uses the CustomUserDetailsService and sets authentication
         verify(filterChain).doFilter(request, response);
         verify(jwtService).extractUsername(jwt);
         verify(customUserDetailsService).loadUserByUsername(username);
-        verify(adminUserDetailsService, never()).loadUserByUsername(anyString());
         verify(jwtService).isTokenValid(jwt, userDetails);
-        verify(securityContext).setAuthentication(any());
-    }
-
-    @Test
-    void testDoFilterInternal_AdminToken_UsesAdminUserDetailsService() throws ServletException, IOException {
-        // Given: A token with ROLE_ADMIN
-        String jwt = "valid.admin.token";
-        String username = "admin@example.com";
-        List<String> adminRoles = Arrays.asList("ROLE_ADMIN", "ROLE_USER");
-
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
-        // The URI is irrelevant for the logic now, but we test a protected one for completeness
-        when(request.getRequestURI()).thenReturn("/api/admin/some-resource");
-
-        when(jwtService.extractUsername(jwt)).thenReturn(username);
-        when(securityContext.getAuthentication()).thenReturn(null);
-
-        // Mock the extraction of roles from the token
-        when(jwtService.extractClaim(eq(jwt), any(java.util.function.Function.class))).thenReturn(adminRoles);
-
-        when(adminUserDetailsService.loadUserByUsername(username)).thenReturn(adminUserDetails);
-        when(jwtService.isTokenValid(jwt, adminUserDetails)).thenReturn(true);
-
-        // When
-        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-
-        // Then: Verify the filter uses the AdminUserDetailsService because the token has ROLE_ADMIN
-        verify(filterChain).doFilter(request, response);
-        verify(jwtService).extractUsername(jwt);
-        verify(adminUserDetailsService).loadUserByUsername(username);
-        verify(customUserDetailsService, never()).loadUserByUsername(anyString());
-        verify(jwtService).isTokenValid(jwt, adminUserDetails);
         verify(securityContext).setAuthentication(any());
     }
 
@@ -200,7 +151,8 @@ class JwtAuthenticationFilterTest {
         
         when(jwtService.extractUsername(jwt)).thenReturn("user@example.com");
         when(securityContext.getAuthentication()).thenReturn(null);
-        
+
+        // Mocking the user details service is important
         when(customUserDetailsService.loadUserByUsername("user@example.com")).thenReturn(userDetails);
         when(jwtService.isTokenValid(jwt, userDetails)).thenReturn(false);
         
