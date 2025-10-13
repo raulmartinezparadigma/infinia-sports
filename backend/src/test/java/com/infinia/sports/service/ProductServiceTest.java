@@ -5,6 +5,7 @@ import com.infinia.sports.model.ProductType;
 import com.infinia.sports.model.dto.ProductDTO;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.service.impl.ProductServiceImpl;
+import com.infinia.sports.mapper.mapstruct.ProductMapperMS;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -33,6 +35,9 @@ class ProductServiceTest {
     @Mock
     private ImageStorageService imageStorageService; // Se mantiene por si se usa internamente
 
+    @Mock
+    private ProductMapperMS productMapper;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
@@ -53,7 +58,33 @@ class ProductServiceTest {
         product2.setDescription("Description 2");
         product2.setPrice(new BigDecimal("20.00"));
         product2.setType(ProductType.SNEAKERS);
-        product2.setImageUrl("image2.jpg");
+        product2.setImageUrl("image2.jpg");        
+        // Configurar mocks por defecto para productMapper
+        Mockito.lenient().when(productMapper.toDTO(any(Product.class))).thenAnswer(invocation -> {
+            Product product = invocation.getArgument(0);
+            ProductDTO dto = new ProductDTO();
+            dto.setId(product.getId());
+            dto.setDescription(product.getDescription());
+            dto.setPrice(product.getPrice());
+            dto.setType(product.getType() != null ? product.getType().name() : null);
+            dto.setImageUrl(product.getImageUrl());
+            return dto;
+        });
+        
+        Mockito.lenient().when(productMapper.toDTOList(any(List.class))).thenAnswer(invocation -> {
+            List<Product> products = invocation.getArgument(0);
+            return products.stream()
+                .map(p -> {
+                    ProductDTO dto = new ProductDTO();
+                    dto.setId(p.getId());
+                    dto.setDescription(p.getDescription());
+                    dto.setPrice(p.getPrice());
+                    dto.setType(p.getType() != null ? p.getType().name() : null);
+                    dto.setImageUrl(p.getImageUrl());
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+        });
     }
 
     @Test
@@ -166,3 +197,12 @@ class ProductServiceTest {
         verify(productRepository, times(1)).findByDescriptionContainingIgnoreCase(searchTerm);
     }
 }
+
+
+
+
+
+
+
+
+

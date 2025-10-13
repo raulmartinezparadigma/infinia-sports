@@ -2,7 +2,7 @@ package com.infinia.sports.service.impl;
 
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.OrderDTO;
-import com.infinia.sports.mapper.OrderMapper;
+import com.infinia.sports.mapper.mapstruct.OrderMapperMS;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.service.OrderService;
@@ -21,10 +21,12 @@ public class OrderServiceImpl implements OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final OrderMapperMS orderMapper;
 
-    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, OrderMapperMS orderMapper) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.orderMapper = orderMapper;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
                 });
             }
             logger.info("Pedido {} completamente hidratado.", orderId);
-            return OrderMapper.toDTO(order);
+            return orderMapper.toDTO(order);
         } catch (Exception e) {
             logger.error("[OrderService] Error inesperado al obtener el pedido para orderId: {}. Error: {}", orderId, e.getMessage(), e);
             throw e;
@@ -86,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
             
             logger.info("Se encontraron {} pedidos para el email: {}", orders.size(), email);
             return orders.stream()
-                    .map(OrderMapper::toDTO)
+                    .map(orderMapper::toDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("[OrderService] Error inesperado al obtener pedidos para el email: {}. Error: {}", email, e.getMessage(), e);
