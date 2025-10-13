@@ -1,8 +1,8 @@
 package com.infinia.sports.service.impl;
 
 import com.infinia.sports.exception.ResourceNotFoundException;
-import com.infinia.sports.mapper.CartMapper;
-import com.infinia.sports.mapper.OrderMapper;
+import com.infinia.sports.mapper.mapstruct.CartMapperMS;
+import com.infinia.sports.mapper.mapstruct.OrderMapperMS;
 import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.Product;
@@ -11,7 +11,6 @@ import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.CheckoutService;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,17 +26,23 @@ import java.util.UUID;
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
 
-    public CheckoutServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository) {
-        this.cartRepository = cartRepository;
-        this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(CheckoutServiceImpl.class);
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final CartMapperMS cartMapper;
+    private final OrderMapperMS orderMapper;
+
+    public CheckoutServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, 
+                               ProductRepository productRepository, CartMapperMS cartMapper, 
+                               OrderMapperMS orderMapper) {
+        this.cartRepository = cartRepository;
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.cartMapper = cartMapper;
+        this.orderMapper = orderMapper;
+    }
     
     @Value("${infinia.sports.shipping-cost}")
     private BigDecimal shippingCost;
@@ -141,7 +146,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             logger.error("Error al guardar el carrito en MongoDB: {}", e.getMessage(), e);
             throw e;
         }
-        return CartMapper.toDTO(enrichCartItemsWithImages(savedCart));
+        return cartMapper.toDTO(enrichCartItemsWithImages(savedCart));
     }
 
     @Override
@@ -176,7 +181,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         Cart savedCart = cartRepository.save(cart);
         logger.info("[updateCartItemQuantity] Carrito guardado tras actualización de cantidad. ID: {}, items: {}", 
                 savedCart.getId(), savedCart.getItems().size());
-        return CartMapper.toDTO(enrichCartItemsWithImages(savedCart));
+        return cartMapper.toDTO(enrichCartItemsWithImages(savedCart));
     }
 
     @Override
@@ -194,12 +199,12 @@ public class CheckoutServiceImpl implements CheckoutService {
         cart.setUpdatedAt(LocalDateTime.now());
         logger.info("[removeItemFromCart] Carrito actualizado y guardado tras eliminación de item. id={}", cart.getId());
         Cart savedCart = cartRepository.save(cart);
-        return CartMapper.toDTO(enrichCartItemsWithImages(savedCart));
+        return cartMapper.toDTO(enrichCartItemsWithImages(savedCart));
     }
 
     @Override
     public CartDTO getCart(String sessionId, String userId) {
-        return CartMapper.toDTO(getCartEntity(sessionId, userId));
+        return cartMapper.toDTO(getCartEntity(sessionId, userId));
     }
 
     @Override
@@ -211,11 +216,11 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Si las direcciones son iguales, usamos la misma para ambos casos
         
         // Crear y guardar la entidad Order
-        Order order = OrderMapper.fromCart(cart, shippingAddress, billingAddress);
+        Order order = orderMapper.fromCart(cart, shippingAddress, billingAddress);
         orderRepository.save(order);
         logger.info("Orden creada y guardada con ID: {}", order.getOrderId());
         
-        return CartMapper.toDTO(cart);
+        return cartMapper.toDTO(cart);
     }
     
     @Override
@@ -224,14 +229,14 @@ public class CheckoutServiceImpl implements CheckoutService {
         java.util.Optional<Order> existing = orderRepository.findByOrderId(checkoutDTO.getCartId());
         if (existing.isPresent()) {
             logger.info("[confirmOrder] Ya existe una orden para orderId={}, devolviendo la existente", checkoutDTO.getCartId());
-            return OrderMapper.toDTO(existing.get());
+            return orderMapper.toDTO(existing.get());
         }
         // Obtener el carrito
         Cart cart = cartRepository.findById(checkoutDTO.getCartId())
                 .orElseThrow(() -> new ResourceNotFoundException("Carrito no encontrado"));
         
         // Crear la orden usando el mapper centralizado
-        Order order = OrderMapper.fromCartAndCheckout(cart, checkoutDTO);
+        Order order = orderMapper.fromCartAndCheckout(cart, checkoutDTO);
         
         // Guardar la orden
         Order savedOrder = orderRepository.save(order);
@@ -248,7 +253,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             cartRepository.delete(cart);
         }
         // Nota: el frontend debe recargar el carrito tras el pedido para máxima sincronización
-        return OrderMapper.toDTO(savedOrder);
+        return orderMapper.toDTO(savedOrder);
     }
 
     /**
@@ -349,14 +354,6 @@ public class CheckoutServiceImpl implements CheckoutService {
         Cart updatedCart = cartRepository.save(cart);
         logger.info("[linkCartToUser] Carrito vinculado correctamente con usuario {}", userId);
         
-        return CartMapper.toDTO(updatedCart);
-    }
-
-    /**
-     * Método para inicializar el repositorio de productos en el OrderMapper
-     */
-    @PostConstruct
-    public void init() {
-        OrderMapper.setProductRepository(productRepository);
+        return cartMapper.toDTO(updatedCart);
     }
 }

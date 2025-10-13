@@ -10,6 +10,7 @@ import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.service.impl.RedsysPaymentServiceImpl;
+import com.infinia.sports.mapper.mapstruct.PaymentMapperMS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,13 +29,24 @@ class RedsysPaymentServiceImplTest {
     private OrderRepository orderRepository;
     @Mock
     private OrderMailPaymentService orderMailPaymentService;
+    @Mock
+    private PaymentMapperMS paymentMapper;
     @InjectMocks
     private RedsysPaymentServiceImpl redsysPaymentService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        redsysPaymentService = new RedsysPaymentServiceImpl(paymentRepository, cartRepository, orderRepository, orderMailPaymentService);
+        redsysPaymentService = new RedsysPaymentServiceImpl(paymentRepository, cartRepository, orderRepository, orderMailPaymentService, paymentMapper);
+        
+        // Configurar mock por defecto para paymentMapper
+        when(paymentMapper.toRedsysPaymentResponseDTO(any(Payment.class))).thenAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            RedsysPaymentResponseDTO dto = new RedsysPaymentResponseDTO();
+            dto.setPaymentId(payment.getId());
+            dto.setStatus(payment.getStatus() != null ? payment.getStatus().name() : null);
+            return dto;
+        });
     }
 
     @Test

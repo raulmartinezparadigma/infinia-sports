@@ -15,7 +15,7 @@ import com.infinia.sports.model.dto.BizumPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.service.OrderMailPaymentService;
-import com.infinia.sports.mapper.PaymentMapper;
+import com.infinia.sports.mapper.mapstruct.PaymentMapperMS;
 
 /**
  * Servicio mock para pagos Bizum
@@ -27,12 +27,16 @@ public class BizumPaymentServiceImpl {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final OrderMailPaymentService orderMailPaymentService;
+    private final PaymentMapperMS paymentMapper;
 
-    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService) {
+    public BizumPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, 
+                                   OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService,
+                                   PaymentMapperMS paymentMapper) {
         this.paymentRepository = paymentRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.orderMailPaymentService = orderMailPaymentService;
+        this.paymentMapper = paymentMapper;
     }
 
     /**
@@ -109,7 +113,7 @@ public class BizumPaymentServiceImpl {
         }
 
         // Traza de salida
-        BizumPaymentResponseDTO dto = PaymentMapper.toBizumPaymentResponseDTO(payment);
+        BizumPaymentResponseDTO dto = paymentMapper.toBizumPaymentResponseDTO(payment);
         logger.info("[BizumService] DTO devuelto: {}", dto);
         return dto;
     }

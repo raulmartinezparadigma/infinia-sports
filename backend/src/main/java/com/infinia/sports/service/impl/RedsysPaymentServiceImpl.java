@@ -13,7 +13,7 @@ import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.repository.mongo.PaymentRepository;
 import com.infinia.sports.service.OrderMailPaymentService;
-import com.infinia.sports.mapper.PaymentMapper;
+import com.infinia.sports.mapper.mapstruct.PaymentMapperMS;
 
 /**
  * Servicio simulado para pagos Redsys
@@ -25,12 +25,16 @@ public class RedsysPaymentServiceImpl {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final OrderMailPaymentService orderMailPaymentService;
+    private final PaymentMapperMS paymentMapper;
 
-    public RedsysPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService) {
+    public RedsysPaymentServiceImpl(PaymentRepository paymentRepository, CartRepository cartRepository, 
+                                    OrderRepository orderRepository, OrderMailPaymentService orderMailPaymentService,
+                                    PaymentMapperMS paymentMapper) {
         this.paymentRepository = paymentRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.orderMailPaymentService = orderMailPaymentService;
+        this.paymentMapper = paymentMapper;
     }
 
     /**
@@ -71,7 +75,7 @@ public class RedsysPaymentServiceImpl {
         } catch (Exception e) {
             logger.error("[RedsysService] Error al eliminar el carrito tras pago Redsys: {}", e.getMessage(), e);
         }
-        RedsysPaymentResponseDTO dto = PaymentMapper.toRedsysPaymentResponseDTO(saved);
+        RedsysPaymentResponseDTO dto = paymentMapper.toRedsysPaymentResponseDTO(saved);
         logger.info("[RedsysService] DTO devuelto: {}", dto);
         return dto;
     }

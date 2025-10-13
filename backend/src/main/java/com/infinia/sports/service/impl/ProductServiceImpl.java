@@ -4,7 +4,7 @@ import com.infinia.sports.kafka.dto.ProductKafkaMessage;
 import com.infinia.sports.model.Product;
 import com.infinia.sports.model.ProductType;
 import com.infinia.sports.model.dto.ProductDTO;
-import com.infinia.sports.mapper.ProductMapper;
+import com.infinia.sports.mapper.mapstruct.ProductMapperMS;
 import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.service.ImageStorageService;
 import com.infinia.sports.service.ProductService;
@@ -23,29 +23,31 @@ public class ProductServiceImpl implements ProductService {
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductRepository productRepository;
     private final ImageStorageService imageStorageService;
+    private final ProductMapperMS productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, ImageStorageService imageStorageService) {
+    public ProductServiceImpl(ProductRepository productRepository, ImageStorageService imageStorageService, ProductMapperMS productMapper) {
         this.productRepository = productRepository;
         this.imageStorageService = imageStorageService;
+        this.productMapper = productMapper;
     }
 
     @Override
     public List<ProductDTO> getAllProducts() {
-        return ProductMapper.toDTOList(productRepository.findAll());
+        return productMapper.toDTOList(productRepository.findAll());
     }
 
     @Override
     public ProductDTO getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
-        return ProductMapper.toDTO(product);
+        return productMapper.toDTO(product);
     }
 
     @Override
     @Transactional
     public ProductDTO saveProduct(Product product) {
         Product saved = productRepository.save(product);
-        return ProductMapper.toDTO(saved);
+        return productMapper.toDTO(saved);
     }
 
     @Override
@@ -64,29 +66,29 @@ public class ProductServiceImpl implements ProductService {
         product.setSize(productDetails.getSize());
         product.setImageUrl(productDetails.getImageUrl());
         Product updated = productRepository.save(product);
-        return ProductMapper.toDTO(updated);
+        return productMapper.toDTO(updated);
     }
 
     @Override
     public List<ProductDTO> getProductsByType(ProductType type) {
-        return ProductMapper.toDTOList(productRepository.findByType(type));
+        return productMapper.toDTOList(productRepository.findByType(type));
     }
 
     @Override
     public List<ProductDTO> getProductsByDescription(String description) {
-        return ProductMapper.toDTOList(productRepository.findByDescriptionContainingIgnoreCase(description));
+        return productMapper.toDTOList(productRepository.findByDescriptionContainingIgnoreCase(description));
     }
 
     @Override
     public List<ProductDTO> getProductsBySize(String size) {
-        return ProductMapper.toDTOList(productRepository.findBySize(size));
+        return productMapper.toDTOList(productRepository.findBySize(size));
     }
 
     @Override
     @Transactional
     public List<ProductDTO> importProducts(List<Product> products) {
         List<Product> imported = productRepository.saveAll(products);
-        return ProductMapper.toDTOList(imported);
+        return productMapper.toDTOList(imported);
     }
 
     @Override

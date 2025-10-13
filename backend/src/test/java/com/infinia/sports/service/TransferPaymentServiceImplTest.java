@@ -7,6 +7,7 @@ import com.infinia.sports.model.dto.TransferPaymentRequestDTO;
 import com.infinia.sports.model.dto.TransferPaymentResponseDTO;
 import com.infinia.sports.repository.mongo.PaymentRepository;
 import com.infinia.sports.service.impl.TransferPaymentServiceImpl;
+import com.infinia.sports.mapper.mapstruct.PaymentMapperMS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,13 +22,24 @@ class TransferPaymentServiceImplTest {
     private PaymentRepository paymentRepository;
     @Mock
     private OrderMailPaymentService orderMailPaymentService;
+    @Mock
+    private PaymentMapperMS paymentMapper;
     @InjectMocks
     private TransferPaymentServiceImpl transferPaymentService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        transferPaymentService = new TransferPaymentServiceImpl(paymentRepository, orderMailPaymentService);
+        transferPaymentService = new TransferPaymentServiceImpl(paymentRepository, orderMailPaymentService, paymentMapper);
+        
+        // Configurar mock por defecto para paymentMapper
+        when(paymentMapper.toTransferPaymentResponseDTO(any(Payment.class))).thenAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            return TransferPaymentResponseDTO.builder()
+                .paymentId(payment.getId())
+                .status(payment.getStatus() != null ? payment.getStatus().name() : null)
+                .build();
+        });
     }
 
     @Test

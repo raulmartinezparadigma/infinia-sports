@@ -1,7 +1,8 @@
 package com.infinia.sports.service;
 
 import com.infinia.sports.exception.ResourceNotFoundException;
-import com.infinia.sports.mapper.OrderMapper;
+import com.infinia.sports.mapper.mapstruct.CartMapperMS;
+import com.infinia.sports.mapper.mapstruct.OrderMapperMS;
 import com.infinia.sports.model.Cart;
 import com.infinia.sports.model.Order;
 import com.infinia.sports.model.dto.*;
@@ -38,6 +39,12 @@ class CheckoutServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private CartMapperMS cartMapper;
+
+    @Mock
+    private OrderMapperMS orderMapper;
+
     @InjectMocks
     private CheckoutServiceImpl checkoutService;
 
@@ -47,6 +54,21 @@ class CheckoutServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(checkoutService, "shippingCost", new BigDecimal("4.99"));
+        
+        // Configurar mocks por defecto para los mappers
+        when(cartMapper.toDTO(any(Cart.class))).thenAnswer(invocation -> {
+            Cart cart = invocation.getArgument(0);
+            CartDTO dto = new CartDTO();
+            dto.setId(cart.getId());
+            dto.setUserId(cart.getUserId());
+            dto.setSessionId(cart.getSessionId());
+            dto.setItems(new ArrayList<>());
+            dto.setSubtotal(cart.getSubtotal() != null ? cart.getSubtotal() : BigDecimal.ZERO);
+            dto.setTax(cart.getTax() != null ? cart.getTax() : BigDecimal.ZERO);
+            dto.setShippingCost(cart.getShippingCost() != null ? cart.getShippingCost() : BigDecimal.ZERO);
+            dto.setTotal(cart.getTotal() != null ? cart.getTotal() : BigDecimal.ZERO);
+            return dto;
+        });
     }
 
     @Test
@@ -74,24 +96,19 @@ class CheckoutServiceImplTest {
         when(orderRepository.findByOrderId(cartId)).thenReturn(Optional.empty());
         when(cartRepository.findById(cartId)).thenReturn(Optional.of(cart));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
+        when(orderMapper.fromCartAndCheckout(any(Cart.class), any(CheckoutDTO.class))).thenReturn(order);
+        when(orderMapper.toDTO(any(Order.class))).thenReturn(orderDTO);
 
-        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
-            mockedOrderMapper.when(() -> OrderMapper.fromCartAndCheckout(any(Cart.class), any(CheckoutDTO.class)))
-                             .thenReturn(order);
-            mockedOrderMapper.when(() -> OrderMapper.toDTO(any(Order.class)))
-                             .thenReturn(orderDTO);
+        // --- Act ---
+        OrderDTO result = checkoutService.confirmOrder(checkoutDTO);
 
-            // --- Act ---
-            OrderDTO result = checkoutService.confirmOrder(checkoutDTO);
-
-            // --- Assert ---
-            assertNotNull(result);
-            assertEquals(order.getId(), result.getId());
-            mockedOrderMapper.verify(() -> OrderMapper.fromCartAndCheckout(cart, checkoutDTO));
-            verify(orderRepository, times(1)).save(order);
-            verify(cartRepository, times(1)).deleteByUserId(userId);
-            mockedOrderMapper.verify(() -> OrderMapper.toDTO(order));
-        }
+        // --- Assert ---
+        assertNotNull(result);
+        assertEquals(order.getId(), result.getId());
+        verify(orderMapper).fromCartAndCheckout(cart, checkoutDTO);
+        verify(orderRepository, times(1)).save(order);
+        verify(cartRepository, times(1)).deleteByUserId(userId);
+        verify(orderMapper).toDTO(order);
     }
 
     @Test
@@ -109,19 +126,16 @@ class CheckoutServiceImplTest {
         existingOrderDTO.setId("order-456");
 
         when(orderRepository.findByOrderId(cartId)).thenReturn(Optional.of(existingOrder));
+        when(orderMapper.toDTO(any(Order.class))).thenReturn(existingOrderDTO);
 
-        try (MockedStatic<OrderMapper> mockedOrderMapper = mockStatic(OrderMapper.class)) {
-            mockedOrderMapper.when(() -> OrderMapper.toDTO(any(Order.class))).thenReturn(existingOrderDTO);
+        // --- Act ---
+        OrderDTO result = checkoutService.confirmOrder(checkoutDTO);
 
-            // --- Act ---
-            OrderDTO result = checkoutService.confirmOrder(checkoutDTO);
-
-            // --- Assert ---
-            assertNotNull(result);
-            assertEquals(existingOrder.getId(), result.getId());
-            verify(orderRepository, never()).save(any(Order.class));
-            verify(cartRepository, never()).delete(any(Cart.class));
-        }
+        // --- Assert ---
+        assertNotNull(result);
+        assertEquals(existingOrder.getId(), result.getId());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(cartRepository, never()).delete(any(Cart.class));
     }
 
     @Test
@@ -243,6 +257,25 @@ class CheckoutServiceImplTest {
 
         when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(cart));
         when(productRepository.findById(java.util.UUID.fromString(productId))).thenReturn(Optional.of(product));
+        
+        // Mock específico para este test con items
+        when(cartMapper.toDTO(any(Cart.class))).thenAnswer(invocation -> {
+            Cart c = invocation.getArgument(0);
+            CartDTO dto = new CartDTO();
+            dto.setUserId(c.getUserId());
+            List<CartItemDTO> itemDTOs = new ArrayList<>();
+            if (c.getItems() != null) {
+                for (Cart.CartItem cartItem : c.getItems()) {
+                    CartItemDTO itemDTO = new CartItemDTO();
+                    itemDTO.setProductId(cartItem.getProductId());
+                    itemDTO.setProductImageUrl(cartItem.getProductImageUrl());
+                    itemDTO.setDescription(cartItem.getDescription());
+                    itemDTOs.add(itemDTO);
+                }
+            }
+            dto.setItems(itemDTOs);
+            return dto;
+        });
 
         // Act
         CartDTO result = checkoutService.getCart(sessionId, userId);
@@ -305,6 +338,27 @@ class CheckoutServiceImplTest {
 
         when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(cart));
         when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+        
+        // Mock específico para este test con items actualizados
+        when(cartMapper.toDTO(any(Cart.class))).thenAnswer(invocation -> {
+            Cart c = invocation.getArgument(0);
+            CartDTO dto = new CartDTO();
+            dto.setId(c.getId());
+            dto.setUserId(c.getUserId());
+            List<CartItemDTO> itemDTOs = new ArrayList<>();
+            if (c.getItems() != null) {
+                for (Cart.CartItem cartItem : c.getItems()) {
+                    CartItemDTO itemDTO = new CartItemDTO();
+                    itemDTO.setProductId(cartItem.getProductId());
+                    itemDTO.setQuantity(cartItem.getQuantity());
+                    itemDTO.setUnitPrice(cartItem.getUnitPrice());
+                    itemDTO.setTotalPrice(cartItem.getTotalPrice());
+                    itemDTOs.add(itemDTO);
+                }
+            }
+            dto.setItems(itemDTOs);
+            return dto;
+        });
 
         CartDTO result = checkoutService.addItemToCart(sessionId, userId, newItemDTO);
 
@@ -392,8 +446,11 @@ class CheckoutServiceImplTest {
         Cart cart = new Cart();
         cart.setId(cartId);
         AddressDTO address = new AddressDTO();
+        Order order = new Order();
+        order.setOrderId(cartId);
 
         when(cartRepository.findById(cartId)).thenReturn(Optional.of(cart));
+        when(orderMapper.fromCart(any(Cart.class), any(AddressDTO.class), any(AddressDTO.class))).thenReturn(order);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         checkoutService.saveAddresses(cartId, address, address, true);
