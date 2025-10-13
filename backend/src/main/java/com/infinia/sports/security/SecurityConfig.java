@@ -66,7 +66,8 @@ public class SecurityConfig {
                     "/api/cart/**",
                     "/api/checkout/**",
                     "/api/payments/**",
-                    "/api/admin/auth/**" // Login admin público
+                    "/api/admin/auth/**", // Login admin público
+                    "/actuator/**" // Spring Boot Actuator endpoints
                 ).permitAll()
                 // Proteger endpoints de administración
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
