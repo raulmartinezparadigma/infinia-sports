@@ -11,6 +11,8 @@ import com.infinia.sports.repository.jpa.ProductRepository;
 import com.infinia.sports.repository.mongo.CartRepository;
 import com.infinia.sports.repository.mongo.OrderRepository;
 import com.infinia.sports.service.CheckoutService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -202,9 +204,35 @@ public class CheckoutServiceImpl implements CheckoutService {
         return cartMapper.toDTO(enrichCartItemsWithImages(savedCart));
     }
 
+    /**
+     * Obtiene el carrito del usuario/sesión con protección Retry para MongoDB.
+     * 
+     * Resilience4j:
+     * - Retry: Reintenta hasta 3 veces si hay fallos transitorios de conexión
+     * - Circuit Breaker: Protege contra caída total de MongoDB
+     * - Fallback: Devuelve carrito vacío si MongoDB no está disponible
+     */
     @Override
+    @Retry(name = "mongoService")
+    @CircuitBreaker(name = "mongoService", fallbackMethod = "fallbackGetCart")
     public CartDTO getCart(String sessionId, String userId) {
         return cartMapper.toDTO(getCartEntity(sessionId, userId));
+    }
+    
+    /**
+     * Fallback cuando MongoDB no está disponible.
+     * Devuelve un carrito vacío para no romper la experiencia del usuario.
+     */
+    private CartDTO fallbackGetCart(String sessionId, String userId, Exception ex) {
+        logger.warn("⚠️ FALLBACK: MongoDB no disponible al obtener carrito. sessionId={}, userId={}. Causa: {}",
+                    sessionId, userId, ex.getMessage());
+        
+        // Devolver carrito vacío
+        CartDTO emptyCart = new CartDTO();
+        emptyCart.setSessionId(sessionId);
+        emptyCart.setUserId(userId);
+        emptyCart.setItems(new ArrayList<>());
+        return emptyCart;
     }
 
     @Override
